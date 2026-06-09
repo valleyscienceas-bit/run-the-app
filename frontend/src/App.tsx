@@ -1,0 +1,476 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
+import { Brain, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { auth, onAuthStateChanged, User, db, doc, setDoc, getDoc, updateDoc } from './lib/firebase';
+import { Layout } from './components/Layout';
+import { ModuleGrid } from './components/ModuleGrid';
+import { SocraticChat } from './components/SocraticChat';
+import { Dashboard } from './components/Dashboard';
+import { Settings } from './components/Settings';
+import { LandingPage } from './components/LandingPage';
+import { LoginSelection } from './components/LoginSelection';
+import { FounderDashboard } from './components/FounderDashboard';
+import { PlacementTest } from './components/PlacementTest';
+import { UnitView } from './components/UnitView';
+import { ValerieWidget } from './components/ValerieWidget';
+import { PaymentFirewall } from './components/PaymentFirewall';
+import { FULL_CURRICULUM, UNITS } from './curriculum';
+import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult } from './types';
+
+export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const isProcessingPayment = useRef(false);
+  const [appState, setAppState] = useState<UserState>({
+    role: 'student',
+    path: 'individual',
+    isLoggedIn: false
+  });
+  const [view, setView] = useState<'landing' | 'login' | 'dashboard'>('landing');
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'dashboard' | 'chat' | 'founder' | 'settings'>('curriculum');
+  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [selectedModule, setSelectedModule] = useState<NGSSModule | null>(null);
+  const [showPlacementPopup, setShowPlacementPopup] = useState(false);
+  const [isTakingTest, setIsTakingTest] = useState<{ type: 'placement' | 'unit' | 'grade', target?: any } | null>(null);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [lastTestResult, setLastTestResult] = useState<TestResult | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        try {
+          const profileDoc = await getDoc(doc(db, 'users', user.uid));
+          if (profileDoc.exists()) {
+            const profileData = profileDoc.data() as UserProfile;
+            
+            // Fetch test results
+            const resultsSnap = await getDoc(doc(db, 'results', user.uid));
+            let results: TestResult[] = [];
+            if (resultsSnap.exists()) {
+              results = resultsSnap.data().results || [];
+              setTestResults(results);
+            }
+
+            setAppState({
+              path: profileData.path,
+              role: profileData.role,
+              isLoggedIn: true,
+              grade: profileData.grade,
+              profile: profileData
+            });
+            
+            setView('dashboard');
+            
+            // Only show placement popup if student, first time, and has no results at all
+            const hasExistingResults = results.length > 0;
+            if (hasExistingResults) {
+              setShowPlacementPopup(false);
+              // Self-heal profile isFirstTime state if database had the stale flag
+              if (profileData.isFirstTime) {
+                profileData.isFirstTime = false;
+                updateDoc(doc(db, 'users', user.uid), { isFirstTime: false }).catch(err => {
+                  console.error("Failed to auto-cleanse isFirstTime state:", err);
+                });
+              }
+            } else if (profileData.role === 'student' && profileData.isFirstTime) {
+              setShowPlacementPopup(true);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching profile:", err);
+        }
+      } else {
+        setUser(null);
+        setAppState({
+          role: 'student',
+          path: 'individual',
+          isLoggedIn: false
+        });
+        setView('landing');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleDismissPlacement = async () => {
+    setShowPlacementPopup(false);
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), { isFirstTime: false });
+        if (appState.profile) {
+          setAppState(prev => ({
+            ...prev,
+            profile: prev.profile ? { ...prev.profile, isFirstTime: false } : undefined
+          }));
+        }
+      } catch (err) {
+        console.error("Error dismissing placement test:", err);
+      }
+    }
+  };
+
+  const handleLogin = (path: AccessPath, role: UserRole, details?: any) => {
+    const profile: UserProfile = {
+      uid: user?.uid || details?.uid || 'guest',
+      name: details?.name || 'Guest User',
+      username: details?.username || 'guest',
+      email: details?.email || '',
+      parentEmail: details?.parentEmail || null,
+      linkedStudentUid: details?.linkedStudentUid || null,
+      role,
+      path,
+      grade: details?.grade || (path === 'district' ? '6' : '3'),
+      xp: details?.xp || 0,
+      isFirstTime: details?.isFirstTime ?? true,
+      isPaid: details?.isPaid ?? (path === 'district'),
+      createdAt: details?.createdAt || new Date().toISOString()
+    };
+
+    setAppState({
+      path,
+      role,
+      isLoggedIn: true,
+      grade: profile.grade,
+      profile
+    });
+    
+    setView('dashboard');
+    if (role === 'founder') {
+      setActiveTab('founder');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+      setAppState({
+        role: 'student',
+        path: 'individual',
+        isLoggedIn: false
+      });
+      setView('landing');
+      setActiveTab('curriculum');
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (!appState.profile || isProcessingPayment.current) return;
+    isProcessingPayment.current = true;
+
+    const updatedProfile = { ...appState.profile, isPaid: true };
+    
+    // 1. Update Student Profile in Firestore
+    try {
+      await setDoc(doc(db, 'users', updatedProfile.uid), updatedProfile, { merge: true });
+    } catch (err) {
+      console.error("Error updating student profile:", err);
+    }
+
+    // 2. Dual-Provisioning: Create Parent Account
+    if (updatedProfile.parentEmail) {
+      try {
+        const parentUid = `parent_${updatedProfile.uid}`;
+        const parentProfile: UserProfile = {
+          uid: parentUid,
+          name: `Parent of ${updatedProfile.name}`,
+          username: `parent_${updatedProfile.username}`,
+          email: updatedProfile.parentEmail,
+          linkedStudentUid: updatedProfile.uid,
+          role: 'parent',
+          path: 'individual',
+          grade: updatedProfile.grade,
+          xp: 0,
+          isFirstTime: true,
+          isPaid: true,
+          createdAt: new Date().toISOString()
+        };
+
+        await setDoc(doc(db, 'users', parentUid), parentProfile);
+        
+        // Send email to parent with instructions
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: updatedProfile.parentEmail,
+            subject: 'Welcome to Valley Science - Parent Access',
+            text: `Your parent account is ready. Please use the "Forgot Password" feature with this email (${updatedProfile.parentEmail}) to set your password and log in.`,
+            html: `
+              <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #0f172a;">Parent Access Ready</h2>
+                <p>A parent account has been created for you to monitor <strong>${updatedProfile.name}'s</strong> progress.</p>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                  <p><strong>How to log in:</strong></p>
+                  <ol>
+                    <li>Go to the Valley Science Login page</li>
+                    <li>Select "Individual Access" -> "Parent"</li>
+                    <li>Enter your email: <strong>${updatedProfile.parentEmail}</strong></li>
+                    <li>Click the <strong>"Forgot?"</strong> button to set your password</li>
+                  </ol>
+                </div>
+                <p style="color: #64748b; font-size: 14px;">Once you set your password, you can log in to view your student's progress.</p>
+              </div>
+            `
+          })
+        });
+        
+        console.log(`[DUAL-PROVISIONING] Parent instructions sent to ${updatedProfile.parentEmail}`);
+      } catch (err) {
+        console.error("Error in parent provisioning:", err);
+      }
+    }
+
+    setAppState(prev => ({
+      ...prev,
+      profile: updatedProfile
+    }));
+
+    if (updatedProfile.isFirstTime && updatedProfile.role === 'student' && testResults.length === 0) {
+      setShowPlacementPopup(true);
+    }
+    
+    // Reset guard after a delay to allow for state transition
+    setTimeout(() => {
+      isProcessingPayment.current = false;
+    }, 5000);
+  };
+
+  const handleModuleSelect = (module: NGSSModule) => {
+    setSelectedModule(module);
+    setActiveTab('chat');
+  };
+
+  const handleTestComplete = async (score: number, gaps: string[]) => {
+    const result: TestResult = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: user?.uid || 'guest',
+      type: isTakingTest?.type || 'placement',
+      targetId: isTakingTest?.type === 'unit' ? isTakingTest.target.id : appState.grade,
+      score,
+      gaps,
+      timestamp: new Date().toISOString()
+    };
+
+    const newResults = [...testResults, result];
+    setTestResults(newResults);
+    setLastTestResult(result);
+    setIsTakingTest(null);
+    setShowPlacementPopup(false);
+    setActiveTab('dashboard');
+    
+    // Save to Firestore
+    if (user) {
+      try {
+        await setDoc(doc(db, 'results', user.uid), { results: newResults }, { merge: true });
+        await updateDoc(doc(db, 'users', user.uid), { isFirstTime: false });
+        
+        if (appState.profile) {
+          handleUpdateProfile({ ...appState.profile, isFirstTime: false });
+        }
+      } catch (err) {
+        console.error("Error saving test results or updating profile:", err);
+      }
+    }
+  };
+
+  const handleStartTest = (type: 'placement' | 'unit' | 'grade', target?: any) => {
+    (window as any).currentTestTarget = target;
+    (window as any).userGrade = appState.grade;
+    setIsTakingTest({ type, target });
+    setLastTestResult(null);
+  };
+
+  const handleUpdateProfile = (updatedProfile: UserProfile) => {
+    setAppState(prev => ({
+      ...prev,
+      profile: updatedProfile
+    }));
+  };
+
+  const isGated = appState.profile?.role === 'student' && appState.path === 'individual' && !appState.profile?.isPaid;
+
+  if (view === 'landing') {
+    return <LandingPage onLoginClick={() => setView('login')} />;
+  }
+
+  if (view === 'login') {
+    return <LoginSelection onBack={() => setView('landing')} onLogin={handleLogin} />;
+  }
+
+  if (isGated) {
+    return <PaymentFirewall onPaymentSuccess={handlePaymentSuccess} onSkip={handlePaymentSuccess} />;
+  }
+
+  return (
+    <Layout 
+      activeTab={activeTab === 'founder' ? 'dashboard' : activeTab} 
+      onTabChange={(tab) => setActiveTab(tab as any)}
+      userState={appState}
+      onLogout={handleLogout}
+    >
+      {showPlacementPopup && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl"
+          >
+            <div className="w-20 h-20 bg-soft-pink/10 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Brain size={40} className="text-soft-pink" />
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 mb-4">Welcome to Valley Science!</h2>
+            <p className="text-slate-600 font-medium leading-relaxed mb-10">
+              Would you like to take a quick placement test? This helps Valerie identify your conceptual gaps and customize your learning path.
+            </p>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => { setShowPlacementPopup(false); handleStartTest('placement'); }}
+                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+              >
+                Yes, Start Test
+              </button>
+              <button 
+                onClick={handleDismissPlacement}
+                className="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {activeTab === 'curriculum' && (
+        <div className="space-y-8 animate-in fade-in duration-500">
+          {isTakingTest ? (
+            <PlacementTest 
+              module={isTakingTest.type === 'unit' ? null : selectedModule} 
+              onComplete={handleTestComplete} 
+              onCancel={() => setIsTakingTest(null)}
+            />
+          ) : lastTestResult ? (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white max-w-2xl w-full rounded-[40px] p-12 text-center shadow-2xl"
+              >
+                <div className="w-20 h-20 bg-sage-green/10 rounded-full flex items-center justify-center mx-auto mb-8 text-sage-green">
+                  <ClipboardCheck size={40} />
+                </div>
+                <h2 className="text-4xl font-black text-slate-900 mb-2">{lastTestResult.score}%</h2>
+                <h3 className="text-2xl font-black text-slate-900 mb-4">Test Results</h3>
+                <p className="text-slate-600 font-medium mb-8">
+                  {lastTestResult.type === 'placement' ? 'Benchmark complete.' : 'Assessment complete.'} Valerie has updated your stats with {lastTestResult.gaps.length} identified gaps.
+                </p>
+                <div className="bg-slate-50 p-6 rounded-3xl text-left mb-8 max-h-40 overflow-y-auto">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Identified Gaps</p>
+                  <ul className="space-y-2">
+                    {lastTestResult.gaps.map((gap, i) => (
+                      <li key={i} className="text-sm font-bold text-slate-700 flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-soft-pink rounded-full mt-1.5 shrink-0" />
+                        {gap}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => setLastTestResult(null)}
+                  className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+                >
+                  Continue to Learning Path
+                </button>
+              </motion.div>
+            </div>
+          ) : selectedUnit ? (
+            <UnitView 
+              unit={selectedUnit} 
+              onBack={() => setSelectedUnit(null)} 
+              onSelectModule={handleModuleSelect}
+              onTakeUnitTest={(unit) => handleStartTest('unit', unit)}
+            />
+          ) : (
+            <>
+              <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="max-w-3xl">
+                  <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-4 leading-tight">
+                    {appState.path === 'district' ? 'District Curriculum' : `Grade ${appState.grade} Science`}
+                  </h1>
+                  <p className="text-xl text-slate-600 font-medium">
+                    {appState.path === 'district' 
+                      ? `Welcome back! Your teacher has unlocked the Grade ${appState.grade} units for you.` 
+                      : `Exploring the core units for Grade ${appState.grade}. Select a unit to see its modules.`}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => handleStartTest('grade')}
+                  className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-soft-pink transition-all whitespace-nowrap"
+                >
+                  Take Grade Level Test <ArrowRight size={20} />
+                </button>
+              </header>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {UNITS.filter(u => u.gradeLevel === appState.grade).map((unit, index) => (
+                  <motion.div
+                    key={unit.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => setSelectedUnit(unit)}
+                    className="group bg-white border-2 border-slate-100 rounded-[40px] p-10 hover:shadow-2xl hover:border-soft-pink transition-all cursor-pointer"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <span className="px-4 py-1.5 bg-cream text-slate-900 text-[10px] font-black rounded-full uppercase tracking-[0.2em] border border-slate-100">
+                        Unit {index + 1}
+                      </span>
+                      <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:bg-soft-pink group-hover:text-white transition-colors">
+                        <ArrowRight size={20} />
+                      </div>
+                    </div>
+                    <h3 className="text-3xl font-black text-slate-900 mb-4 group-hover:text-soft-pink transition-colors">
+                      {unit.title}
+                    </h3>
+                    <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                      {unit.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                      {unit.modules.length} Modules • Unit Test Available
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'chat' && (
+        <SocraticChat 
+          selectedModule={selectedModule} 
+          onBack={() => {
+            setSelectedModule(null);
+            setActiveTab('curriculum');
+          }}
+        />
+      )}
+
+      {activeTab === 'dashboard' && (
+        <Dashboard results={testResults} userState={appState} />
+      )}
+
+      {activeTab === 'settings' && (
+        <Settings userState={appState} onUpdateProfile={handleUpdateProfile} />
+      )}
+
+      {activeTab === 'founder' && (
+        <FounderDashboard />
+      )}
+
+      <ValerieWidget />
+    </Layout>
+  );
+}

@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user account information and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "parentEmail": { "type": "string", "format": "email", "description": "Mandatory parent email for individual students" },
+        "linkedStudentUid": { "type": "string", "description": "UID of the student linked to this parent account" },
+        "role": { "type": "string", "enum": ["student", "teacher", "parent", "admin", "founder"] },
+        "path": { "type": "string", "enum": ["district", "individual"] },
+        "grade": { "type": "string", "enum": ["3", "4", "5", "6", "7", "8"] },
+        "xp": { "type": "number" },
+        "isFirstTime": { "type": "boolean" },
+        "isPaid": { "type": "boolean", "description": "Whether the user has paid for the individual tier" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "path", "isPaid"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A single message in a conversation.",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["user", "model"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ChatHistory": {
+      "title": "Chat History",
+      "description": "Stores conversation history for a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "ChatMessage" }
+        },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "UserProgress": {
+      "title": "User Progress",
+      "description": "Tracks student progress through modules.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "status": { "type": "string", "enum": ["locked", "active", "completed"] },
+        "score": { "type": "number" },
+        "gapsClosed": { "type": "boolean" },
+        "lastInteraction": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents."
+    },
+    "/chat_history/{userId}": {
+      "schema": "ChatHistory",
+      "description": "Conversation history per user."
+    },
+    "/progress/{progressId}": {
+      "schema": "UserProgress",
+      "description": "Progress tracking for modules."
+    }
+  }
+}
