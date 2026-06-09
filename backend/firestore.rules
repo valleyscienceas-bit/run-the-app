@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isFounder() {
+      return isAuthenticated() && 
+             (getUserData().role == 'founder' || 
+              request.auth.token.email == 'valley.science.as@gmail.com');
+    }
+
+    function isParentOf(studentId) {
+      return isAuthenticated() && 
+             getUserData().role == 'parent' && 
+             getUserData().linkedStudentUid == studentId;
+    }
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.email is string &&
+             data.role in ['student', 'teacher', 'parent', 'admin', 'founder'] &&
+             data.path in ['district', 'individual'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isFounder() || isParentOf(userId);
+      // Allow student to create their own profile OR their parent's profile (simulated dual-provisioning)
+      allow create: if isAuthenticated() && (
+        request.resource.data.uid == request.auth.uid || 
+        userId == "parent_" + request.auth.uid
+      );
+      allow update: if isOwner(userId) || isFounder() || (isAuthenticated() && userId == "parent_" + request.auth.uid);
+      // Soft delete support: allow deletion for now, but App will handle soft-delete logic
+      allow delete: if isOwner(userId) || isFounder();
+    }
+
+    match /chat_history/{userId} {
+      allow read: if isOwner(userId) || isFounder() || isParentOf(userId);
+      allow create, update: if isOwner(userId);
+    }
+
+    match /progress/{progressId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isFounder() || isParentOf(resource.data.userId));
+      allow create, update: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /results/{userId} {
+      allow read, write: if isOwner(userId) || isFounder() || isParentOf(userId);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
