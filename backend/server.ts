@@ -75,6 +75,25 @@ async function startServer() {
   });
 
   // ==========================================
+  // CREATE USER PROFILE ROUTE (Admin SDK bypasses Firestore rules)
+  // ==========================================
+  app.post("/api/create-profile", async (req, res) => {
+    const { uid, profile } = req.body;
+
+    if (!uid || !profile) {
+      return res.status(400).json({ error: "uid and profile are required" });
+    }
+
+    try {
+      await adminDb.collection("users").doc(uid).set(profile);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Create profile error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
   // SMTP EMAIL ROUTE
   // ==========================================
   app.post("/api/send-email", async (req, res) => {

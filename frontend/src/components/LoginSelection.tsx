@@ -222,7 +222,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
           user = userCredential.user;
         }
 
-        // Create Firestore Profile
+        // Create Firestore Profile via backend (Admin SDK bypasses security rules)
         const profile: UserProfile = {
           uid: user.uid,
           name: formData.name,
@@ -238,7 +238,15 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
           createdAt: new Date().toISOString()
         };
 
-        await setDoc(doc(db, 'users', user.uid), profile);
+        const profileRes = await fetch('/api/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: user.uid, profile })
+        });
+        if (!profileRes.ok) {
+          const err = await profileRes.json();
+          throw new Error(err.error || 'Failed to create profile');
+        }
         onLogin('individual', profile.role, profile);
       } catch (err: any) {
         if (err.code === 'auth/email-already-in-use') {
