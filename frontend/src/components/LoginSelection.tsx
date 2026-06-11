@@ -167,6 +167,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
           console.log(`[FALLBACK] Verification Code: ${code}`);
         }
         
+        setTwoFACode('');
         setStep('2fa');
       } else {
         // Real Firebase Login
@@ -213,7 +214,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
       setLoading(true);
       setError(null);
       try {
-        let user = googleUser;
+        let user = googleUser || auth.currentUser;
         
         if (!user) {
           // Create Firebase Auth User for email/pass signup
