@@ -169,55 +169,20 @@ export default function App() {
       console.error("Error updating student profile:", err);
     }
 
-    // 2. Dual-Provisioning: Create Parent Account
+    // 2. Dual-Provisioning: Create Parent Account via backend (Admin SDK)
     if (updatedProfile.parentEmail) {
       try {
-        const parentUid = `parent_${updatedProfile.uid}`;
-        const parentProfile: UserProfile = {
-          uid: parentUid,
-          name: `Parent of ${updatedProfile.name}`,
-          username: `parent_${updatedProfile.username}`,
-          email: updatedProfile.parentEmail,
-          linkedStudentUid: updatedProfile.uid,
-          role: 'parent',
-          path: 'individual',
-          grade: updatedProfile.grade,
-          xp: 0,
-          isFirstTime: true,
-          isPaid: true,
-          createdAt: new Date().toISOString()
-        };
-
-        await setDoc(doc(db, 'users', parentUid), parentProfile);
-        
-        // Send email to parent with instructions
-        await fetch('/api/send-email', {
+        await fetch('/api/provision-parent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            to: updatedProfile.parentEmail,
-            subject: 'Welcome to Valley Science - Parent Access',
-            text: `Your parent account is ready. Please use the "Forgot Password" feature with this email (${updatedProfile.parentEmail}) to set your password and log in.`,
-            html: `
-              <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                <h2 style="color: #0f172a;">Parent Access Ready</h2>
-                <p>A parent account has been created for you to monitor <strong>${updatedProfile.name}'s</strong> progress.</p>
-                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                  <p><strong>How to log in:</strong></p>
-                  <ol>
-                    <li>Go to the Valley Science Login page</li>
-                    <li>Select "Individual Access" -> "Parent"</li>
-                    <li>Enter your email: <strong>${updatedProfile.parentEmail}</strong></li>
-                    <li>Click the <strong>"Forgot?"</strong> button to set your password</li>
-                  </ol>
-                </div>
-                <p style="color: #64748b; font-size: 14px;">Once you set your password, you can log in to view your student's progress.</p>
-              </div>
-            `
+            studentUid: updatedProfile.uid,
+            studentName: updatedProfile.name,
+            parentEmail: updatedProfile.parentEmail,
+            studentGrade: updatedProfile.grade
           })
         });
-        
-        console.log(`[DUAL-PROVISIONING] Parent instructions sent to ${updatedProfile.parentEmail}`);
+        console.log(`[DUAL-PROVISIONING] Parent provisioned for ${updatedProfile.parentEmail}`);
       } catch (err) {
         console.error("Error in parent provisioning:", err);
       }
@@ -261,10 +226,14 @@ export default function App() {
     setShowPlacementPopup(false);
     setActiveTab('dashboard');
     
-    // Save to Firestore
+    // Save results via backend (Admin SDK bypasses rules)
     if (user) {
       try {
-        await setDoc(doc(db, 'results', user.uid), { results: newResults }, { merge: true });
+        await fetch('/api/save-results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: user.uid, results: newResults })
+        });
         await updateDoc(doc(db, 'users', user.uid), { isFirstTime: false });
         
         if (appState.profile) {

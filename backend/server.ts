@@ -94,6 +94,135 @@ async function startServer() {
   });
 
   // ==========================================
+  // PROVISION PARENT ACCOUNT ROUTE
+  // ==========================================
+  app.post("/api/provision-parent", async (req, res) => {
+    const { studentUid, studentName, parentEmail, studentGrade } = req.body;
+
+    if (!studentUid || !parentEmail) {
+      return res.status(400).json({ error: "studentUid and parentEmail are required" });
+    }
+
+    try {
+      const parentDocId = `parent_${studentUid}`;
+
+      // 1. Check if parent Auth user already exists
+      let parentAuthUid: string;
+      try {
+        const existingUser = await adminAuth.getUserByEmail(parentEmail);
+        parentAuthUid = existingUser.uid;
+      } catch (err: any) {
+        if (err.code === "auth/user-not-found") {
+          // Create real Firebase Auth user for the parent
+          const newUser = await adminAuth.createUser({
+            email: parentEmail,
+            emailVerified: false,
+            displayName: `Parent of ${studentName || "Student"}`,
+            password: Math.random().toString(36).slice(-12) + "A1!"
+          });
+          parentAuthUid = newUser.uid;
+          console.log(`[PROVISION] Created Auth user for parent: ${parentEmail}`);
+        } else {
+          throw err;
+        }
+      }
+
+      // 2. Create or update parent Firestore profile (Admin SDK bypasses rules)
+      const parentProfile = {
+        uid: parentDocId,
+        authUid: parentAuthUid,
+        name: `Parent of ${studentName || "Student"}`,
+        username: `parent_${studentUid}`,
+        email: parentEmail,
+        linkedStudentUid: studentUid,
+        role: "parent",
+        path: "individual",
+        grade: studentGrade || "6",
+        xp: 0,
+        isFirstTime: true,
+        isPaid: true,
+        createdAt: new Date().toISOString()
+      };
+
+      await adminDb.collection("users").doc(parentDocId).set(parentProfile, { merge: true });
+      console.log(`[PROVISION] Created/updated parent profile: ${parentDocId}`);
+
+      // 3. Generate password reset link so parent can set their own password
+      const resetLink = await adminAuth.generatePasswordResetLink(parentEmail);
+
+      // 4. Send branded welcome email with direct set-password button
+      const transporter = nodemailer.createTransport({
+        service: process.env.SMTP_SERVICE,
+        host: process.env.SMTP_HOST || "smtp.ethereal.email",
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true" || Number(process.env.SMTP_PORT) === 465,
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        tls: { rejectUnauthorized: false }
+      });
+
+      const emailHtml = `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 520px;">
+          <h2 style="color: #0f172a;">Your Valley Science Parent Account is Ready</h2>
+          <p>A parent monitoring account has been created for you to track <strong>${studentName || "your student"}'s</strong> science progress.</p>
+          <p>Click the button below to set your password and access your dashboard:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" style="background: #ec4899; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">Set Your Password</a>
+          </div>
+          <div style="background: #f8fafc; padding: 16px; border-radius: 10px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #475569;"><strong>To log in after setting your password:</strong></p>
+            <ol style="font-size: 14px; color: #475569; margin: 8px 0 0;">
+              <li>Go to the Valley Science login page</li>
+              <li>Select <strong>Individual Access → Parent</strong></li>
+              <li>Enter your email: <strong>${parentEmail}</strong></li>
+            </ol>
+          </div>
+          <p style="color: #94a3b8; font-size: 13px;">If you didn't expect this email, you can safely ignore it.</p>
+          <p style="color: #94a3b8; font-size: 13px;">If the button doesn't work, copy this link: <a href="${resetLink}">${resetLink}</a></p>
+        </div>
+      `;
+
+      if (process.env.SMTP_USER) {
+        await transporter.sendMail({
+          from: `"Valley Science" <${process.env.SMTP_USER}>`,
+          to: parentEmail,
+          subject: `${studentName || "Your student"} just joined Valley Science — Set up your parent account`,
+          html: emailHtml
+        });
+        console.log(`[PROVISION] Sent parent welcome email to ${parentEmail}`);
+      } else {
+        console.log("--- SIMULATED PARENT WELCOME EMAIL ---");
+        console.log(`To: ${parentEmail}`);
+        console.log(`Reset Link: ${resetLink}`);
+        console.log("--------------------------------------");
+      }
+
+      res.json({ success: true, parentDocId });
+    } catch (error: any) {
+      console.error("Parent provisioning error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // SAVE TEST RESULTS ROUTE
+  // ==========================================
+  app.post("/api/save-results", async (req, res) => {
+    const { uid, results } = req.body;
+
+    if (!uid || !results) {
+      return res.status(400).json({ error: "uid and results are required" });
+    }
+
+    try {
+      await adminDb.collection("results").doc(uid).set({ results }, { merge: true });
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Save results error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
   // SMTP EMAIL ROUTE
   // ==========================================
   app.post("/api/send-email", async (req, res) => {
