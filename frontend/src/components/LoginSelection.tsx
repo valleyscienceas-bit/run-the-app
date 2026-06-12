@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
 import { UserRole, AccessPath, GradeLevel, UserProfile } from '../types';
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
-import { getDoc, query, where, collection, getDocs } from 'firebase/firestore';
+import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
+import { getDoc } from 'firebase/firestore';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -16,21 +16,23 @@ interface LoginSelectionProps {
   onLogin: (path: AccessPath, role: UserRole, details?: any) => void;
 }
 
+const EMPTY_FORM = {
+  email: '',
+  password: '',
+  confirmPassword: '',
+  name: '',
+  username: '',
+  parentEmail: '',
+  grade: '6' as GradeLevel
+};
+
 export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
   const [path, setPath] = useState<AccessPath | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile'>('selection');
+  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile' | 'parent-signup'>('selection');
   
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    username: '',
-    parentEmail: '',
-    grade: '6' as GradeLevel
-  });
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [twoFACode, setTwoFACode] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [googleUser, setGoogleUser] = useState<any>(null);
@@ -85,6 +87,63 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
     }
   };
 
+  const handleParentSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      if (!formData.username.trim()) throw new Error("Please choose a username.");
+      if (formData.password !== formData.confirmPassword) throw new Error("Passwords do not match.");
+      if (formData.password.length < 8) throw new Error("Password must be at least 8 characters.");
+      if (!agreedToTerms) throw new Error("You must agree to the Terms of Service to continue.");
+
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      const profile: UserProfile = {
+        uid: user.uid,
+        name: formData.name || `Parent`,
+        username: formData.username,
+        email: formData.email,
+        role: 'parent',
+        path: 'individual',
+        grade: '6',
+        xp: 0,
+        isFirstTime: false,
+        isPaid: true,
+        createdAt: new Date().toISOString()
+      };
+
+      const profileRes = await fetch('/api/create-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid, profile })
+      });
+      if (!profileRes.ok) {
+        const err = await profileRes.json();
+        throw new Error(err.error || 'Failed to create profile');
+      }
+      onLogin('individual', 'parent', profile);
+    } catch (err: any) {
+      if (err.code === 'auth/email-already-in-use') {
+        setError("An account with this email already exists. Try logging in.");
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoBack = (toStep: typeof step) => {
+    setFormData({ ...EMPTY_FORM });
+    setError(null);
+    setMessage(null);
+    setAgreedToTerms(false);
+    setTwoFACode('');
+    setStep(toStep);
+  };
+
   const handleGoogleLogin = async () => {
     setError(null);
     setLoading(true);
@@ -116,10 +175,19 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
   };
 
   const handleNext = () => {
+    // Always clear fields when navigating to a new step
+    setFormData({ ...EMPTY_FORM });
+    setError(null);
+    setMessage(null);
+    setAgreedToTerms(false);
     if (path === 'district') {
       setStep('guest');
     } else if (path === 'individual') {
-      setStep('form');
+      if (mode === 'signup' && role === 'parent') {
+        setStep('parent-signup');
+      } else {
+        setStep('form');
+      }
     }
   };
 
@@ -173,16 +241,18 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
         // Real Firebase Login
         let loginEmail = formData.email;
         
-        // Check if it's a username instead of an email
+        // Check if it's a username instead of an email — use backend to avoid Firestore rule issues
         if (!formData.email.includes('@')) {
-          const q = query(collection(db, 'users'), where('username', '==', formData.email));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-            const userData = querySnapshot.docs[0].data();
-            loginEmail = userData.email;
-          } else {
+          const lookupRes = await fetch('/api/lookup-username', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: formData.email })
+          });
+          const lookupData = await lookupRes.json();
+          if (!lookupRes.ok) {
             throw new Error("Username not found. Please use your email or check your username.");
           }
+          loginEmail = lookupData.email;
         }
 
         const userCredential = await signInWithEmailAndPassword(auth, loginEmail, formData.password);
@@ -331,14 +401,21 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                         >
                           Login
                         </button>
-                        {role !== 'parent' && (
-                          <button 
-                            onClick={() => setMode('signup')}
-                            className={cn("flex-1 py-2 rounded-xl text-sm font-bold transition-all", mode === 'signup' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}
-                          >
-                            Sign Up
-                          </button>
-                        )}
+                        <button 
+                          onClick={() => setMode('signup')}
+                          className={cn("flex-1 py-2 rounded-xl text-sm font-bold transition-all", mode === 'signup' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}
+                        >
+                          Sign Up
+                        </button>
+                      </div>
+                    )}
+
+                    {role === 'parent' && mode === 'signup' && (
+                      <div className="p-4 bg-soft-pink/5 border border-soft-pink/20 rounded-2xl">
+                        <p className="text-[10px] font-black text-soft-pink uppercase tracking-widest mb-1">Creating a Parent Account</p>
+                        <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                          If your student already signed up, you may have received an email with a "Set Your Password" button — use that instead of signing up here.
+                        </p>
                       </div>
                     )}
 
@@ -346,7 +423,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                       <div className="p-4 bg-sage-green/5 border border-sage-green/20 rounded-2xl">
                         <p className="text-[10px] font-black text-sage-green uppercase tracking-widest mb-1">Parent Access</p>
                         <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                          Parent accounts are automatically generated when your student joins. Check your email for temporary credentials.
+                          Use your email and password, or your username if you set one up.
                         </p>
                       </div>
                     )}
@@ -383,7 +460,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                 Enter as Guest
               </button>
               <button 
-                onClick={() => setStep('selection')}
+                onClick={() => handleGoBack('selection')}
                 className="text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
               >
                 Change Access Path
@@ -391,11 +468,85 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
             </div>
           )}
 
+          {step === 'parent-signup' && (
+            <form onSubmit={handleParentSignup} className="space-y-6">
+              <button
+                type="button"
+                onClick={() => handleGoBack('selection')}
+                className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-2 hover:text-slate-600 transition-colors"
+              >
+                <ArrowLeft size={16} /> Back
+              </button>
+
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-soft-pink/10 rounded-2xl flex items-center justify-center">
+                  <UserCircle size={22} className="text-soft-pink" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black text-slate-900 leading-none">Parent Account</h2>
+                  <p className="text-slate-400 text-xs font-bold mt-1">Monitor your child's science progress</p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-soft-pink/5 border border-soft-pink/20 rounded-2xl">
+                <p className="text-xs font-bold text-soft-pink leading-relaxed">
+                  Already have an account from your child's signup email? Just log in instead — your account was pre-created.
+                </p>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold">{error}</div>
+              )}
+
+              <div className="space-y-4">
+                <Input label="Full Name" value={formData.name} onChange={v => setFormData({...formData, name: v})} placeholder="Jane Doe" icon={<UserIcon size={18} />} />
+                <Input label="Choose a Username" value={formData.username} onChange={v => setFormData({...formData, username: v})} placeholder="janedoe_parent" icon={<ShieldCheck size={18} />} />
+                <Input label="Email Address" type="email" value={formData.email} onChange={v => setFormData({...formData, email: v})} placeholder="you@example.com" icon={<Mail size={18} />} />
+                <Input label="Password" type="password" value={formData.password} onChange={v => setFormData({...formData, password: v})} placeholder="Min. 8 characters" icon={<Lock size={18} />} />
+                <Input label="Confirm Password" type="password" value={formData.confirmPassword} onChange={v => setFormData({...formData, confirmPassword: v})} placeholder="Re-enter password" icon={<ShieldCheck size={18} />} />
+
+                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <input
+                    type="checkbox"
+                    id="parent-tos"
+                    checked={agreedToTerms}
+                    onChange={e => setAgreedToTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-slate-300 text-soft-pink focus:ring-soft-pink"
+                  />
+                  <label htmlFor="parent-tos" className="text-xs text-slate-500 font-medium leading-relaxed">
+                    I agree to the <button type="button" className="text-slate-900 font-bold hover:underline">Terms of Service</button> and <button type="button" className="text-slate-900 font-bold hover:underline">Privacy Policy</button>. I confirm I am 18 years of age or older.
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-soft-pink text-white py-4 rounded-2xl font-black hover:bg-soft-pink/90 disabled:opacity-50 transition-all mt-2 flex items-center justify-center gap-2"
+              >
+                {loading ? 'Creating Account...' : 'Create Parent Account'} {!loading && <ArrowRight size={20} />}
+              </button>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400 font-black tracking-widest">Or log in</span></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => { setMode('login'); handleGoBack('form'); }}
+                className="w-full bg-slate-100 text-slate-700 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all"
+              >
+                I Already Have an Account
+              </button>
+            </form>
+          )}
+
           {step === 'form' && (
             <form onSubmit={handleFormSubmit} className="space-y-6">
               <button 
                 type="button"
-                onClick={() => setStep('selection')}
+                onClick={() => handleGoBack('selection')}
                 className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-8 hover:text-slate-600 transition-colors"
               >
                 <ArrowLeft size={16} /> Back

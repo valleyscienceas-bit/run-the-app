@@ -21,6 +21,23 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sessionStartRef = useRef<number>(Date.now());
+
+  // Save time spent when leaving the chat
+  useEffect(() => {
+    sessionStartRef.current = Date.now();
+    return () => {
+      const userId = auth.currentUser?.uid;
+      if (!userId) return;
+      const seconds = Math.floor((Date.now() - sessionStartRef.current) / 1000);
+      if (seconds < 5) return;
+      fetch('/api/track-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: userId, sessionSeconds: seconds })
+      }).catch(() => {});
+    };
+  }, []);
 
   // Load chat history on mount
   useEffect(() => {

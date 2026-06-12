@@ -33,6 +33,7 @@ export default function App() {
   const [isTakingTest, setIsTakingTest] = useState<{ type: 'placement' | 'unit' | 'grade', target?: any } | null>(null);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [lastTestResult, setLastTestResult] = useState<TestResult | null>(null);
+  const [totalLearningSeconds, setTotalLearningSeconds] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -50,6 +51,14 @@ export default function App() {
               results = resultsSnap.data().results || [];
               setTestResults(results);
             }
+
+            // Fetch learning time stats
+            try {
+              const statsSnap = await getDoc(doc(db, 'stats', user.uid));
+              if (statsSnap.exists()) {
+                setTotalLearningSeconds(statsSnap.data().totalSeconds || 0);
+              }
+            } catch { /* stats are non-critical */ }
 
             setAppState({
               path: profileData.path,
@@ -428,7 +437,7 @@ export default function App() {
       )}
 
       {activeTab === 'dashboard' && (
-        <Dashboard results={testResults} userState={appState} />
+        <Dashboard results={testResults} userState={appState} totalLearningSeconds={totalLearningSeconds} />
       )}
 
       {activeTab === 'settings' && (

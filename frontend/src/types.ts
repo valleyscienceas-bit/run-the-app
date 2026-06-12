@@ -15,6 +15,7 @@ export interface UserProfile {
   isFirstTime: boolean;
   isPaid: boolean;
   createdAt: string;
+  totalLearningSeconds?: number;
 }
 
 export interface UserState {
