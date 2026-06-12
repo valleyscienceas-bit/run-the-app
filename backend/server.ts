@@ -127,14 +127,13 @@ async function startServer() {
         }
       }
 
-      // 2. Create or update parent Firestore profile (Admin SDK bypasses rules)
+      // 2. Create or update parent Firestore profile stored at Auth UID (so login works)
       const parentProfile = {
-        uid: parentDocId,
-        authUid: parentAuthUid,
-        name: `Parent of ${studentName || "Student"}`,
-        username: `parent_${studentUid}`,
-        email: parentEmail,
+        uid: parentAuthUid,
         linkedStudentUid: studentUid,
+        name: `Parent of ${studentName || "Student"}`,
+        username: `parent_${studentUid.slice(-6)}`,
+        email: parentEmail,
         role: "parent",
         path: "individual",
         grade: studentGrade || "6",
@@ -144,8 +143,11 @@ async function startServer() {
         createdAt: new Date().toISOString()
       };
 
-      await adminDb.collection("users").doc(parentDocId).set(parentProfile, { merge: true });
-      console.log(`[PROVISION] Created/updated parent profile: ${parentDocId}`);
+      // Store at Auth UID so onAuthStateChanged can find it directly
+      await adminDb.collection("users").doc(parentAuthUid).set(parentProfile, { merge: true });
+      // Also keep legacy doc for backward compatibility
+      await adminDb.collection("users").doc(parentDocId).set({ ...parentProfile, uid: parentDocId, authUid: parentAuthUid }, { merge: true });
+      console.log(`[PROVISION] Created/updated parent profile at Auth UID: ${parentAuthUid}`);
 
       // 3. Generate password reset link so parent can set their own password
       const resetLink = await adminAuth.generatePasswordResetLink(parentEmail);
@@ -199,6 +201,41 @@ async function startServer() {
       res.json({ success: true, parentDocId });
     } catch (error: any) {
       console.error("Parent provisioning error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // USERNAME LOOKUP ROUTE
+  // ==========================================
+  app.post("/api/lookup-username", async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: "username is required" });
+    try {
+      const snapshot = await adminDb.collection("users").where("username", "==", username).limit(1).get();
+      if (snapshot.empty) return res.status(404).json({ error: "Username not found." });
+      const data = snapshot.docs[0].data();
+      res.json({ email: data.email });
+    } catch (error: any) {
+      console.error("Username lookup error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // TRACK LEARNING TIME ROUTE
+  // ==========================================
+  app.post("/api/track-time", async (req, res) => {
+    const { uid, sessionSeconds } = req.body;
+    if (!uid || sessionSeconds === undefined) return res.status(400).json({ error: "uid and sessionSeconds are required" });
+    try {
+      const ref = adminDb.collection("stats").doc(uid);
+      const snap = await ref.get();
+      const current = snap.exists ? (snap.data()?.totalSeconds || 0) : 0;
+      await ref.set({ totalSeconds: current + sessionSeconds, lastUpdated: new Date().toISOString() }, { merge: true });
+      res.json({ success: true, totalSeconds: current + sessionSeconds });
+    } catch (error: any) {
+      console.error("Track time error:", error);
       res.status(500).json({ error: error.message });
     }
   });

@@ -21,6 +21,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
+    phone: '',
     district: '',
     role: '',
     message: ''
@@ -28,6 +29,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
   const [feedbackForm, setFeedbackForm] = useState({
     name: '',
     email: '',
+    phone: '',
     role: '',
     message: '',
     file: null as File | null
@@ -67,11 +69,12 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
         body: JSON.stringify({
           to: 'valley.science.as@gmail.com',
           subject: `District Inquiry: ${contactForm.district}`,
-          text: `Name: ${contactForm.name}\nEmail: ${contactForm.email}\nDistrict: ${contactForm.district}\nRole: ${contactForm.role}\nMessage: ${contactForm.message}`,
+          text: `Name: ${contactForm.name}\nEmail: ${contactForm.email}\nPhone/WhatsApp: ${contactForm.phone || 'N/A'}\nDistrict: ${contactForm.district}\nRole: ${contactForm.role}\nMessage: ${contactForm.message}`,
           html: `
             <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
               <h2 style="color: #0f172a;">New District Inquiry</h2>
               <p><strong>From:</strong> ${contactForm.name} (${contactForm.email})</p>
+              ${contactForm.phone ? `<p><strong>Phone/WhatsApp:</strong> ${contactForm.phone}</p>` : ''}
               <p><strong>District:</strong> ${contactForm.district}</p>
               <p><strong>Role:</strong> ${contactForm.role}</p>
               <p><strong>Message:</strong></p>
@@ -356,6 +359,15 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                         />
                       </div>
                       <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
+                        <input 
+                          type="tel" value={contactForm.phone}
+                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
+                          placeholder="+1 (650) 555-0000" 
+                        />
+                      </div>
+                      <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">District/School</label>
                         <input 
                           type="text" required value={contactForm.district}
@@ -433,6 +445,15 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                         />
                       </div>
                       <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
+                        <input 
+                          type="tel" value={contactForm.phone}
+                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
+                          placeholder="+1 (650) 555-0000" 
+                        />
+                      </div>
+                      <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Message</label>
                         <textarea 
                           required value={contactForm.message}
@@ -458,7 +479,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                       // Simulate feedback submission with file
                       setTimeout(() => {
                         setContactStatus('sent');
-                        setFeedbackForm({ name: '', email: '', role: '', message: '', file: null });
+                        setFeedbackForm({ name: '', email: '', phone: '', role: '', message: '', file: null });
                       }, 1500);
                     }}>
                       <div className="space-y-2">
@@ -475,6 +496,15 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                           type="email" required value={feedbackForm.email}
                           onChange={(e) => setFeedbackForm({...feedbackForm, email: e.target.value})}
                           className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
+                        <input 
+                          type="tel" value={feedbackForm.phone}
+                          onChange={(e) => setFeedbackForm({...feedbackForm, phone: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all"
+                          placeholder="+1 (650) 555-0000"
                         />
                       </div>
                       <div className="space-y-2">
