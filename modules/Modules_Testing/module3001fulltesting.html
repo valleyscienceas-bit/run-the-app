@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3001 — Balanced Forces | Valley Science</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;color:#fff}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.hidden{display:none!important}
+
+/* ── TRANSITIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(255,160,122,.55)}
+                     50%{box-shadow:0 0 0 18px rgba(255,160,122,0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.08}50%{opacity:.9}}
+@keyframes slideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+
+/* ── STARS ── */
+.stars{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.star{position:absolute;background:#fff;border-radius:50%;
+      animation:twinkle var(--d,3s) ease-in-out infinite var(--dl,0s)}
+
+/* ══════════════════════════════════════════════
+   INTRO SCREEN
+══════════════════════════════════════════════ */
+#s-intro{flex-direction:column;
+  background:radial-gradient(ellipse 80% 60% at 50% 25%,#182245 0%,#0B0F19 70%)}
+
+.intro-bar{position:absolute;top:0;left:0;right:0;display:flex;
+  justify-content:space-between;align-items:center;padding:20px 26px}
+
+.btn-exit{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.65);padding:8px 20px;border-radius:20px;cursor:pointer;
+  font-size:13px;font-weight:700;transition:all .2s}
+.btn-exit:hover{background:rgba(255,70,70,.2);border-color:#f55;color:#f77}
+
+.btn-info{width:36px;height:36px;border-radius:50%;background:rgba(34,211,238,.12);
+  border:1px solid rgba(34,211,238,.35);color:#22D3EE;cursor:pointer;font-size:15px;
+  font-weight:900;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-info:hover{background:rgba(34,211,238,.28);transform:scale(1.12)}
+
+.intro-content{display:flex;flex-direction:column;align-items:center;
+  gap:10px;text-align:center;padding:0 20px;animation:fadeUp .8s ease both}
+
+.badge{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.4);
+  color:#22D3EE;font-size:11px;font-weight:800;letter-spacing:.2em;
+  text-transform:uppercase;padding:6px 18px;border-radius:20px}
+
+.intro-title{font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1.05;
+  background:linear-gradient(130deg,#fff 0%,#FFA07A 55%,#22D3EE 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.intro-sub{font-size:16px;color:rgba(255,255,255,.45);font-weight:500;
+  letter-spacing:.06em;margin-bottom:8px}
+
+#icon-canvas{display:block}
+
+.float-wrap{animation:float 3.2s ease-in-out infinite;margin-top:18px}
+
+.btn-start{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
+  padding:18px 52px;border-radius:50px;font-size:20px;font-weight:900;cursor:pointer;
+  letter-spacing:.04em;box-shadow:0 8px 36px rgba(255,160,122,.45);
+  animation:pulseRing 2.4s ease-in-out infinite;transition:transform .2s,box-shadow .2s;
+  display:flex;align-items:center;gap:10px}
+.btn-start:hover{transform:scale(1.07);box-shadow:0 14px 44px rgba(255,160,122,.65)}
+
+/* ── STANDARDS MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal-box{background:rgba(13,19,35,.97);border:1px solid rgba(255,255,255,.12);
+  border-radius:26px;padding:38px;max-width:480px;width:90%;animation:pop .35s ease}
+.modal-box h2{color:#FFA07A;font-size:20px;font-weight:900;margin-bottom:16px}
+.std-tag{display:inline-block;background:rgba(34,211,238,.14);border:1px solid rgba(34,211,238,.35);
+  color:#22D3EE;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:14px}
+.modal-box li{color:rgba(255,255,255,.72);font-size:14px;line-height:1.75;margin-left:18px}
+.modal-box p.note{color:rgba(255,255,255,.35);font-size:12px;margin-top:14px}
+.modal-close{margin-top:20px;background:rgba(255,160,122,.18);border:1px solid #FFA07A;
+  color:#FFA07A;padding:10px 30px;border-radius:20px;cursor:pointer;font-weight:700;
+  font-size:14px;transition:all .2s}
+.modal-close:hover{background:#FFA07A;color:#0B0F19}
+
+/* ══════════════════════════════════════════════
+   HYPOTHESIS SCREEN
+══════════════════════════════════════════════ */
+#s-hyp{flex-direction:column;
+  background:radial-gradient(ellipse 80% 60% at 50% 25%,#182245 0%,#0B0F19 70%);
+  padding:40px 20px}
+
+.hyp-wrap{max-width:680px;width:100%;display:flex;flex-direction:column;gap:22px}
+
+.glass-card{background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(14px);border-radius:24px;padding:30px;
+  animation:fadeUp .5s ease both}
+
+.section-label{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  color:#22D3EE;margin-bottom:12px}
+.glass-card h3{font-size:21px;font-weight:800;color:#fff;margin-bottom:10px}
+.glass-card p{color:rgba(255,255,255,.6);font-size:15px;line-height:1.72}
+
+.hyp-box textarea{width:100%;background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;
+  font-size:15px;line-height:1.65;padding:16px;resize:none;
+  outline:none;height:116px;font-family:inherit;transition:border-color .2s}
+.hyp-box textarea:focus{border-color:#FFA07A}
+.hyp-box textarea::placeholder{color:rgba(255,255,255,.28)}
+
+.btn-orange{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
+  padding:14px 36px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 18px rgba(255,160,122,.35)}
+.btn-orange:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,160,122,.5)}
+.btn-orange:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+.v-bubble{display:flex;align-items:flex-start;gap:14px;
+  background:rgba(255,160,122,.08);border:1px solid rgba(255,160,122,.22);
+  border-radius:20px;padding:18px 22px;animation:fadeUp .4s ease both}
+.v-dot-sm{width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 35% 35%,#ffbf9a,#FFA07A,#e8673a);
+  animation:pulseRing 2.5s ease-in-out infinite;box-shadow:0 0 14px rgba(255,160,122,.4)}
+.v-bubble p{font-size:14px;color:rgba(255,255,255,.84);line-height:1.68}
+
+/* ══════════════════════════════════════════════
+   SIMULATION SCREEN
+══════════════════════════════════════════════ */
+#s-sim{flex-direction:row;align-items:stretch;justify-content:flex-start;
+  background:#0B0F19;padding:0}
+
+/* SIDEBAR */
+.sidebar{width:360px;flex-shrink:0;background:rgba(17,24,39,.82);
+  backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.09);
+  display:flex;flex-direction:column;height:100vh;overflow-y:auto;
+  padding:22px 18px;gap:18px}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+.v-header{display:flex;align-items:center;gap:12px}
+.v-core{width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 35% 35%,#ffbf9a,#FFA07A,#e8673a);
+  animation:pulseRing 2.5s ease-in-out infinite;
+  box-shadow:0 0 22px rgba(255,160,122,.5)}
+.v-name{font-size:13px;font-weight:800;color:#FFA07A;letter-spacing:.05em}
+.v-role{font-size:11px;color:rgba(255,255,255,.38)}
+
+.v-panel{background:rgba(255,160,122,.06);border:1px solid rgba(255,160,122,.16);
+  border-radius:16px;padding:16px;font-size:13.5px;color:rgba(255,255,255,.84);
+  line-height:1.68;min-height:96px;transition:opacity .3s,transform .3s}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:7px}
+.step{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:all .3s}
+.step.active{background:rgba(255,160,122,.1);border-color:rgba(255,160,122,.3)}
+.step.done{background:rgba(34,211,238,.07);border-color:rgba(34,211,238,.2)}
+.step-n{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);
+  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:rgba(255,255,255,.4);transition:all .3s}
+.step.active .step-n{background:#FFA07A;color:#0B0F19}
+.step.done .step-n{background:#22D3EE;color:#0B0F19}
+.step-lbl{font-size:12px;font-weight:600;color:rgba(255,255,255,.42);transition:color .3s}
+.step.active .step-lbl{color:#FFA07A}
+.step.done .step-lbl{color:#22D3EE}
+
+/* Sliders */
+.ctrls{display:flex;flex-direction:column;gap:14px}
+.ctrl-group{display:flex;flex-direction:column;gap:7px}
+.ctrl-label{display:flex;justify-content:space-between;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.55);
+  text-transform:uppercase;letter-spacing:.1em}
+.ctrl-val{color:#FFA07A;font-weight:900}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.1);outline:none;transition:opacity .3s}
+input[type=range]:disabled{opacity:.28;cursor:not-allowed}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  border-radius:50%;background:#FFA07A;cursor:pointer;
+  box-shadow:0 2px 10px rgba(255,160,122,.5);transition:transform .12s}
+input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.25)}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.m-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:12px;text-align:center}
+.m-val{font-size:22px;font-weight:900;color:#FFA07A}
+.m-lbl{font-size:10px;color:rgba(255,255,255,.38);text-transform:uppercase;
+  letter-spacing:.1em;margin-top:2px}
+
+/* Action area */
+#action-area{display:flex;flex-direction:column;gap:10px}
+
+.btn-sim-primary{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
+  padding:14px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;
+  transition:all .2s;box-shadow:0 4px 18px rgba(255,160,122,.35);letter-spacing:.02em}
+.btn-sim-primary:hover:not(:disabled){transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(255,160,122,.55)}
+.btn-sim-primary:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+/* Observation */
+.obs-wrap{display:flex;flex-direction:column;gap:9px;animation:slideIn .4s ease both}
+.obs-lbl{font-size:11px;font-weight:800;color:#22D3EE;text-transform:uppercase;letter-spacing:.18em}
+.obs-prompt{font-size:12.5px;color:rgba(255,255,255,.68);line-height:1.6}
+.obs-ta{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(34,211,238,.22);
+  border-radius:12px;color:#fff;font-size:13px;line-height:1.6;padding:12px;
+  resize:none;outline:none;height:96px;font-family:inherit;transition:border-color .2s}
+.obs-ta:focus{border-color:#22D3EE}
+.obs-ta::placeholder{color:rgba(255,255,255,.22)}
+.obs-count{font-size:11px;color:rgba(255,255,255,.28);text-align:right}
+.btn-obs-submit{background:rgba(34,211,238,.14);border:1px solid #22D3EE;color:#22D3EE;
+  padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-obs-submit:hover:not(:disabled){background:#22D3EE;color:#0B0F19}
+.btn-obs-submit:disabled{opacity:.3;cursor:not-allowed}
+
+/* Synthesis */
+.synth-card{background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.18);
+  border-radius:16px;padding:16px;font-size:13px;color:rgba(255,255,255,.8);
+  line-height:1.72;animation:fadeUp .5s ease both}
+.synth-label{font-size:10px;font-weight:800;letter-spacing:.2em;color:#22D3EE;
+  text-transform:uppercase;margin-bottom:8px}
+
+/* MAIN / CANVAS */
+.sim-main{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:20px;overflow:hidden;position:relative}
+.canvas-wrap{position:relative;width:100%;max-width:860px;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);
+  border-radius:24px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.canvas-wrap.glow{border-color:#FFA07A;box-shadow:0 0 40px rgba(255,160,122,.25)}
+#sim-canvas{display:block;width:100%}
+
+.canvas-overlay{position:absolute;inset:0;background:rgba(11,15,25,.65);
+  backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;border-radius:24px;transition:opacity .5s}
+.canvas-overlay.gone{opacity:0;pointer-events:none}
+.ov-icon{font-size:50px;animation:float 2s ease-in-out infinite}
+.ov-text{font-size:15px;font-weight:700;color:rgba(255,255,255,.45)}
+
+.data-bar{display:flex;gap:14px;margin-top:14px;justify-content:center;flex-wrap:wrap}
+.data-chip{background:rgba(17,24,39,.92);border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;padding:8px 20px;display:flex;flex-direction:column;align-items:center}
+.chip-val{font-size:19px;font-weight:900;color:#FFA07A}
+.chip-lbl{font-size:10px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.1em}
+
+/* ══════════════════════════════════════════════
+   VIDEO SCREEN
+══════════════════════════════════════════════ */
+#s-video{flex-direction:column;background:#0B0F19;padding:36px 24px}
+
+.vid-wrap{max-width:720px;width:100%;display:flex;flex-direction:column;gap:18px}
+.vid-label{font-size:11px;font-weight:800;letter-spacing:.2em;color:#22D3EE;text-transform:uppercase}
+.vid-title{font-size:28px;font-weight:900;color:#fff}
+.vid-sub{font-size:14px;color:rgba(255,255,255,.45)}
+
+.vid-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 28px 70px rgba(0,0,0,.65)}
+#vid-canvas{width:100%;height:100%;display:block}
+
+.vid-loading{position:absolute;inset:0;background:#050812;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .7s,visibility .7s;border-radius:20px}
+.vid-loading.gone{opacity:0;visibility:hidden}
+.spinner{width:54px;height:54px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.08);border-top-color:#FFA07A;
+  animation:spin .75s linear infinite}
+.load-txt{font-size:14px;color:rgba(255,255,255,.42);font-weight:600}
+
+.vid-caption-wrap{position:absolute;bottom:64px;left:0;right:0;
+  text-align:center;padding:0 40px;pointer-events:none}
+.vid-cap{display:inline-block;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);
+  color:#fff;font-size:16px;font-weight:600;padding:8px 22px;border-radius:8px;
+  border-bottom:3px solid #FFA07A;opacity:0;transform:translateY(8px);
+  transition:opacity .3s,transform .3s}
+.vid-cap.show{opacity:1;transform:translateY(0)}
+
+.vid-controls{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.88));
+  padding:22px 20px 16px;display:flex;align-items:center;gap:14px;
+  opacity:0;transition:opacity .3s}
+.vid-player:hover .vid-controls{opacity:1}
+.vid-play{width:40px;height:40px;border-radius:50%;background:#FFA07A;border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:15px;flex-shrink:0;transition:transform .15s,background .15s}
+.vid-play:hover{transform:scale(1.12);background:#ff6b35}
+.vid-prog-bar{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;
+  cursor:pointer;position:relative}
+.vid-prog{height:100%;background:#FFA07A;border-radius:2px;width:0%;
+  transition:width .1s linear;position:relative}
+.vid-prog::after{content:'';position:absolute;right:-6px;top:-4px;
+  width:12px;height:12px;background:#FFA07A;border-radius:50%}
+.vid-time{font-size:12px;color:rgba(255,255,255,.65);font-weight:600;white-space:nowrap}
+
+.btn-vid-continue{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
+  padding:14px 42px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;
+  transition:all .2s;box-shadow:0 6px 22px rgba(255,160,122,.42);align-self:center;
+  animation:pop .4s ease both}
+.btn-vid-continue:hover{transform:scale(1.06)}
+
+/* ══════════════════════════════════════════════
+   QUIZ SCREEN
+══════════════════════════════════════════════ */
+#s-quiz{flex-direction:column;
+  background:radial-gradient(ellipse 80% 55% at 50% 20%,#182245 0%,#0B0F19 70%);
+  padding:40px 20px}
+
+.quiz-wrap{max-width:640px;width:100%;display:flex;flex-direction:column;gap:22px}
+
+.q-prog-bar{width:100%;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.q-prog{height:100%;background:linear-gradient(90deg,#FFA07A,#22D3EE);
+  border-radius:2px;transition:width .55s ease}
+
+.q-num{font-size:11px;font-weight:800;color:#22D3EE;letter-spacing:.18em;text-transform:uppercase}
+
+.q-card{background:rgba(17,24,39,.84);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(14px);border-radius:24px;padding:28px;
+  display:flex;flex-direction:column;gap:16px;transition:opacity .35s,transform .35s}
+.q-card h3{font-size:20px;font-weight:800;color:#fff;line-height:1.42}
+.q-hint{font-size:13px;color:rgba(255,255,255,.38);font-style:italic}
+
+.q-ta{width:100%;background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;
+  font-size:15px;line-height:1.65;padding:16px;resize:none;outline:none;
+  height:130px;font-family:inherit;transition:border-color .2s}
+.q-ta:focus{border-color:#FFA07A}
+.q-ta::placeholder{color:rgba(255,255,255,.24)}
+
+/* ══════════════════════════════════════════════
+   RESULTS SCREEN
+══════════════════════════════════════════════ */
+#s-results{flex-direction:column;
+  background:radial-gradient(ellipse 80% 55% at 50% 20%,#182245 0%,#0B0F19 70%);
+  padding:40px 20px;overflow-y:auto;align-items:center;justify-content:flex-start}
+
+.res-wrap{max-width:680px;width:100%;display:flex;flex-direction:column;gap:22px;
+  padding:20px 0 40px}
+.res-header{text-align:center;animation:fadeUp .5s ease both}
+.res-header h2{font-size:34px;font-weight:900;color:#fff}
+.res-header p{color:rgba(255,255,255,.45);font-size:16px;margin-top:4px}
+
+.ring-wrap{display:flex;justify-content:center}
+#score-ring{display:block}
+
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.res-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:18px;animation:fadeUp .5s ease both}
+.res-card.good{border-color:rgba(34,211,238,.3)}
+.res-card.weak{border-color:rgba(255,160,122,.3)}
+.res-card-lbl{font-size:10px;font-weight:800;letter-spacing:.18em;
+  text-transform:uppercase;margin-bottom:8px}
+.res-card.good .res-card-lbl{color:#22D3EE}
+.res-card.weak .res-card-lbl{color:#FFA07A}
+.res-card p{font-size:13px;color:rgba(255,255,255,.68);line-height:1.65;margin-bottom:6px}
+
+.v-summary{background:rgba(255,160,122,.08);border:1px solid rgba(255,160,122,.24);
+  border-radius:20px;padding:20px 22px;display:flex;align-items:flex-start;gap:14px;
+  animation:fadeUp .5s ease .2s both}
+.v-summary p{font-size:14px;color:rgba(255,255,255,.84);line-height:1.7}
+
+.btn-done{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
+  padding:16px 50px;border-radius:50px;font-size:17px;font-weight:800;cursor:pointer;
+  align-self:center;box-shadow:0 8px 26px rgba(255,160,122,.42);transition:all .2s;
+  animation:pop .5s ease .3s both}
+.btn-done:hover{transform:scale(1.06)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ INTRO ═══════════════════ -->
+<div class="screen" id="s-intro">
+  <div class="stars" id="star-bg"></div>
+  <div class="intro-bar">
+    <button class="btn-exit" onclick="exitMod()">✕ Exit</button>
+    <button class="btn-info" title="View Standards" onclick="toggleModal()">ⓘ</button>
+  </div>
+  <div class="intro-content">
+    <div class="badge">Grade 8 &nbsp;·&nbsp; Module 3001</div>
+    <h1 class="intro-title">Balanced<br>Forces</h1>
+    <p class="intro-sub">MS-PS2-1 &nbsp;·&nbsp; Newton's First Law</p>
+    <canvas id="icon-canvas" width="260" height="130"></canvas>
+    <div class="float-wrap">
+      <button class="btn-start" onclick="goHyp()">
+        <span>🚀</span> Start Mission
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ STANDARDS MODAL ═══════════════════ -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <span class="std-tag">MS-PS2-1</span>
+    <h2>Standards Covered</h2>
+    <ul>
+      <li><strong>NGSS MS-PS2-1</strong> — Apply Newton's Third Law to design solutions involving motion of two interacting objects.</li>
+      <li><strong>SEP 2</strong> — Developing and using models to represent force relationships.</li>
+      <li><strong>CCC: Cause &amp; Effect</strong> — Balanced forces result in no change in motion state.</li>
+      <li><strong>DCI PS2.A</strong> — Objects in equilibrium experience zero net force.</li>
+    </ul>
+    <p class="note">Completion of this module earns evidence toward Grade 8 NGSS Physical Science proficiency.</p>
+    <button class="modal-close" onclick="toggleModal()">Got it!</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HYPOTHESIS ═══════════════════ -->
+<div class="screen hidden" id="s-hyp">
+  <div class="hyp-wrap">
+    <div class="glass-card">
+      <div class="section-label">Mission Brief</div>
+      <h3>What Are Balanced Forces?</h3>
+      <p>In this lab, two teams tug on a box from opposite sides. Sometimes the box flies off — and sometimes it stays completely still even while both teams pull their hardest. Your mission: figure out <em>exactly</em> why. Start by forming a prediction.</p>
+    </div>
+    <div class="glass-card hyp-box" style="animation-delay:.12s">
+      <div class="section-label">Your Hypothesis</div>
+      <p style="color:rgba(255,255,255,.5);font-size:14px;margin-bottom:12px">
+        What do you think will happen to the box when both teams pull with the <em>same</em> force? Why?
+      </p>
+      <textarea id="hyp-ta" placeholder="I think the box will... because..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <button class="btn-orange" id="hyp-btn" onclick="submitHyp()" disabled>Submit Prediction →</button>
+      </div>
+    </div>
+    <div class="v-bubble hidden" id="v-hyp-reply">
+      <div class="v-dot-sm"></div>
+      <p id="v-hyp-txt"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SIMULATION ═══════════════════ -->
+<div class="screen hidden" id="s-sim">
+
+  <div class="sidebar">
+    <div class="v-header">
+      <div class="v-core"></div>
+      <div>
+        <div class="v-name">VALERIE</div>
+        <div class="v-role">Your Science Guide</div>
+      </div>
+    </div>
+
+    <div class="v-panel" id="v-panel">Loading lab...</div>
+
+    <div class="steps">
+      <div class="step active" id="st-0"><div class="step-n">1</div><div class="step-lbl">Orient the Lab</div></div>
+      <div class="step" id="st-1"><div class="step-n">2</div><div class="step-lbl">Apply Left Force</div></div>
+      <div class="step" id="st-2"><div class="step-n">3</div><div class="step-lbl">Observe &amp; Reflect</div></div>
+      <div class="step" id="st-3"><div class="step-n">4</div><div class="step-lbl">Balance the Forces</div></div>
+      <div class="step" id="st-4"><div class="step-n">5</div><div class="step-lbl">Discover Equilibrium</div></div>
+      <div class="step" id="st-5"><div class="step-n">6</div><div class="step-lbl">Synthesis</div></div>
+    </div>
+
+    <div class="ctrls" id="ctrls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span>⬅ Left Force</span>
+          <span class="ctrl-val" id="lv">0 N</span>
+        </div>
+        <input type="range" id="sl-L" min="0" max="100" value="0" disabled>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">
+          <span>Right Force ➡</span>
+          <span class="ctrl-val" id="rv">0 N</span>
+        </div>
+        <input type="range" id="sl-R" min="0" max="100" value="0" disabled>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="m-card"><div class="m-val" id="m-net">0.0</div><div class="m-lbl">Net Force (N)</div></div>
+      <div class="m-card"><div class="m-val" id="m-acc">0.00</div><div class="m-lbl">Accel. (m/s²)</div></div>
+      <div class="m-card"><div class="m-val" id="m-vel">0.00</div><div class="m-lbl">Velocity (m/s)</div></div>
+      <div class="m-card"><div class="m-val" id="m-pos">0.0</div><div class="m-lbl">Displace. (m)</div></div>
+    </div>
+
+    <div id="action-area">
+      <button class="btn-sim-primary" id="btn-start-sim" onclick="startSim()">▶ Start Simulation</button>
+    </div>
+  </div>
+
+  <div class="sim-main">
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="sim-canvas"></canvas>
+      <div class="canvas-overlay" id="canvas-ov">
+        <div class="ov-icon">⚡</div>
+        <div class="ov-text">Read Valerie's brief — then start!</div>
+      </div>
+    </div>
+    <div class="data-bar">
+      <div class="data-chip"><div class="chip-val" id="c-FL">0 N</div><div class="chip-lbl">← Left</div></div>
+      <div class="data-chip"><div class="chip-val" id="c-FN" style="color:#22D3EE">0 N</div><div class="chip-lbl">Net Force</div></div>
+      <div class="data-chip"><div class="chip-val" id="c-FR">0 N</div><div class="chip-lbl">Right →</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ VIDEO ═══════════════════ -->
+<div class="screen hidden" id="s-video">
+  <div class="vid-wrap">
+    <div class="vid-label">Concept Deep-Dive</div>
+    <div class="vid-title">Balanced Forces in the Real World</div>
+    <div class="vid-sub">See how Newton's First Law shows up all around us</div>
+    <div class="vid-player" id="vid-player">
+      <canvas id="vid-canvas"></canvas>
+      <div class="vid-loading" id="vid-loading">
+        <div class="spinner"></div>
+        <div class="load-txt">Loading video...</div>
+      </div>
+      <div class="vid-caption-wrap">
+        <span class="vid-cap" id="vid-cap"></span>
+      </div>
+      <div class="vid-controls">
+        <button class="vid-play" id="vid-play-btn" onclick="toggleVid()">▶</button>
+        <div class="vid-prog-bar" onclick="seekVid(event)">
+          <div class="vid-prog" id="vid-prog"></div>
+        </div>
+        <div class="vid-time" id="vid-time">0:00 / 0:30</div>
+      </div>
+    </div>
+    <button class="btn-vid-continue hidden" id="vid-continue" onclick="goQuiz()">Continue to Review Questions →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="screen hidden" id="s-quiz">
+  <div class="quiz-wrap">
+    <div class="q-prog-bar"><div class="q-prog" id="q-prog" style="width:0%"></div></div>
+    <div class="q-num" id="q-num">Question 1 of 3</div>
+    <div class="q-card" id="q-card">
+      <h3 id="q-text"></h3>
+      <p class="q-hint" id="q-hint"></p>
+      <textarea class="q-ta" id="q-ta" placeholder="Write your answer here..."></textarea>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn-orange" id="q-btn" onclick="submitQ()" disabled>Submit Answer →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULTS ═══════════════════ -->
+<div class="screen hidden" id="s-results">
+  <div class="res-wrap">
+    <div class="res-header">
+      <h2>🎯 Mission Complete!</h2>
+      <p>Module 3001: Balanced Forces — here's how you did</p>
+    </div>
+    <div class="ring-wrap"><canvas id="score-ring" width="140" height="140"></canvas></div>
+    <div class="res-grid" id="res-grid"></div>
+    <div class="v-summary">
+      <div class="v-dot-sm"></div>
+      <p id="v-final"></p>
+    </div>
+    <button class="btn-done" onclick="exitMod()">Finish Module ✓</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   POLYFILL — roundRect for older browsers
+═══════════════════════════════════════════════════════════ */
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    this.moveTo(x+r,y);
+    this.lineTo(x+w-r,y); this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r); this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    this.lineTo(x+r,y+h); this.quadraticCurveTo(x,y+h,x,y+h-r);
+    this.lineTo(x,y+r); this.quadraticCurveTo(x,y,x+r,y);
+    this.closePath();
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL STATE
+═══════════════════════════════════════════════════════════ */
+const G = {
+  step: 0,
+  hypothesis: '',
+  obs: [],
+  simMetrics: { balFL:0, balFR:0, maxVel:0 },
+  quizAnswers: [],
+  simRunning: false,
+  raf: null,
+  iconRaf: null,
+  vidRaf: null,
+  vidTime: 0,
+  vidDur: 30,
+  vidPlaying: false,
+  thresholdHit1: false,
+  thresholdHit2: false,
+};
+
+const P = { FL:0, FR:0, mass:50, vel:0, pos:0, dt:1/60 };
+
+/* ═══════════════════════════════════════════════════════════
+   STARS
+═══════════════════════════════════════════════════════════ */
+(function(){
+  const bg = document.getElementById('star-bg');
+  for(let i=0;i<90;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random()*2.4+.4;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dl:-${Math.random()*5}s;`;
+    bg.appendChild(s);
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   INTRO ICON ANIMATION — box with two opposing arrows
+═══════════════════════════════════════════════════════════ */
+(function(){
+  const c = document.getElementById('icon-canvas');
+  const ctx = c.getContext('2d');
+  let t = 0;
+
+  function arrow(ctx, x1,y1, x2,y2, col, w){
+    const ang = Math.atan2(y2-y1, x2-x1);
+    const h = 13;
+    ctx.strokeStyle = ctx.fillStyle = col;
+    ctx.lineWidth = w; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-h*Math.cos(ang-.42), y2-h*Math.sin(ang-.42));
+    ctx.lineTo(x2-h*Math.cos(ang+.42), y2-h*Math.sin(ang+.42));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,260,130);
+    const cx=130, cy=65, off=Math.sin(t*.05)*10;
+
+    /* glow halo */
+    const g = ctx.createRadialGradient(cx,cy,2,cx,cy,55);
+    g.addColorStop(0,'rgba(255,160,122,.12)'); g.addColorStop(1,'rgba(255,160,122,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,55,0,Math.PI*2); ctx.fill();
+
+    /* arrows */
+    arrow(ctx, cx-22-off,cy, cx-95-off,cy, '#22D3EE', 3.5);
+    arrow(ctx, cx+22+off,cy, cx+95+off,cy, '#FFA07A', 3.5);
+
+    /* box */
+    ctx.fillStyle='rgba(255,255,255,.08)';
+    ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.roundRect(cx-20,cy-20,40,40,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.8)';
+    ctx.font='bold 15px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('=',cx,cy);
+
+    t++;
+    G.iconRaf = requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+function toggleModal(){ document.getElementById('modal').classList.toggle('open'); }
+
+/* ═══════════════════════════════════════════════════════════
+   EXIT
+═══════════════════════════════════════════════════════════ */
+function exitMod(){
+  if(confirm('Exit Module 3001? Progress will not be saved.')){
+    if(G.iconRaf) cancelAnimationFrame(G.iconRaf);
+    if(G.raf)     cancelAnimationFrame(G.raf);
+    if(G.vidRaf)  cancelAnimationFrame(G.vidRaf);
+    document.body.innerHTML='<div style="position:fixed;inset:0;background:#0B0F19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:sans-serif"><div style="font-size:52px">✓</div><div style="color:rgba(255,255,255,.5);font-size:18px">You exited Module 3001.</div></div>';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN WHOOSH TRANSITION
+═══════════════════════════════════════════════════════════ */
+function whoosh(fromId, toId){
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  from.style.transition='opacity .38s ease,transform .38s ease';
+  from.style.opacity='0'; from.style.transform='translateX(-44px)';
+  setTimeout(()=>{
+    from.classList.add('hidden');
+    from.style.opacity=''; from.style.transform=''; from.style.transition='';
+    to.classList.remove('hidden');
+    to.style.opacity='0'; to.style.transform='translateX(44px)';
+    to.style.transition='opacity .45s ease,transform .45s ease';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      to.style.opacity='1'; to.style.transform='translateX(0)';
+      setTimeout(()=>{ to.style.opacity=''; to.style.transform=''; to.style.transition=''; }, 500);
+    }));
+  }, 380);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HYPOTHESIS SCREEN
+═══════════════════════════════════════════════════════════ */
+function goHyp(){
+  cancelAnimationFrame(G.iconRaf);
+  whoosh('s-intro','s-hyp');
+  setTimeout(()=>document.getElementById('hyp-ta').focus(), 550);
+}
+
+document.getElementById('hyp-ta').addEventListener('input', function(){
+  document.getElementById('hyp-btn').disabled = this.value.trim().length < 12;
+});
+
+function submitHyp(){
+  G.hypothesis = document.getElementById('hyp-ta').value.trim();
+  document.getElementById('hyp-btn').disabled = true;
+  document.getElementById('hyp-ta').disabled = true;
+
+  const replies = [
+    'Bold prediction! 🤔 Real scientists test every hunch — let\'s fire up the simulation and see what actually happens. The answer might surprise you!',
+    'Love that thinking! Now let\'s put it to the test. Science is all about comparing predictions to real data. Ready to see the truth? 🚀',
+    'Great hypothesis! Whether you\'re right or wrong, what we discover next is going to be awesome. Let\'s go run the experiment!',
+  ];
+  const rb = document.getElementById('v-hyp-reply');
+  document.getElementById('v-hyp-txt').textContent = replies[Math.floor(Math.random()*replies.length)];
+  rb.classList.remove('hidden');
+  setTimeout(()=>{ whoosh('s-hyp','s-sim'); setTimeout(initSim, 550); }, 2600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIMULATION — CANVAS SETUP
+═══════════════════════════════════════════════════════════ */
+function initSim(){
+  const c   = document.getElementById('sim-canvas');
+  const wr  = document.getElementById('canvas-wrap');
+  const W   = wr.clientWidth;
+  const H   = Math.round(W * .52);
+  const dpr = window.devicePixelRatio || 1;
+  c.width   = W * dpr; c.height = H * dpr;
+  c.style.height = H + 'px';
+
+  G.step = 0; P.FL=0; P.FR=0; P.vel=0; P.pos=0;
+  G.thresholdHit1=false; G.thresholdHit2=false;
+
+  setVal(`👋 <strong>Welcome to the Balanced Forces Lab!</strong><br><br>
+🔵 <strong>LEFT team</strong> pulls the box to the left<br>
+🔴 <strong>RIGHT team</strong> pulls the box to the right<br>
+📦 The <strong>box</strong> sits on a frictionless track in the center<br>
+➡ Force <strong>arrows</strong> on the box show each team's pull<br>
+📊 The <strong>Net Force</strong> chip is your KEY measurement<br><br>
+Your mission: discover what makes the box stop accelerating even while both teams pull! Hit <strong>"Start Simulation"</strong>!`);
+
+  setSteps(0);
+  document.getElementById('btn-start-sim').style.display='block';
+  drawSim(simCtx(), simDims());
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SLIDERS
+═══════════════════════════════════════════════════════════ */
+document.getElementById('sl-L').addEventListener('input', function(){
+  P.FL = +this.value;
+  document.getElementById('lv').textContent = P.FL + ' N';
+  updateChips(); checkThresholds();
+});
+document.getElementById('sl-R').addEventListener('input', function(){
+  P.FR = +this.value;
+  document.getElementById('rv').textContent = P.FR + ' N';
+  updateChips(); checkThresholds();
+});
+
+function updateChips(){
+  const fn = P.FR - P.FL;
+  document.getElementById('c-FL').textContent = P.FL + ' N';
+  document.getElementById('c-FR').textContent = P.FR + ' N';
+  document.getElementById('c-FN').textContent = fn.toFixed(1) + ' N';
+  document.getElementById('c-FN').style.color = Math.abs(fn)<3 ? '#22D3EE' : '#FFA07A';
+}
+
+function checkThresholds(){
+  if(G.step===1 && !G.thresholdHit1 && P.FL >= 58){
+    G.thresholdHit1 = true; triggerObs1();
+  }
+  if(G.step===3 && !G.thresholdHit2 && Math.abs(P.FR-P.FL)<=3 && Math.abs(P.vel)<.6){
+    G.thresholdHit2 = true;
+    G.simMetrics.balFL = P.FL; G.simMetrics.balFR = P.FR;
+    triggerObs2();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATE MACHINE
+═══════════════════════════════════════════════════════════ */
+function startSim(){
+  document.getElementById('btn-start-sim').style.display='none';
+  document.getElementById('canvas-ov').classList.add('gone');
+  G.step = 1; G.simRunning = true;
+  document.getElementById('sl-L').disabled = false;
+  setSteps(1);
+  setVal(`🎉 <strong>Lab is LIVE!</strong><br><br>
+Task: Drag the <strong>Left Force slider</strong> up to <strong>60 N</strong>.<br>
+Watch what happens to the pink force arrow on the left of the box. Which way does the box move? Why?`);
+  physicsLoop();
+}
+
+function triggerObs1(){
+  G.simRunning = false;
+  document.getElementById('sl-L').disabled = true;
+  glowCanvas(true);
+  const fn = (P.FR - P.FL).toFixed(0);
+  setSteps(2);
+  setVal(`⚡ <strong>Freeze frame!</strong><br><br>
+Left force is <strong>${P.FL}N</strong>. Net force = <strong>${fn}N</strong> pointing right.<br>
+The box is <strong>accelerating to the right!</strong><br><br>
+What do you think happens if the right team matches that exact force? Write your prediction 👇`);
+  showObs('Observation 1',
+    `Left = ${P.FL}N, Net = ${fn}N. The box moved right. What would happen if the right team also applied ${P.FL}N? Why?`,
+    30, afterObs1);
+}
+
+function afterObs1(){
+  G.step = 3; G.simRunning = true;
+  P.vel = 0; P.pos = 0;
+  document.getElementById('sl-L').disabled = false;
+  document.getElementById('sl-R').disabled = false;
+  glowCanvas(false);
+  setSteps(3);
+  setVal(`🔬 <strong>Both sliders are now live!</strong><br><br>
+Experiment — find the combination of left and right force that makes the box <strong>stop accelerating</strong>. Watch the Net Force chip — what value does it need to hit?<br><br><em>Hint: try matching them!</em>`);
+  hideObs();
+  physicsLoop();
+}
+
+function triggerObs2(){
+  G.simRunning = false;
+  document.getElementById('sl-L').disabled = true;
+  document.getElementById('sl-R').disabled = true;
+  glowCanvas(true);
+  setSteps(4);
+  setVal(`🎯 <strong>INCREDIBLE — look at the canvas!</strong><br><br>
+Left: <strong>${P.FL}N</strong> | Right: <strong>${P.FR}N</strong> | Net: <strong>${(P.FR-P.FL).toFixed(1)}N</strong><br><br>
+The net force arrow <strong>disappeared</strong> even though both teams are still pulling! Write exactly what you observe 👇`);
+  showObs('Observation 2 — The Big Discovery',
+    'Both forces are applied. The box stopped accelerating. The net force arrow is gone. WHY? Describe what you see and explain why the box behaves this way.',
+    50, goSynthesis);
+}
+
+function goSynthesis(){
+  G.step = 5; setSteps(5);
+  glowCanvas(false); hideObs();
+  document.getElementById('ctrls').style.display = 'none';
+
+  const obs0 = G.obs[0] ? G.obs[0].substring(0,80)+'…' : '—';
+  const obs1 = G.obs[1] ? G.obs[1].substring(0,80)+'…' : '—';
+
+  const synthHTML = `
+    <div class="synth-card">
+      <div class="synth-label">🏆 What YOU Proved</div>
+      ✅ Left = <strong>${G.simMetrics.balFL}N</strong> | Right = <strong>${G.simMetrics.balFR}N</strong> | Net = <strong>0N</strong><br><br>
+      ✅ Zero net force → zero acceleration — that's <strong>Newton's First Law!</strong><br><br>
+      ✅ Your words: <em>"${obs1}"</em><br><br>
+      You've just experimentally proven that <strong>BALANCED FORCES</strong> create equilibrium — an object won't speed up, slow down, or change direction when forces cancel out. That's real physics! 🚀
+    </div>`;
+
+  document.getElementById('action-area').innerHTML = synthHTML +
+    `<button class="btn-sim-primary" onclick="goVideo()" style="margin-top:10px">Watch Concept Video →</button>`;
+
+  setVal(`🏆 <strong>BRILLIANT deduction!</strong><br><br>
+You discovered that when forces are equal and opposite, they cancel — producing <strong>zero net force</strong> and therefore <strong>zero acceleration</strong>. That's the entire heart of Newton's First Law! Watch the concept video to see this in the real world.`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OBSERVATION BOX
+═══════════════════════════════════════════════════════════ */
+function showObs(label, prompt, minLen, cb){
+  document.getElementById('action-area').innerHTML = `
+    <div class="obs-wrap">
+      <div class="obs-lbl">${label}</div>
+      <div class="obs-prompt">${prompt}</div>
+      <textarea class="obs-ta" id="obs-ta" placeholder="Write your scientific observation here..."></textarea>
+      <div class="obs-count" id="obs-cnt">0 / ${minLen} chars min</div>
+      <button class="btn-obs-submit" id="obs-btn" disabled onclick="submitObs()">Submit Observation →</button>
+    </div>`;
+  document.getElementById('obs-ta').addEventListener('input', function(){
+    const n = this.value.trim().length;
+    document.getElementById('obs-cnt').textContent = n+' / '+minLen+' chars min';
+    document.getElementById('obs-btn').disabled = n < minLen;
+  });
+  window._obsCallback = cb;
+}
+
+function hideObs(){ /* action-area cleared by caller */ }
+
+function submitObs(){
+  G.obs.push(document.getElementById('obs-ta').value.trim());
+  if(window._obsCallback) window._obsCallback();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHYSICS LOOP — v += a·dt ; pos += v·dt
+═══════════════════════════════════════════════════════════ */
+function physicsLoop(){
+  if(G.raf) cancelAnimationFrame(G.raf);
+  const [ctx,W,H] = [simCtx(), ...simDims()];
+
+  function loop(){
+    if(!G.simRunning){ drawSim(ctx,[W,H]); return; }
+    const fn = P.FR - P.FL;
+    const a  = fn / P.mass;
+    P.vel += a * P.dt;
+    P.vel *= .988; // slight damping simulating track
+    P.pos += P.vel * P.dt;
+    P.pos = Math.max(-9, Math.min(9, P.pos));
+    G.simMetrics.maxVel = Math.max(G.simMetrics.maxVel, Math.abs(P.vel));
+
+    document.getElementById('m-net').textContent = fn.toFixed(1);
+    document.getElementById('m-acc').textContent = a.toFixed(3);
+    document.getElementById('m-vel').textContent = P.vel.toFixed(2);
+    document.getElementById('m-pos').textContent = P.pos.toFixed(2);
+    updateChips();
+    drawSim(ctx,[W,H]);
+    G.raf = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function simCtx(){
+  const c = document.getElementById('sim-canvas');
+  return c.getContext('2d');
+}
+function simDims(){
+  const c = document.getElementById('sim-canvas');
+  const dpr = window.devicePixelRatio||1;
+  return [c.width/dpr, c.height/dpr];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DRAW SIMULATION
+═══════════════════════════════════════════════════════════ */
+function arrow(ctx,x1,y1,x2,y2,col,w){
+  const ang = Math.atan2(y2-y1,x2-x1), h=13;
+  ctx.strokeStyle=ctx.fillStyle=col; ctx.lineWidth=w; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-h*Math.cos(ang-.42),y2-h*Math.sin(ang-.42));
+  ctx.lineTo(x2-h*Math.cos(ang+.42),y2-h*Math.sin(ang+.42));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawSim(ctx,[W,H]){
+  const dpr = window.devicePixelRatio||1;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  /* bg */
+  ctx.fillStyle='#0B0F19'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.035)'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=44){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=44){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  const cx = W/2 + (P.pos/9)*(W*.28), cy = H/2;
+
+  /* track */
+  ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.lineWidth=4; ctx.setLineDash([7,6]);
+  ctx.beginPath(); ctx.moveTo(48,cy); ctx.lineTo(W-48,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* center marker */
+  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W/2,cy-18); ctx.lineTo(W/2,cy+18); ctx.stroke();
+
+  /* teams */
+  drawTeam(ctx,66,cy,'left',P.FL);
+  drawTeam(ctx,W-66,cy,'right',P.FR);
+
+  /* ropes */
+  ctx.strokeStyle='rgba(255,160,122,.5)'; ctx.lineWidth=2.5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(94,cy); ctx.lineTo(cx-28,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W-94,cy); ctx.lineTo(cx+28,cy); ctx.stroke();
+
+  /* box */
+  const bw=58, bh=58;
+  ctx.fillStyle='rgba(255,255,255,.06)';
+  ctx.strokeStyle='rgba(255,255,255,.82)'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,10); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='bold 11px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('50 kg',cx,cy);
+
+  /* force arrows on box */
+  const maxL=82;
+  if(P.FL>0){
+    const len=(P.FL/100)*maxL;
+    arrow(ctx,cx-bw/2,cy,cx-bw/2-len,cy,'#22D3EE',3.8);
+    ctx.fillStyle='#22D3EE'; ctx.font='bold 12px sans-serif';
+    ctx.textAlign='center'; ctx.fillText(P.FL+'N',cx-bw/2-len/2,cy-18);
+  }
+  if(P.FR>0){
+    const len=(P.FR/100)*maxL;
+    arrow(ctx,cx+bw/2,cy,cx+bw/2+len,cy,'#FFA07A',3.8);
+    ctx.fillStyle='#FFA07A'; ctx.font='bold 12px sans-serif';
+    ctx.textAlign='center'; ctx.fillText(P.FR+'N',cx+bw/2+len/2,cy-18);
+  }
+
+  /* net force arrow */
+  const fn = P.FR - P.FL;
+  if(Math.abs(fn)>1.5){
+    const dir=Math.sign(fn), len=(Math.abs(fn)/100)*72;
+    arrow(ctx,cx,cy+42,cx+dir*len,cy+42,'#ffffff',4);
+    ctx.fillStyle='#fff'; ctx.font='bold 11px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('NET: '+fn.toFixed(0)+'N', cx+dir*len/2, cy+58);
+  } else if(G.step>=1){
+    ctx.fillStyle='#22D3EE'; ctx.font='bold 14px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚖ BALANCED!', cx, cy+52);
+  }
+
+  /* velocity hint */
+  if(Math.abs(P.vel)>0.06){
+    ctx.fillStyle='rgba(255,255,255,.42)'; ctx.font='11px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('v = '+P.vel.toFixed(2)+' m/s', cx, cy-46);
+  }
+
+  ctx.resetTransform();
+}
+
+function drawTeam(ctx,x,cy,side,force){
+  const col = side==='left' ? '#22D3EE' : '#FFA07A';
+  const alpha = Math.min(.35+(force/100)*.65, 1);
+  const dir = side==='left' ? 1 : -1;
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(x,cy-24,9,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy-15); ctx.lineTo(x,cy+8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy-8); ctx.lineTo(x+dir*17,cy-3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy-8); ctx.lineTo(x-dir*10,cy-3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x-8,cy+22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x+8,cy+22); ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════ */
+function setSteps(active){
+  for(let i=0;i<=5;i++){
+    const el=document.getElementById('st-'+i); if(!el)continue;
+    el.classList.remove('active','done');
+    if(i<active) el.classList.add('done');
+    else if(i===active) el.classList.add('active');
+  }
+}
+
+function setVal(html){
+  const el=document.getElementById('v-panel');
+  el.style.opacity='0'; el.style.transform='translateY(8px)';
+  el.style.transition='opacity .3s,transform .3s';
+  setTimeout(()=>{
+    el.innerHTML=html; el.style.opacity='1'; el.style.transform='translateY(0)';
+  },280);
+}
+
+function glowCanvas(on){
+  document.getElementById('canvas-wrap').classList.toggle('glow',on);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VIDEO SCREEN
+═══════════════════════════════════════════════════════════ */
+function goVideo(){
+  if(G.raf) cancelAnimationFrame(G.raf);
+  whoosh('s-sim','s-video');
+  setTimeout(initVideo, 580);
+}
+
+const CAPS = [
+  {s:0,  e:4,  t:'What are Balanced Forces?'},
+  {s:4,  e:9,  t:'Two forces — equal AND opposite...'},
+  {s:9,  e:14, t:'Net Force = ZERO → No acceleration!'},
+  {s:14, e:19, t:'Real example: a book resting on a table'},
+  {s:19, e:24, t:'Gravity pulls DOWN ↓ · Table pushes UP ↑'},
+  {s:24, e:30, t:'⚖ Balanced Forces = Equilibrium = Zero Net Force'},
+];
+
+function initVideo(){
+  const player = document.getElementById('vid-player');
+  const c = document.getElementById('vid-canvas');
+  const W = player.clientWidth, H = player.clientHeight || Math.round(W*9/16);
+  const dpr = window.devicePixelRatio||1;
+  c.width=W*dpr; c.height=H*dpr;
+  c.style.width=W+'px'; c.style.height=H+'px';
+  G.vidTime=0; G.vidPlaying=false;
+
+  setTimeout(()=>{
+    document.getElementById('vid-loading').classList.add('gone');
+    drawVidFrame(0);
+  }, 1700);
+}
+
+function toggleVid(){
+  G.vidPlaying=!G.vidPlaying;
+  document.getElementById('vid-play-btn').textContent = G.vidPlaying ? '⏸' : '▶';
+  if(G.vidPlaying) runVid();
+  else cancelAnimationFrame(G.vidRaf);
+}
+
+function runVid(){
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    G.vidTime=Math.min(G.vidTime+dt, G.vidDur);
+    const pct=(G.vidTime/G.vidDur)*100;
+    document.getElementById('vid-prog').style.width=pct+'%';
+    document.getElementById('vid-time').textContent=fmt(G.vidTime)+' / '+fmt(G.vidDur);
+    drawVidFrame(G.vidTime);
+    updateCap(G.vidTime);
+    if(G.vidTime>=G.vidDur){
+      G.vidPlaying=false;
+      document.getElementById('vid-play-btn').textContent='▶';
+      document.getElementById('vid-continue').classList.remove('hidden');
+      return;
+    }
+    G.vidRaf=requestAnimationFrame(loop);
+  }
+  G.vidRaf=requestAnimationFrame(loop);
+}
+
+function seekVid(e){
+  const bar=e.currentTarget;
+  G.vidTime=(e.offsetX/bar.clientWidth)*G.vidDur;
+  drawVidFrame(G.vidTime); updateCap(G.vidTime);
+  document.getElementById('vid-prog').style.width=((G.vidTime/G.vidDur)*100)+'%';
+}
+
+function updateCap(t){
+  const cap=CAPS.find(c=>t>=c.s&&t<c.e);
+  const el=document.getElementById('vid-cap');
+  if(cap){ el.textContent=cap.t; el.classList.add('show'); }
+  else el.classList.remove('show');
+}
+
+function drawVidFrame(t){
+  const c=document.getElementById('vid-canvas');
+  const ctx=c.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=c.width/dpr, H=c.height/dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  ctx.fillStyle='#06091a'; ctx.fillRect(0,0,W,H);
+  const cx=W/2, cy=H/2;
+
+  if(t<4){
+    /* Title */
+    const p=Math.min(t,1);
+    ctx.globalAlpha=p;
+    ctx.fillStyle='#FFA07A'; ctx.font=`bold ${Math.round(W*.055)}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Balanced Forces',cx,cy-22);
+    ctx.fillStyle='#22D3EE'; ctx.font=`${Math.round(W*.028)}px sans-serif`;
+    ctx.fillText("Newton's First Law",cx,cy+22);
+    ctx.globalAlpha=1;
+
+  } else if(t<14){
+    /* Two force arrows on a box */
+    const progress=Math.min((t-4)/5,1);
+    const len=70+progress*30;
+
+    /* box */
+    ctx.globalAlpha=progress;
+    ctx.strokeStyle='#fff'; ctx.fillStyle='rgba(255,255,255,.1)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.roundRect(cx-32,cy-32,64,64,9); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 15px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Box',cx,cy);
+    ctx.globalAlpha=1;
+
+    arrow(ctx,cx-32,cy,cx-32-len,cy,'#22D3EE',4);
+    ctx.fillStyle='#22D3EE'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(Math.round(70*progress)+'N', cx-32-len/2, cy-20);
+
+    arrow(ctx,cx+32,cy,cx+32+len,cy,'#FFA07A',4);
+    ctx.fillStyle='#FFA07A'; ctx.font='bold 13px sans-serif';
+    ctx.fillText(Math.round(70*progress)+'N', cx+32+len/2, cy-20);
+
+    if(t>=9){
+      const a=Math.min((t-9)/2,1);
+      ctx.globalAlpha=a;
+      ctx.fillStyle='#22D3EE'; ctx.font=`bold ${Math.round(W*.036)}px sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('NET FORCE = 0 N', cx, cy+H*.28);
+      ctx.globalAlpha=1;
+    }
+
+  } else if(t<24){
+    /* Book on table */
+    const p=Math.min((t-14)/3,1);
+    /* table */
+    ctx.fillStyle='#6b4423';
+    ctx.fillRect(cx-130,cy+25,260,16);
+    ctx.fillRect(cx-130,cy+41,14,55); ctx.fillRect(cx+116,cy+41,14,55);
+    /* book */
+    ctx.fillStyle='#2563eb'; ctx.strokeStyle='#60a5fa'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(cx-35,cy-12,70,37,5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='12px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('BOOK',cx,cy+7);
+    /* arrows */
+    ctx.globalAlpha=p;
+    arrow(ctx,cx,cy-12,cx,cy-12-68,'#FFA07A',3.5);
+    ctx.fillStyle='#FFA07A'; ctx.font='bold 13px sans-serif';
+    ctx.textAlign='left'; ctx.fillText('Gravity ↓',cx+12,cy-48);
+    arrow(ctx,cx,cy+25,cx,cy+25+68,'#22D3EE',3.5);
+    ctx.fillStyle='#22D3EE'; ctx.fillText('Normal ↑',cx+12,cy+60);
+    ctx.globalAlpha=1;
+    if(t>=21){
+      ctx.globalAlpha=Math.min((t-21)/1.5,1);
+      ctx.fillStyle='#fff'; ctx.font=`bold ${Math.round(W*.032)}px sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('Forces Balanced! ⚖',cx,cy+H*.35);
+      ctx.globalAlpha=1;
+    }
+
+  } else {
+    /* Summary */
+    const p=Math.min((t-24)/2,1);
+    ctx.globalAlpha=p;
+    ctx.fillStyle='#FFA07A'; ctx.font=`bold ${Math.round(W*.05)}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚖ Equilibrium',cx,cy-36);
+    ctx.fillStyle='#fff'; ctx.font=`${Math.round(W*.028)}px sans-serif`;
+    ctx.fillText('Balanced Forces → Net Force = 0',cx,cy+2);
+    ctx.fillStyle='#22D3EE'; ctx.font=`${Math.round(W*.024)}px sans-serif`;
+    ctx.fillText('Net Force = 0 → No Acceleration',cx,cy+36);
+    ctx.globalAlpha=1;
+  }
+
+  ctx.resetTransform();
+}
+
+function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
+
+/* ═══════════════════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════════════════ */
+const QUIZ = [
+  {q:"In your own words, what does it mean for forces to be 'balanced'? Give one real-world example.",
+   hint:"💡 Think about what happened when both teams pulled with equal force...",
+   kw:['equal','same','cancel','zero','balanced','no change','constant','opposite','equilibrium']},
+  {q:"A heavy book sits perfectly still on a desk. Are the forces on it balanced or unbalanced? How do you know — use evidence from the simulation.",
+   hint:"💡 What does 'not accelerating' tell us about net force? Use Newton's First Law.",
+   kw:['balanced','zero','gravity','normal','still','not moving','equilibrium','equal','newton']},
+  {q:"In our simulation, both teams pulled with 60N each. What is the net force? What happened to the box — and WHY?",
+   hint:"💡 Use: Net Force = Right Force − Left Force. Then connect it to acceleration.",
+   kw:['zero','0','cancel','balanced','no acceleration','stopped','constant','net force','equal']},
+];
+
+let CQ = 0;
+
+function goQuiz(){
+  if(G.vidRaf) cancelAnimationFrame(G.vidRaf);
+  whoosh('s-video','s-quiz');
+  setTimeout(()=>showQ(0), 580);
+}
+
+function showQ(idx){
+  CQ = idx;
+  const q = QUIZ[idx];
+  document.getElementById('q-prog').style.width=((idx/QUIZ.length)*100)+'%';
+  document.getElementById('q-num').textContent=`Question ${idx+1} of ${QUIZ.length}`;
+
+  const card = document.getElementById('q-card');
+  card.style.opacity='0'; card.style.transform='translateX(32px)';
+  card.style.transition='opacity .35s,transform .35s';
+  setTimeout(()=>{
+    document.getElementById('q-text').textContent=q.q;
+    document.getElementById('q-hint').textContent=q.hint;
+    document.getElementById('q-ta').value='';
+    document.getElementById('q-btn').disabled=true;
+    card.style.opacity='1'; card.style.transform='translateX(0)';
+  },340);
+}
+
+document.getElementById('q-ta').addEventListener('input',function(){
+  document.getElementById('q-btn').disabled = this.value.trim().length < 18;
+});
+
+function submitQ(){
+  G.quizAnswers.push({qi:CQ, ans:document.getElementById('q-ta').value.trim()});
+  if(CQ < QUIZ.length-1){ showQ(CQ+1); }
+  else {
+    document.getElementById('q-prog').style.width='100%';
+    setTimeout(goResults, 500);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════════════════════ */
+function goResults(){
+  whoosh('s-quiz','s-results');
+  setTimeout(buildResults, 580);
+}
+
+function buildResults(){
+  const results = G.quizAnswers.map(a=>{
+    const kw = QUIZ[a.qi].kw;
+    const hits = kw.filter(k=>a.ans.toLowerCase().includes(k));
+    const score = Math.min(hits.length / Math.max(kw.length*.45, 2), 1);
+    return {score, hits, ans:a.ans, qi:a.qi};
+  });
+
+  const avg = results.reduce((s,r)=>s+r.score,0)/results.length;
+  const pct = Math.round(avg*100);
+
+  animRing(pct);
+
+  const grid = document.getElementById('res-grid');
+  grid.innerHTML='';
+
+  const strong = results.filter(r=>r.score>=.55);
+  const weak   = results.filter(r=>r.score<.55);
+
+  if(strong.length){
+    const c=document.createElement('div'); c.className='res-card good';
+    c.innerHTML=`<div class="res-card-lbl">✓ Strong Areas</div>`+
+      strong.map(r=>`<p>• Q${r.qi+1}: Good use of <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join('');
+    grid.appendChild(c);
+  }
+  if(weak.length){
+    const c=document.createElement('div'); c.className='res-card weak';
+    c.innerHTML=`<div class="res-card-lbl">⚠ Areas to Strengthen</div>`+
+      weak.map(r=>`<p>• Q${r.qi+1}: Try using terms like <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join('');
+    grid.appendChild(c);
+  }
+
+  let summary='';
+  if(pct>=80){
+    summary=`Outstanding — ${pct}%! 🎉 You clearly understand that balanced forces produce zero net force and therefore zero acceleration. Newton's First Law is fully in your toolkit. Keep this thinking sharp for Module 3007!`;
+  } else if(pct>=55){
+    summary=`Solid effort — ${pct}%! You're grasping the core idea. Focus on writing "net force = 0" explicitly when forces balance, and connecting that directly to "no acceleration." You're very close to full mastery!`;
+  } else {
+    summary=`You're building — ${pct}%. The key concept to revisit: equal opposite forces don't disappear — they CANCEL each other, making net force = 0. When net force = 0, acceleration = 0. Re-watch the concept video and retry!`;
+  }
+
+  const obsAll = G.obs.join(' ').toLowerCase();
+  if(!obsAll.includes('net')&&!obsAll.includes('zero')){
+    summary+=' Tip: In your simulation observations, explicitly mention "net force" — that\'s the core quantity!';
+  }
+
+  document.getElementById('v-final').textContent=summary;
+}
+
+function animRing(pct){
+  const c=document.getElementById('score-ring');
+  const ctx=c.getContext('2d');
+  const sz=140, cx=70, cy=70, r=52;
+  const col = pct>=80?'#22D3EE':pct>=55?'#FFA07A':'#f55';
+  const start=-Math.PI/2;
+  let frame=0, total=72;
+
+  function draw(){
+    ctx.clearRect(0,0,sz,sz);
+    const p=Math.min(frame/total,1);
+    const end=start+(pct/100)*2*Math.PI*p;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=10; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r,start,end);
+    ctx.strokeStyle=col; ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 28px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(pct*p)+'%',cx,cy-6);
+    ctx.fillStyle='rgba(255,255,255,.38)'; ctx.font='11px sans-serif';
+    ctx.fillText('score',cx,cy+14);
+    frame++;
+    if(frame<=total) requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+</body>
+</html>
