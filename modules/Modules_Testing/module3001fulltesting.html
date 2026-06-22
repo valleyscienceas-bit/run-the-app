@@ -134,11 +134,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 #s-sim{flex-direction:row;align-items:stretch;justify-content:flex-start;
   background:#0B0F19;padding:0}
 
+/* VALERIE FOCUS OVERLAY — covers canvas, sidebar stays on top */
+#valerie-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);z-index:10;opacity:0;pointer-events:none;
+  transition:opacity .4s ease}
+#valerie-overlay.active{opacity:1;pointer-events:all}
+
 /* SIDEBAR */
 .sidebar{width:360px;flex-shrink:0;background:rgba(17,24,39,.82);
   backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.09);
   display:flex;flex-direction:column;height:100vh;overflow-y:auto;
-  padding:22px 18px;gap:18px}
+  padding:22px 18px;gap:18px;position:relative;z-index:20}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
 
@@ -152,7 +158,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 
 .v-panel{background:rgba(255,160,122,.06);border:1px solid rgba(255,160,122,.16);
   border-radius:16px;padding:16px;font-size:13.5px;color:rgba(255,255,255,.84);
-  line-height:1.68;min-height:96px;transition:opacity .3s,transform .3s}
+  line-height:1.68;height:auto;transition:opacity .3s,transform .3s}
 
 /* Steps */
 .steps{display:flex;flex-direction:column;gap:7px}
@@ -485,6 +491,7 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 </div>
 
 <!-- ═══════════════════ SIMULATION ═══════════════════ -->
+<div id="valerie-overlay"></div>
 <div class="screen hidden" id="s-sim">
 
   <div class="sidebar">
@@ -805,6 +812,7 @@ Your mission: discover what makes the box stop accelerating even while both team
   setSteps(0);
   document.getElementById('btn-start-sim').style.display='block';
   drawSim(simCtx(), simDims());
+  showOverlay();
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -844,6 +852,7 @@ function checkThresholds(){
    STATE MACHINE
 ═══════════════════════════════════════════════════════════ */
 function startSim(){
+  hideOverlay();
   document.getElementById('btn-start-sim').style.display='none';
   document.getElementById('canvas-ov').classList.add('gone');
   G.step = 1; G.simRunning = true;
@@ -859,6 +868,7 @@ function triggerObs1(){
   G.simRunning = false;
   document.getElementById('sl-L').disabled = true;
   glowCanvas(true);
+  showOverlay();
   const fn = (P.FR - P.FL).toFixed(0);
   setSteps(2);
   setVal(`⚡ <strong>Freeze frame!</strong><br><br>
@@ -867,10 +877,11 @@ The box is <strong>accelerating to the right!</strong><br><br>
 What do you think happens if the right team matches that exact force? Write your prediction 👇`);
   showObs('Observation 1',
     `Left = ${P.FL}N, Net = ${fn}N. The box moved right. What would happen if the right team also applied ${P.FL}N? Why?`,
-    30, afterObs1);
+    afterObs1);
 }
 
 function afterObs1(){
+  hideOverlay();
   G.step = 3; G.simRunning = true;
   P.vel = 0; P.pos = 0;
   document.getElementById('sl-L').disabled = false;
@@ -888,16 +899,18 @@ function triggerObs2(){
   document.getElementById('sl-L').disabled = true;
   document.getElementById('sl-R').disabled = true;
   glowCanvas(true);
+  showOverlay();
   setSteps(4);
   setVal(`🎯 <strong>INCREDIBLE — look at the canvas!</strong><br><br>
 Left: <strong>${P.FL}N</strong> | Right: <strong>${P.FR}N</strong> | Net: <strong>${(P.FR-P.FL).toFixed(1)}N</strong><br><br>
 The net force arrow <strong>disappeared</strong> even though both teams are still pulling! Write exactly what you observe 👇`);
   showObs('Observation 2 — The Big Discovery',
     'Both forces are applied. The box stopped accelerating. The net force arrow is gone. WHY? Describe what you see and explain why the box behaves this way.',
-    50, goSynthesis);
+    goSynthesis);
 }
 
 function goSynthesis(){
+  hideOverlay();
   G.step = 5; setSteps(5);
   glowCanvas(false); hideObs();
   document.getElementById('ctrls').style.display = 'none';
@@ -924,19 +937,16 @@ You discovered that when forces are equal and opposite, they cancel — producin
 /* ═══════════════════════════════════════════════════════════
    OBSERVATION BOX
 ═══════════════════════════════════════════════════════════ */
-function showObs(label, prompt, minLen, cb){
+function showObs(label, prompt, cb){
   document.getElementById('action-area').innerHTML = `
     <div class="obs-wrap">
       <div class="obs-lbl">${label}</div>
       <div class="obs-prompt">${prompt}</div>
-      <textarea class="obs-ta" id="obs-ta" placeholder="Write your scientific observation here..."></textarea>
-      <div class="obs-count" id="obs-cnt">0 / ${minLen} chars min</div>
+      <textarea class="obs-ta" id="obs-ta" placeholder="Write 2 or 3 sentences about your observation..."></textarea>
       <button class="btn-obs-submit" id="obs-btn" disabled onclick="submitObs()">Submit Observation →</button>
     </div>`;
   document.getElementById('obs-ta').addEventListener('input', function(){
-    const n = this.value.trim().length;
-    document.getElementById('obs-cnt').textContent = n+' / '+minLen+' chars min';
-    document.getElementById('obs-btn').disabled = n < minLen;
+    document.getElementById('obs-btn').disabled = this.value.trim().length === 0;
   });
   window._obsCallback = cb;
 }
@@ -1117,6 +1127,9 @@ function setVal(html){
 function glowCanvas(on){
   document.getElementById('canvas-wrap').classList.toggle('glow',on);
 }
+
+function showOverlay(){ document.getElementById('valerie-overlay').classList.add('active'); }
+function hideOverlay(){ document.getElementById('valerie-overlay').classList.remove('active'); }
 
 /* ═══════════════════════════════════════════════════════════
    VIDEO SCREEN
@@ -1333,7 +1346,7 @@ function showQ(idx){
 }
 
 document.getElementById('q-ta').addEventListener('input',function(){
-  document.getElementById('q-btn').disabled = this.value.trim().length < 18;
+  document.getElementById('q-btn').disabled = this.value.trim().length === 0;
 });
 
 function submitQ(){
