@@ -773,7 +773,7 @@ function goHyp(){
 }
 
 document.getElementById('hyp-ta').addEventListener('input', function(){
-  document.getElementById('hyp-btn').disabled = this.value.trim().length < 12;
+  document.getElementById('hyp-btn').disabled = this.value.trim().length === 0;
 });
 
 function submitHyp(){
