@@ -139,9 +139,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 #s-sim{flex-direction:row;align-items:stretch;justify-content:flex-start;
   background:#0B0F19;padding:0}
 
-/* VALERIE FOCUS OVERLAY — covers canvas, sidebar stays on top */
-#valerie-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);
-  backdrop-filter:blur(4px);z-index:10;opacity:0;pointer-events:none;
+/* VALERIE FOCUS OVERLAY — inside #s-sim, covers canvas only, sidebar stays above */
+#valerie-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);z-index:5;opacity:0;pointer-events:none;
   transition:opacity .4s ease}
 #valerie-overlay.active{opacity:1;pointer-events:all}
 
@@ -149,7 +149,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 .sidebar{width:360px;flex-shrink:0;background:rgba(17,24,39,.82);
   backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.09);
   display:flex;flex-direction:column;height:100vh;overflow-y:auto;
-  padding:22px 18px;gap:18px;position:relative;z-index:20}
+  padding:22px 18px;gap:18px;position:relative;z-index:10}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
 
@@ -496,9 +496,9 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 </div>
 
 <!-- ═══════════════════ SIMULATION ═══════════════════ -->
-<div id="valerie-overlay"></div>
 <div id="version-tag">v2.0</div>
 <div class="screen hidden" id="s-sim">
+<div id="valerie-overlay"></div>
 
   <div class="sidebar">
     <div class="v-header">
