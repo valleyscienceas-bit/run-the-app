@@ -7,13 +7,11 @@
 <style>
 #version-tag{position:fixed;bottom:12px;right:16px;z-index:9999;
   font-size:11px;font-weight:800;letter-spacing:.12em;
-  color:rgba(255,160,122,.7);pointer-events:none;font-family:monospace;
-  background:rgba(17,24,39,.7);padding:4px 10px;border-radius:8px;
-  border:1px solid rgba(255,160,122,.2)}
+  color:rgba(56,189,248,0.4);pointer-events:none;font-family:monospace}
 </style>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
+html,body{width:100%;height:100%;overflow:hidden;background:#0F172A;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;color:#fff}
 
 /* ── SCREENS ── */
@@ -23,8 +21,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 /* ── TRANSITIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(255,160,122,.55)}
-                     50%{box-shadow:0 0 0 18px rgba(255,160,122,0)}}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.45)}
+                     50%{box-shadow:0 0 0 18px rgba(245,158,11,0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes twinkle{0%,100%{opacity:.08}50%{opacity:.9}}
 @keyframes slideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
@@ -36,103 +34,100 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
       animation:twinkle var(--d,3s) ease-in-out infinite var(--dl,0s)}
 
 /* ══════════════════════════════════════════════
-   INTRO SCREEN
+   INTRO SCREEN (MISSION CONTROL RESKIN V6)
 ══════════════════════════════════════════════ */
-#s-intro{flex-direction:column;
-  background:radial-gradient(ellipse 80% 60% at 50% 25%,#182245 0%,#0B0F19 70%)}
+#s-intro{flex-direction:column; background:#0F172A;}
+.grid-bg {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px; z-index: 1;
+}
 
 .intro-bar{position:absolute;top:0;left:0;right:0;display:flex;
-  justify-content:space-between;align-items:center;padding:20px 26px}
+  justify-content:space-between;align-items:center;padding:20px 26px;z-index:10}
 
-.btn-exit{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
-  color:rgba(255,255,255,.65);padding:8px 20px;border-radius:20px;cursor:pointer;
-  font-size:13px;font-weight:700;transition:all .2s}
-.btn-exit:hover{background:rgba(255,70,70,.2);border-color:#f55;color:#f77}
+.btn-exit{background:rgba(255,255,255,.05);border:1px solid rgba(56,189,248,.3);
+  color:#94A3B8;padding:8px 20px;border-radius:6px;cursor:pointer;
+  font-family:monospace;font-size:13px;font-weight:700;transition:all .2s}
+.btn-exit:hover{background:rgba(255,70,70,.15);border-color:#f55;color:#f77}
 
-.btn-info{width:36px;height:36px;border-radius:50%;background:rgba(34,211,238,.12);
-  border:1px solid rgba(34,211,238,.35);color:#22D3EE;cursor:pointer;font-size:15px;
+.btn-info{width:36px;height:36px;border-radius:6px;background:rgba(56,189,248,.1);
+  border:1px solid #38BDF8;color:#38BDF8;cursor:pointer;font-family:monospace;font-size:15px;
   font-weight:900;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.btn-info:hover{background:rgba(34,211,238,.28);transform:scale(1.12)}
+.btn-info:hover{background:rgba(56,189,248,.25);transform:scale(1.08)}
 
 .intro-content{display:flex;flex-direction:column;align-items:center;
-  gap:10px;text-align:center;padding:0 20px;animation:fadeUp .8s ease both}
+  gap:12px;text-align:center;padding:0 20px;animation:fadeUp .8s ease both;z-index:5;max-width:640px;}
 
-.badge{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.4);
-  color:#22D3EE;font-size:11px;font-weight:800;letter-spacing:.2em;
-  text-transform:uppercase;padding:6px 18px;border-radius:20px}
+.target-badge { color: #F59E0B; font-family: monospace; font-weight: bold; margin-bottom: 4px; font-size: 14px; letter-spacing: 2px; }
+.intro-title{font-family: system-ui, sans-serif; font-size:clamp(34px,5vw,56px);font-weight:900;line-height:1.1;
+  color:#FFF;letter-spacing:2px}
 
-.intro-title{font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1.05;
-  background:linear-gradient(130deg,#fff 0%,#FFA07A 55%,#22D3EE 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.terminal-box {
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25);
+  padding: 20px; border-radius: 8px; min-height: 120px; width: 100%; text-align: left;
+}
+#story-text { font-family: monospace; font-size: 14px; line-height: 1.6; color: #94A3B8; }
+.cursor { display: inline-block; width: 8px; height: 15px; background: #38BDF8; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
 
-.intro-sub{font-size:16px;color:rgba(255,255,255,.45);font-weight:500;
-  letter-spacing:.06em;margin-bottom:8px}
+#icon-canvas{display:block;margin:10px 0}
+.float-wrap{animation:float 3.2s ease-in-out infinite;margin-top:10px;height:60px;}
 
-#icon-canvas{display:block}
-
-.float-wrap{animation:float 3.2s ease-in-out infinite;margin-top:18px}
-
-.btn-start{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
-  padding:18px 52px;border-radius:50px;font-size:20px;font-weight:900;cursor:pointer;
-  letter-spacing:.04em;box-shadow:0 8px 36px rgba(255,160,122,.45);
-  animation:pulseRing 2.4s ease-in-out infinite;transition:transform .2s,box-shadow .2s;
-  display:flex;align-items:center;gap:10px}
-.btn-start:hover{transform:scale(1.07);box-shadow:0 14px 44px rgba(255,160,122,.65)}
+.btn-start{background:rgba(245,158,11,0.1);border:1px solid #F59E0B;color:#F59E0B;
+  padding:16px 44px;border-radius:6px;font-family:monospace;font-size:18px;font-weight:900;cursor:pointer;
+  letter-spacing:.1em;opacity:0;pointer-events:none;transform:translateY(10px);transition:all .3s ease}
+.btn-start.visible { opacity:1; pointer-events:all; transform:translateY(0); }
+.btn-start:hover{background:#F59E0B;color:#0F172A;box-shadow:0 0 20px rgba(245,158,11,0.35)}
 
 /* ── STANDARDS MODAL ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
   display:flex;align-items:center;justify-content:center;z-index:999;
   opacity:0;pointer-events:none;transition:opacity .3s}
 .modal-bg.open{opacity:1;pointer-events:all}
-.modal-box{background:rgba(13,19,35,.97);border:1px solid rgba(255,255,255,.12);
-  border-radius:26px;padding:38px;max-width:480px;width:90%;animation:pop .35s ease}
-.modal-box h2{color:#FFA07A;font-size:20px;font-weight:900;margin-bottom:16px}
-.std-tag{display:inline-block;background:rgba(34,211,238,.14);border:1px solid rgba(34,211,238,.35);
-  color:#22D3EE;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:14px}
-.modal-box li{color:rgba(255,255,255,.72);font-size:14px;line-height:1.75;margin-left:18px}
+.modal-box{background:#0F172A;border:1px solid #38BDF8;
+  border-radius:12px;padding:36px;max-width:480px;width:90%;animation:pop .35s ease}
+.modal-box h2{color:#F59E0B;font-family:monospace;font-size:20px;font-weight:900;margin-bottom:16px}
+.std-tag{display:inline-block;background:rgba(56,189,248,.12);border:1px solid #38BDF8;
+  color:#38BDF8;padding:4px 12px;border-radius:4px;font-family:monospace;font-size:11px;font-weight:800;margin-bottom:14px}
+.modal-box li{color:#94A3B8;font-size:14px;line-height:1.75;margin-left:18px}
 .modal-box p.note{color:rgba(255,255,255,.35);font-size:12px;margin-top:14px}
-.modal-close{margin-top:20px;background:rgba(255,160,122,.18);border:1px solid #FFA07A;
-  color:#FFA07A;padding:10px 30px;border-radius:20px;cursor:pointer;font-weight:700;
+.modal-close{margin-top:20px;background:transparent;border:1px solid #F59E0B;
+  color:#F59E0B;padding:10px 30px;border-radius:6px;cursor:pointer;font-family:monospace;font-weight:700;
   font-size:14px;transition:all .2s}
-.modal-close:hover{background:#FFA07A;color:#0B0F19}
+.modal-close:hover{background:#F59E0B;color:#0F172A}
 
 /* ══════════════════════════════════════════════
    HYPOTHESIS SCREEN
 ══════════════════════════════════════════════ */
-#s-hyp{flex-direction:column;
-  background:radial-gradient(ellipse 80% 60% at 50% 25%,#182245 0%,#0B0F19 70%);
-  padding:40px 20px}
-
+#s-hyp{flex-direction:column;background:#0F172A;padding:40px 20px}
 .hyp-wrap{max-width:680px;width:100%;display:flex;flex-direction:column;gap:22px}
-
-.glass-card{background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.1);
-  backdrop-filter:blur(14px);border-radius:24px;padding:30px;
-  animation:fadeUp .5s ease both}
-
-.section-label{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
-  color:#22D3EE;margin-bottom:12px}
+.glass-card{background:rgba(30,41,59,0.7);border:1px solid rgba(56,189,248,0.2);
+  border-radius:12px;padding:30px;animation:fadeUp .5s ease both}
+.section-label{font-family:monospace;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  color:#38BDF8;margin-bottom:12px}
 .glass-card h3{font-size:21px;font-weight:800;color:#fff;margin-bottom:10px}
-.glass-card p{color:rgba(255,255,255,.6);font-size:15px;line-height:1.72}
+.glass-card p{color:#94A3B8;font-size:15px;line-height:1.7}
 
-.hyp-box textarea{width:100%;background:rgba(255,255,255,.05);
-  border:1.5px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;
+.hyp-box textarea{width:100%;background:rgba(0,0,0,0.3);
+  border:1px solid rgba(56,189,248,0.2);border-radius:8px;color:#fff;
   font-size:15px;line-height:1.65;padding:16px;resize:none;
   outline:none;height:116px;font-family:inherit;transition:border-color .2s}
-.hyp-box textarea:focus{border-color:#FFA07A}
-.hyp-box textarea::placeholder{color:rgba(255,255,255,.28)}
+.hyp-box textarea:focus{border-color:#F59E0B}
+.hyp-box textarea::placeholder{color:rgba(255,255,255,.2)}
 
-.btn-orange{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
-  padding:14px 36px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;
-  transition:all .2s;box-shadow:0 4px 18px rgba(255,160,122,.35)}
-.btn-orange:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,160,122,.5)}
-.btn-orange:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-orange{background:transparent;border:1px solid #F59E0B;color:#F59E0B;
+  padding:14px 36px;border-radius:6px;font-family:monospace;font-size:16px;font-weight:800;cursor:pointer;
+  transition:all .2s;letter-spacing:1px}
+.btn-orange:hover:not(:disabled){background:#F59E0B;color:#0F172A;box-shadow:0 0 15px rgba(245,158,11,0.3)}
+.btn-orange:disabled{opacity:.25;cursor:not-allowed;transform:none}
 
 .v-bubble{display:flex;align-items:flex-start;gap:14px;
-  background:rgba(255,160,122,.08);border:1px solid rgba(255,160,122,.22);
-  border-radius:20px;padding:18px 22px;animation:fadeUp .4s ease both}
+  background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);
+  border-radius:12px;padding:18px 22px;animation:fadeUp .4s ease both}
 .v-dot-sm{width:38px;height:38px;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 35% 35%,#ffbf9a,#FFA07A,#e8673a);
-  animation:pulseRing 2.5s ease-in-out infinite;box-shadow:0 0 14px rgba(255,160,122,.4)}
+  animation:pulseRing 2.5s ease-in-out infinite}
 .v-bubble p{font-size:14px;color:rgba(255,255,255,.84);line-height:1.68}
 
 /* ══════════════════════════════════════════════
@@ -141,296 +136,201 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0B0F19;
 #s-sim{flex-direction:row;align-items:stretch;justify-content:flex-start;
   background:#0B0F19;padding:0}
 
-/* VALERIE FOCUS OVERLAY — inside #s-sim, covers canvas only, sidebar stays above */
-#valerie-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);
+#valerie-overlay{position:absolute;inset:0;background:rgba(15,23,42,0.8);
   backdrop-filter:blur(4px);z-index:5;opacity:0;pointer-events:none;
   transition:opacity .4s ease}
 #valerie-overlay.active{opacity:1;pointer-events:all}
 
 /* SIDEBAR */
-.sidebar{width:360px;flex-shrink:0;background:rgba(17,24,39,.82);
-  backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.09);
+.sidebar{width:360px;flex-shrink:0;background:rgba(30,41,59,0.85);
+  border-right:1px solid rgba(56,189,248,0.2);
   display:flex;flex-direction:column;height:100vh;overflow-y:auto;
-  padding:22px 18px;gap:18px;position:relative;z-index:10}
+  padding:16px 14px;gap:10px;position:relative;z-index:10}
 .sidebar::-webkit-scrollbar{width:3px}
-.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(56,189,248,0.2);border-radius:3px}
 
-.v-header{display:flex;align-items:center;gap:12px}
-.v-core{width:50px;height:50px;border-radius:50%;flex-shrink:0;
+.v-header{display:flex;align-items:center;gap:10px}
+.v-core{width:40px;height:40px;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 35% 35%,#ffbf9a,#FFA07A,#e8673a);
-  animation:pulseRing 2.5s ease-in-out infinite;
-  box-shadow:0 0 22px rgba(255,160,122,.5)}
-.v-name{font-size:13px;font-weight:800;color:#FFA07A;letter-spacing:.05em}
-.v-role{font-size:11px;color:rgba(255,255,255,.38)}
+  box-shadow:0 0 16px rgba(245,158,11,0.4)}
+.v-name{font-size:13px;font-weight:800;color:#F59E0B;letter-spacing:.05em}
+.v-role{font-size:11px;color:#94A3B8}
 
-.v-panel{background:rgba(255,160,122,.06);border:1px solid rgba(255,160,122,.16);
-  border-radius:16px;padding:16px;font-size:13.5px;color:rgba(255,255,255,.84);
-  line-height:1.68;height:auto;transition:opacity .3s,transform .3s}
+.btn-help{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);
+  color:#38BDF8;padding:6px 12px;border-radius:6px;font-family:monospace;font-size:11px;font-weight:800;
+  cursor:pointer;transition:all .2s;position:relative;overflow:hidden;white-space:nowrap;margin-left:auto;}
+.btn-help:hover{background:rgba(56,189,248,.25);}
+.v-prog-bg{position:absolute;bottom:0;left:0;height:3px;background:#fff;width:0%;transition:width 1s linear;}
+
+.v-panel{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.15);
+  border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,.85);
+  line-height:1.5;height:auto;min-height:auto;transition:opacity .3s,transform .3s}
 
 /* Steps */
-.steps{display:flex;flex-direction:column;gap:7px}
-.step{display:flex;align-items:center;gap:10px;padding:9px 12px;
-  border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:all .3s}
-.step.active{background:rgba(255,160,122,.1);border-color:rgba(255,160,122,.3)}
-.step.done{background:rgba(34,211,238,.07);border-color:rgba(34,211,238,.2)}
-.step-n{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);
-  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;color:rgba(255,255,255,.4);transition:all .3s}
-.step.active .step-n{background:#FFA07A;color:#0B0F19}
-.step.done .step-n{background:#22D3EE;color:#0B0F19}
-.step-lbl{font-size:12px;font-weight:600;color:rgba(255,255,255,.42);transition:color .3s}
-.step.active .step-lbl{color:#FFA07A}
-.step.done .step-lbl{color:#22D3EE}
+.steps{display:flex;flex-direction:column;gap:4px}
+.step{display:flex;align-items:center;gap:8px;padding:6px 10px;
+  border-radius:6px;border:1px solid rgba(255,255,255,.04);transition:all .3s}
+.step.active{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25)}
+.step.done{background:rgba(56,189,248,0.06);border-color:rgba(56,189,248,0.2)}
+.step-n{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.05);
+  font-family:monospace;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:rgba(255,255,255,.3);transition:all .3s}
+.step.active .step-n{background:#F59E0B;color:#0F172A}
+.step.done .step-n{background:#38BDF8;color:#0F172A}
+.step-lbl{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.35);transition:color .3s}
+.step.active .step-lbl{color:#F59E0B}
+.step.done .step-lbl{color:#38BDF8}
 
 /* Sliders */
-.ctrls{display:flex;flex-direction:column;gap:14px}
-.ctrl-group{display:flex;flex-direction:column;gap:7px}
+.ctrls{display:flex;flex-direction:column;gap:12px}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
 .ctrl-label{display:flex;justify-content:space-between;
-  font-size:11px;font-weight:700;color:rgba(255,255,255,.55);
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.5);
   text-transform:uppercase;letter-spacing:.1em}
-.ctrl-val{color:#FFA07A;font-weight:900}
+.ctrl-val{color:#F59E0B;font-weight:900}
 
 input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;
   background:rgba(255,255,255,.1);outline:none;transition:opacity .3s}
-input[type=range]:disabled{opacity:.28;cursor:not-allowed}
+input[type=range]:disabled{opacity:.25;cursor:not-allowed}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
-  border-radius:50%;background:#FFA07A;cursor:pointer;
-  box-shadow:0 2px 10px rgba(255,160,122,.5);transition:transform .12s}
+  border-radius:50%;background:#F59E0B;cursor:pointer;
+  box-shadow:0 2px 10px rgba(245,158,11,0.3);transition:transform .12s}
 input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.25)}
 
 /* Metrics */
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.m-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;padding:12px;text-align:center}
-.m-val{font-size:22px;font-weight:900;color:#FFA07A}
-.m-lbl{font-size:10px;color:rgba(255,255,255,.38);text-transform:uppercase;
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.m-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);
+  border-radius:8px;padding:8px;text-align:center}
+.m-val{font-size:18px;font-weight:900;color:#F59E0B;font-family:monospace;}
+.m-lbl{font-size:9.5px;color:rgba(255,255,255,.35);text-transform:uppercase;
   letter-spacing:.1em;margin-top:2px}
 
 /* Action area */
-#action-area{display:flex;flex-direction:column;gap:10px}
+#action-area{display:flex;flex-direction:column;gap:8px}
 
-.btn-sim-primary{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
-  padding:14px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;
-  transition:all .2s;box-shadow:0 4px 18px rgba(255,160,122,.35);letter-spacing:.02em}
-.btn-sim-primary:hover:not(:disabled){transform:translateY(-2px);
-  box-shadow:0 8px 28px rgba(255,160,122,.55)}
-.btn-sim-primary:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-sim-primary{background:rgba(245,158,11,0.08);border:1px solid #F59E0B;color:#F59E0B;
+  padding:12px;border-radius:6px;font-family:monospace;font-size:14px;font-weight:800;cursor:pointer;width:100%;
+  transition:all .2s;letter-spacing:.02em}
+.btn-sim-primary:hover:not(:disabled){background:#F59E0B;color:#0F172A;box-shadow:0 0 15px rgba(245,158,11,0.3)}
+.btn-sim-primary:disabled{opacity:.25;cursor:not-allowed;transform:none}
 
 /* Observation */
-.obs-wrap{display:flex;flex-direction:column;gap:9px;animation:slideIn .4s ease both}
-.obs-lbl{font-size:11px;font-weight:800;color:#22D3EE;text-transform:uppercase;letter-spacing:.18em}
-.obs-prompt{font-size:12.5px;color:rgba(255,255,255,.68);line-height:1.6}
-.obs-ta{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(34,211,238,.22);
-  border-radius:12px;color:#fff;font-size:13px;line-height:1.6;padding:12px;
-  resize:none;outline:none;height:96px;font-family:inherit;transition:border-color .2s}
-.obs-ta:focus{border-color:#22D3EE}
+.obs-wrap {
+  display: flex; flex-direction: column; gap: 7px;
+  animation: slideIn .4s ease both;
+  max-height: 400px; overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.3s ease, margin 0.4s ease;
+}
+.obs-wrap.hiding {
+  max-height: 0px; opacity: 0; transform: scale(0.95) translateY(10px);
+  margin-top: 0; margin-bottom: 0; pointer-events: none;
+}
+.obs-lbl{font-family:monospace;font-size:11px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:.18em}
+.obs-prompt{font-size:12px;color:#94A3B8;line-height:1.5}
+.obs-ta{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(56,189,248,0.25);
+  border-radius:8px;color:#fff;font-size:13px;line-height:1.5;padding:10px;
+  resize:none;outline:none;height:80px;font-family:inherit;transition:border-color .2s}
+.obs-ta:focus{border-color:#38BDF8}
 .obs-ta::placeholder{color:rgba(255,255,255,.22)}
-.obs-count{font-size:11px;color:rgba(255,255,255,.28);text-align:right}
-.btn-obs-submit{background:rgba(34,211,238,.14);border:1px solid #22D3EE;color:#22D3EE;
-  padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
-.btn-obs-submit:hover:not(:disabled){background:#22D3EE;color:#0B0F19}
-.btn-obs-submit:disabled{opacity:.3;cursor:not-allowed}
+.btn-obs-submit{background:rgba(56,189,248,0.08);border:1px solid #38BDF8;color:#38BDF8;
+  padding:10px;border-radius:6px;font-family:monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-obs-submit:hover:not(:disabled){background:#38BDF8;color:#0F172A}
+.btn-obs-submit:disabled{opacity:.25;cursor:not-allowed}
 
 /* Synthesis */
-.synth-card{background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.18);
-  border-radius:16px;padding:16px;font-size:13px;color:rgba(255,255,255,.8);
-  line-height:1.72;animation:fadeUp .5s ease both}
-.synth-label{font-size:10px;font-weight:800;letter-spacing:.2em;color:#22D3EE;
-  text-transform:uppercase;margin-bottom:8px}
+.synth-card{background:rgba(56,189,248,0.03);border:1px solid rgba(56,189,248,0.15);
+  border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,.8);
+  line-height:1.6;animation:fadeUp .5s ease both}
+.synth-label{font-family:monospace;font-size:10px;font-weight:800;letter-spacing:.2em;color:#38BDF8;
+  text-transform:uppercase;margin-bottom:6px}
 
 /* MAIN / CANVAS */
-.sim-main{flex:1;display:flex;flex-direction:column;align-items:center;
+.sim-main{flex:1; min-width: 0; display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:20px;overflow:hidden;position:relative}
 .canvas-wrap{position:relative;width:100%;max-width:860px;
-  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);
-  border-radius:24px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
-.canvas-wrap.glow{border-color:#FFA07A;box-shadow:0 0 40px rgba(255,160,122,.25)}
-#sim-canvas{display:block;width:100%}
+  background:rgba(0,0,0,0.4);border:1px solid rgba(56,189,248,0.2);
+  border-radius:16px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.canvas-wrap.glow{border-color:#F59E0B;box-shadow:0 0 40px rgba(245,158,11,0.2)}
+#sim-canvas{display:block;width:100%;height:auto;}
 
-.canvas-overlay{position:absolute;inset:0;background:rgba(11,15,25,.65);
-  backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;border-radius:24px;transition:opacity .5s}
+.canvas-overlay{position:absolute;inset:0;background:rgba(15,23,42,0.8);
+  backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;border-radius:16px;transition:opacity .5s}
 .canvas-overlay.gone{opacity:0;pointer-events:none}
 .ov-icon{font-size:50px;animation:float 2s ease-in-out infinite}
-.ov-text{font-size:15px;font-weight:700;color:rgba(255,255,255,.45)}
+.ov-text{font-family:monospace;font-size:14px;font-weight:700;color:#94A3B8;letter-spacing:1px}
 
 .data-bar{display:flex;gap:14px;margin-top:14px;justify-content:center;flex-wrap:wrap}
-.data-chip{background:rgba(17,24,39,.92);border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;padding:8px 20px;display:flex;flex-direction:column;align-items:center}
-.chip-val{font-size:19px;font-weight:900;color:#FFA07A}
-.chip-lbl{font-size:10px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.1em}
+.data-chip{background:rgba(30,41,59,0.9);border:1px solid rgba(56,189,248,0.15);
+  border-radius:8px;padding:8px 20px;display:flex;flex-direction:column;align-items:center}
+.chip-val{font-size:19px;font-weight:900;color:#F59E0B;font-family:monospace;}
+.chip-lbl{font-family:monospace;font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:.1em}
 
-/* ══════════════════════════════════════════════
-   VIDEO SCREEN
-══════════════════════════════════════════════ */
-#s-video{flex-direction:column;background:#0B0F19;padding:36px 24px}
-
-.vid-wrap{max-width:720px;width:100%;display:flex;flex-direction:column;gap:18px}
-.vid-label{font-size:11px;font-weight:800;letter-spacing:.2em;color:#22D3EE;text-transform:uppercase}
+/* ── INTERMEDIATE SCREENS ── */
+#s-video, #s-quiz, #s-results { flex-direction:column; background:#0F172A; padding:40px 20px; }
+.vid-wrap, .quiz-wrap, .res-wrap { max-width:680px; width:100%; display:flex; flex-direction:column; gap:22px; }
+.vid-player { position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid rgba(56,189,248,0.2); box-shadow:0 28px 70px rgba(0,0,0,.65); }
+#vid-canvas { width:100%; height:auto; display:block; }
+.vid-loading { position:absolute; inset:0; background:#0F172A; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .7s,visibility .7s; }
+.vid-loading.gone { opacity:0; visibility:hidden; }
+.spinner { width:54px; height:54px; border-radius:50%; border:3px solid rgba(56,189,248,0.1); border-top-color:#F59E0B; animation:spin .75s linear infinite; }
+.load-txt { font-family:monospace; font-size:14px; color:#94A3B8; }
+.vid-caption-wrap { position:absolute; bottom:64px; left:0; right:0; text-align:center; padding:0 40px; pointer-events:none; }
+.vid-cap { display:inline-block; background:rgba(0,0,0,.85); border:1px solid #38BDF8; color:#fff; font-size:15px; font-weight:600; padding:8px 22px; border-radius:4px; opacity:0; transform:translateY(8px); transition:opacity .3s,transform .3s; }
+.vid-cap.show { opacity:1; transform:translateY(0); }
+.vid-controls { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,.9)); padding:22px 20px 16px; display:flex; align-items:center; gap:14px; opacity:0; transition:opacity .3s; }
+.vid-player:hover .vid-controls { opacity:1; }
+.vid-play { width:40px; height:40px; border-radius:50%; background:#F59E0B; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#0F172A; font-size:15px; flex-shrink:0; transition:transform .15s; }
+.vid-play:hover { transform:scale(1.1); }
+.vid-prog-bar { flex:1; height:4px; background:rgba(255,255,255,.1); border-radius:2px; cursor:pointer; position:relative; }
+.vid-prog { height:100%; background:#F59E0B; border-radius:2px; width:0%; transition:width .1s linear; position:relative; }
+.vid-time { font-family:monospace; font-size:12px; color:#94A3B8; white-space:nowrap; }
+.btn-vid-continue { background:transparent; border:1px solid #F59E0B; color:#F59E0B; padding:14px 42px; border-radius:6px; font-family:monospace; font-size:16px; font-weight:800; cursor:pointer; transition:all .2s; align-self:center; animation:pop .4s ease both; }
+.btn-vid-continue:hover { background:#F59E0B; color:#0F172A; box-shadow:0 0 15px rgba(245,158,11,0.3); }
+.vid-label{font-family:monospace;font-size:11px;font-weight:800;letter-spacing:.2em;color:#38BDF8;text-transform:uppercase}
 .vid-title{font-size:28px;font-weight:900;color:#fff}
-.vid-sub{font-size:14px;color:rgba(255,255,255,.45)}
+.vid-sub{font-size:14px;color:#94A3B8}
 
-.vid-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;
-  border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 28px 70px rgba(0,0,0,.65)}
-#vid-canvas{width:100%;height:100%;display:block}
-
-.vid-loading{position:absolute;inset:0;background:#050812;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-  transition:opacity .7s,visibility .7s;border-radius:20px}
-.vid-loading.gone{opacity:0;visibility:hidden}
-.spinner{width:54px;height:54px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.08);border-top-color:#FFA07A;
-  animation:spin .75s linear infinite}
-.load-txt{font-size:14px;color:rgba(255,255,255,.42);font-weight:600}
-
-.vid-caption-wrap{position:absolute;bottom:64px;left:0;right:0;
-  text-align:center;padding:0 40px;pointer-events:none}
-.vid-cap{display:inline-block;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);
-  color:#fff;font-size:16px;font-weight:600;padding:8px 22px;border-radius:8px;
-  border-bottom:3px solid #FFA07A;opacity:0;transform:translateY(8px);
-  transition:opacity .3s,transform .3s}
-.vid-cap.show{opacity:1;transform:translateY(0)}
-
-.vid-controls{position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,.88));
-  padding:22px 20px 16px;display:flex;align-items:center;gap:14px;
-  opacity:0;transition:opacity .3s}
-.vid-player:hover .vid-controls{opacity:1}
-.vid-play{width:40px;height:40px;border-radius:50%;background:#FFA07A;border:none;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:15px;flex-shrink:0;transition:transform .15s,background .15s}
-.vid-play:hover{transform:scale(1.12);background:#ff6b35}
-.vid-prog-bar{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;
-  cursor:pointer;position:relative}
-.vid-prog{height:100%;background:#FFA07A;border-radius:2px;width:0%;
-  transition:width .1s linear;position:relative}
-.vid-prog::after{content:'';position:absolute;right:-6px;top:-4px;
-  width:12px;height:12px;background:#FFA07A;border-radius:50%}
-.vid-time{font-size:12px;color:rgba(255,255,255,.65);font-weight:600;white-space:nowrap}
-
-.btn-vid-continue{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
-  padding:14px 42px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;
-  transition:all .2s;box-shadow:0 6px 22px rgba(255,160,122,.42);align-self:center;
-  animation:pop .4s ease both}
-.btn-vid-continue:hover{transform:scale(1.06)}
-
-/* ══════════════════════════════════════════════
-   QUIZ SCREEN
-══════════════════════════════════════════════ */
-#s-quiz{flex-direction:column;
-  background:radial-gradient(ellipse 80% 55% at 50% 20%,#182245 0%,#0B0F19 70%);
-  padding:40px 20px}
-
-.quiz-wrap{max-width:640px;width:100%;display:flex;flex-direction:column;gap:22px}
-
-.q-prog-bar{width:100%;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
-.q-prog{height:100%;background:linear-gradient(90deg,#FFA07A,#22D3EE);
-  border-radius:2px;transition:width .55s ease}
-
-.q-num{font-size:11px;font-weight:800;color:#22D3EE;letter-spacing:.18em;text-transform:uppercase}
-
-.q-card{background:rgba(17,24,39,.84);border:1px solid rgba(255,255,255,.1);
-  backdrop-filter:blur(14px);border-radius:24px;padding:28px;
-  display:flex;flex-direction:column;gap:16px;transition:opacity .35s,transform .35s}
+.q-prog-bar{width:100%;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.q-prog{height:100%;background:linear-gradient(90deg,#F59E0B,#38BDF8); border-radius:2px;transition:width .55s ease}
+.q-num{font-family:monospace;font-size:11px;font-weight:800;color:#38BDF8;letter-spacing:.18em;text-transform:uppercase}
+.q-card{background:rgba(30,41,59,0.8);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:28px; display:flex;flex-direction:column;gap:16px;transition:opacity .35s,transform .35s}
 .q-card h3{font-size:20px;font-weight:800;color:#fff;line-height:1.42}
-.q-hint{font-size:13px;color:rgba(255,255,255,.38);font-style:italic}
-
-.q-ta{width:100%;background:rgba(255,255,255,.05);
-  border:1.5px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;
-  font-size:15px;line-height:1.65;padding:16px;resize:none;outline:none;
-  height:130px;font-family:inherit;transition:border-color .2s}
-.q-ta:focus{border-color:#FFA07A}
-.q-ta::placeholder{color:rgba(255,255,255,.24)}
-
-/* ══════════════════════════════════════════════
-   RESULTS SCREEN
-══════════════════════════════════════════════ */
-#s-results{flex-direction:column;
-  background:radial-gradient(ellipse 80% 55% at 50% 20%,#182245 0%,#0B0F19 70%);
-  padding:40px 20px;overflow-y:auto;align-items:center;justify-content:flex-start}
-
-.res-wrap{max-width:680px;width:100%;display:flex;flex-direction:column;gap:22px;
-  padding:20px 0 40px}
+.q-hint{font-size:13px;color:rgba(255,255,255,.35);font-style:italic}
+.q-ta{width:100%;background:rgba(0,0,0,0.3); border:1px solid rgba(56,189,248,0.2);border-radius:8px;color:#fff; font-size:15px;line-height:1.65;padding:16px;resize:none;outline:none; height:130px;font-family:inherit;transition:border-color .2s}
+.q-ta:focus{border-color:#F59E0B}
+.q-ta::placeholder{color:rgba(255,255,255,.2)}
 .res-header{text-align:center;animation:fadeUp .5s ease both}
 .res-header h2{font-size:34px;font-weight:900;color:#fff}
-.res-header p{color:rgba(255,255,255,.45);font-size:16px;margin-top:4px}
-
+.res-header p{color:#94A3B8;font-size:16px;margin-top:4px}
 .ring-wrap{display:flex;justify-content:center}
 #score-ring{display:block}
-
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.res-card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.1);
-  border-radius:16px;padding:18px;animation:fadeUp .5s ease both}
-.res-card.good{border-color:rgba(34,211,238,.3)}
-.res-card.weak{border-color:rgba(255,160,122,.3)}
-.res-card-lbl{font-size:10px;font-weight:800;letter-spacing:.18em;
-  text-transform:uppercase;margin-bottom:8px}
-.res-card.good .res-card-lbl{color:#22D3EE}
-.res-card.weak .res-card-lbl{color:#FFA07A}
-.res-card p{font-size:13px;color:rgba(255,255,255,.68);line-height:1.65;margin-bottom:6px}
-
-.v-summary{background:rgba(255,160,122,.08);border:1px solid rgba(255,160,122,.24);
-  border-radius:20px;padding:20px 22px;display:flex;align-items:flex-start;gap:14px;
-  animation:fadeUp .5s ease .2s both}
+.res-card{background:rgba(30,41,59,0.8);border:1px solid rgba(56,189,248,0.15); border-radius:12px;padding:18px;animation:fadeUp .5s ease both}
+.res-card.good{border-color:rgba(56,189,248,0.3)}
+.res-card.weak{border-color:rgba(245,158,11,0.3)}
+.res-card-lbl{font-family:monospace;font-size:10px;font-weight:800;letter-spacing:.18em; text-transform:uppercase;margin-bottom:8px}
+.res-card.good .res-card-lbl{color:#38BDF8}
+.res-card.weak .res-card-lbl{color:#F59E0B}
+.res-card p{font-size:13px;color:#94A3B8;line-height:1.65;margin-bottom:6px}
+.v-summary{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.2); border-radius:12px;padding:20px 22px;display:flex;align-items:flex-start;gap:14px; animation:fadeUp .5s ease .2s both}
 .v-summary p{font-size:14px;color:rgba(255,255,255,.84);line-height:1.7}
+.btn-done{background:transparent;border:1px solid #F59E0B;color:#F59E0B; padding:16px 50px;border-radius:6px;font-family:monospace;font-size:17px;font-weight:800;cursor:pointer; align-self:center;transition:all .2s; animation:pop .5s ease .3s both}
+.btn-done:hover{background:#F59E0B;color:#0F172A;box-shadow:0 0 15px rgba(245,158,11,0.3)}
 
-.btn-done{background:linear-gradient(135deg,#FFA07A,#ff6b35);border:none;color:#fff;
-  padding:16px 50px;border-radius:50px;font-size:17px;font-weight:800;cursor:pointer;
-  align-self:center;box-shadow:0 8px 26px rgba(255,160,122,.42);transition:all .2s;
-  animation:pop .5s ease .3s both}
-.btn-done:hover{transform:scale(1.06)}
-
-/* ══════════════════════════════════════════════
-   RESPONSIVE DESIGN (TABLET & SMALL MACBOOK FIX)
-══════════════════════════════════════════════ */
-@media screen and (max-width: 1024px) {
-  /* Stack the simulation screen vertically instead of horizontally */
-  #s-sim {
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* Shrink the sidebar and stick it to the top or bottom */
-  .sidebar {
-    width: 100%;
-    height: auto;
-    max-height: 40vh; /* Sidebar takes up 40% of screen height max */
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,.09);
-    padding: 16px;
-  }
-
-  /* Allow the canvas to fill the rest of the space */
-  .sim-main {
-    flex: 1;
-    height: 60vh;
-    padding: 12px;
-  }
-
-  /* Ensure the canvas container never bleeds off screen */
-  .canvas-wrap {
-    max-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-
-  /* Scale down the massive fonts on the Intro/Quiz screens */
-  .intro-title {
-    font-size: clamp(32px, 7vw, 48px);
-  }
-
-  .glass-card, .q-card, .res-wrap {
-    padding: 20px;
-  }
+/* ── RESPONSIVE DESIGN ── */
+@media screen and (max-width: 1150px) {
+  #s-sim { flex-direction: column; overflow: hidden; }
+  .sidebar { width: 100%; height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid rgba(56,189,248,0.2); padding: 12px; }
+  .sim-main { flex: 1; height: 60vh; padding: 12px; }
+  .canvas-wrap { max-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .intro-title { font-size: clamp(32px, 7vw, 48px); }
+  .glass-card, .q-card, .res-wrap { padding: 20px; }
 }
-
 @media screen and (max-height: 700px) {
-  /* If the screen is really short (like a tiny laptop), shrink margins */
-  .sidebar { gap: 10px; }
-  .v-panel { min-height: auto; padding: 12px; }
-  .canvas-wrap { border-radius: 12px; }
+  .sidebar { gap: 6px; }
+  .v-panel { padding: 10px; }
+  .canvas-wrap { border-radius: 10px; }
 }
 </style>
 </head>
@@ -438,20 +338,21 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 
 <!-- ═══════════════════ INTRO ═══════════════════ -->
 <div class="screen" id="s-intro">
+  <div class="grid-bg"></div>
   <div class="stars" id="star-bg"></div>
   <div class="intro-bar">
-    <button class="btn-exit" onclick="exitMod()">✕ Exit</button>
+    <button class="btn-exit" onclick="exitMod()">✕ [SYS.EXIT]</button>
     <button class="btn-info" title="View Standards" onclick="toggleModal()">ⓘ</button>
   </div>
   <div class="intro-content">
-    <div class="badge">Grade 8 &nbsp;·&nbsp; Module 3001</div>
-    <h1 class="intro-title">Balanced<br>Forces</h1>
-    <p class="intro-sub">MS-PS2-1 &nbsp;·&nbsp; Newton's First Law</p>
+    <div class="target-badge">> TARGET INTEL: MS-PS2-1</div>
+    <h1 class="intro-title">BALANCED FORCES</h1>
     <canvas id="icon-canvas" width="260" height="130"></canvas>
+    <div class="terminal-box">
+      <span id="story-text"></span><span class="cursor" id="cursor"></span>
+    </div>
     <div class="float-wrap">
-      <button class="btn-start" onclick="goHyp()">
-        <span>🚀</span> Start Mission
-      </button>
+      <button class="btn-start" id="start-btn" onclick="goHyp()">LAUNCH LAB CORE →</button>
     </div>
   </div>
 </div>
@@ -477,17 +378,17 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
   <div class="hyp-wrap">
     <div class="glass-card">
       <div class="section-label">Mission Brief</div>
-      <h3>What Are Balanced Forces?</h3>
-      <p>In this lab, two teams tug on a box from opposite sides. Sometimes the box flies off — and sometimes it stays completely still even while both teams pull their hardest. Your mission: figure out <em>exactly</em> why. Start by forming a prediction.</p>
+      <h3>Evaluating Equilibrium</h3>
+      <p>You have reviewed the telemetry for the hovering falcon. Now, formulate your initial hypothesis framework. What internal mechanics prevent an active system from accelerating when opposing environmental metrics match perfectly?</p>
     </div>
     <div class="glass-card hyp-box" style="animation-delay:.12s">
       <div class="section-label">Your Hypothesis</div>
-      <p style="color:rgba(255,255,255,.5);font-size:14px;margin-bottom:12px">
-        What do you think will happen to the box when both teams pull with the <em>same</em> force? Why?
+      <p style="color:#94A3B8;font-size:14px;margin-bottom:12px">
+        What do you think will happen to the payload when both vector components pull with the <em>same</em> exact magnitude?
       </p>
-      <textarea id="hyp-ta" placeholder="I think the box will... because..."></textarea>
+      <textarea id="hyp-ta" placeholder="I hypothesize that the payload will... because..."></textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-orange" id="hyp-btn" onclick="submitHyp()" disabled>Submit Prediction →</button>
+        <button class="btn-orange" id="hyp-btn" onclick="submitHyp()" disabled>Submit Framework Prediction →</button>
       </div>
     </div>
     <div class="v-bubble hidden" id="v-hyp-reply">
@@ -498,20 +399,21 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 </div>
 
 <!-- ═══════════════════ SIMULATION ═══════════════════ -->
-<div id="version-tag">v3.0 · Jun 26</div>
+<div id="version-tag">v4.0 · Jun 26</div>
 <div class="screen hidden" id="s-sim">
 <div id="valerie-overlay"></div>
 
   <div class="sidebar">
     <div class="v-header">
       <div class="v-core"></div>
-      <div>
+      <div style="flex:1">
         <div class="v-name">VALERIE</div>
         <div class="v-role">Your Science Guide</div>
       </div>
+      <button class="btn-help" id="btn-v-help" onclick="askValerie()">Ask Valerie</button>
     </div>
 
-    <div class="v-panel" id="v-panel">Loading lab...</div>
+    <div class="v-panel" id="v-panel">Loading telemetry lines...</div>
 
     <div class="steps">
       <div class="step active" id="st-0"><div class="step-n">1</div><div class="step-lbl">Orient the Lab</div></div>
@@ -525,14 +427,14 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
     <div class="ctrls" id="ctrls">
       <div class="ctrl-group">
         <div class="ctrl-label">
-          <span>⬅ Left Force</span>
+          <span>⬅ Left Force Vector</span>
           <span class="ctrl-val" id="lv">0 N</span>
         </div>
         <input type="range" id="sl-L" min="0" max="100" value="0" disabled>
       </div>
       <div class="ctrl-group">
         <div class="ctrl-label">
-          <span>Right Force ➡</span>
+          <span>Right Force Vector ➡</span>
           <span class="ctrl-val" id="rv">0 N</span>
         </div>
         <input type="range" id="sl-R" min="0" max="100" value="0" disabled>
@@ -547,7 +449,7 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
     </div>
 
     <div id="action-area">
-      <button class="btn-sim-primary" id="btn-start-sim" onclick="startSim()">▶ Start Simulation</button>
+      <button class="btn-sim-primary" id="btn-start-sim" onclick="startSim()">▶ Initialize Simulation</button>
     </div>
   </div>
 
@@ -556,13 +458,13 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
       <canvas id="sim-canvas"></canvas>
       <div class="canvas-overlay" id="canvas-ov">
         <div class="ov-icon">⚡</div>
-        <div class="ov-text">Read Valerie's brief — then start!</div>
+        <div class="ov-text">Awaiting System Instructions...</div>
       </div>
     </div>
     <div class="data-bar">
-      <div class="data-chip"><div class="chip-val" id="c-FL">0 N</div><div class="chip-lbl">← Left</div></div>
-      <div class="data-chip"><div class="chip-val" id="c-FN" style="color:#22D3EE">0 N</div><div class="chip-lbl">Net Force</div></div>
-      <div class="data-chip"><div class="chip-val" id="c-FR">0 N</div><div class="chip-lbl">Right →</div></div>
+      <div class="data-chip"><div class="chip-val" id="c-FL">0 N</div><div class="chip-lbl">← Vector Left</div></div>
+      <div class="data-chip"><div class="chip-val" id="c-FN" style="color:#38BDF8">0 N</div><div class="chip-lbl">Net Delta</div></div>
+      <div class="data-chip"><div class="chip-val" id="c-FR">0 N</div><div class="chip-lbl">Vector Right →</div></div>
     </div>
   </div>
 </div>
@@ -577,7 +479,7 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
       <canvas id="vid-canvas"></canvas>
       <div class="vid-loading" id="vid-loading">
         <div class="spinner"></div>
-        <div class="load-txt">Loading video...</div>
+        <div class="load-txt">Loading data frame stream...</div>
       </div>
       <div class="vid-caption-wrap">
         <span class="vid-cap" id="vid-cap"></span>
@@ -598,13 +500,13 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 <div class="screen hidden" id="s-quiz">
   <div class="quiz-wrap">
     <div class="q-prog-bar"><div class="q-prog" id="q-prog" style="width:0%"></div></div>
-    <div class="q-num" id="q-num">Question 1 of 3</div>
+    <div class="q-num" id="q-num">Assessment Node 1 of 3</div>
     <div class="q-card" id="q-card">
       <h3 id="q-text"></h3>
       <p class="q-hint" id="q-hint"></p>
       <textarea class="q-ta" id="q-ta" placeholder="Write your answer here..."></textarea>
       <div style="display:flex;justify-content:flex-end">
-        <button class="btn-orange" id="q-btn" onclick="submitQ()" disabled>Submit Answer →</button>
+        <button class="btn-orange" id="q-btn" onclick="submitQ()" disabled>Submit Assessment Node →</button>
       </div>
     </div>
   </div>
@@ -614,8 +516,8 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
 <div class="screen hidden" id="s-results">
   <div class="res-wrap">
     <div class="res-header">
-      <h2>🎯 Mission Complete!</h2>
-      <p>Module 3001: Balanced Forces — here's how you did</p>
+      <h2>🎯 Operation Complete</h2>
+      <p>Module 3001 Metrics Verified</p>
     </div>
     <div class="ring-wrap"><canvas id="score-ring" width="140" height="140"></canvas></div>
     <div class="res-grid" id="res-grid"></div>
@@ -623,7 +525,7 @@ input[type=range]:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.2
       <div class="v-dot-sm"></div>
       <p id="v-final"></p>
     </div>
-    <button class="btn-done" onclick="exitMod()">Finish Module ✓</button>
+    <button class="btn-done" onclick="exitMod()">Close Mission Framework ✓</button>
   </div>
 </div>
 
@@ -644,26 +546,59 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   GLOBAL RESIZE LISTENER
+═══════════════════════════════════════════════════════════ */
+window.addEventListener('resize', function(){
+  const sc = document.getElementById('sim-canvas');
+  const swr = document.getElementById('canvas-wrap');
+  if(sc && swr && swr.clientWidth > 0){
+    const W = swr.clientWidth; const H = Math.round(W * 0.52);
+    const dpr = window.devicePixelRatio || 1;
+    sc.width = W * dpr; sc.height = H * dpr;
+    if(!G.simRunning) drawSim(sc.getContext('2d'), [W,H]);
+  }
+  const vc = document.getElementById('vid-canvas');
+  const vwr = document.getElementById('vid-player');
+  if(vc && vwr && vwr.clientWidth > 0){
+    const vW = vwr.clientWidth; const vH = Math.round(vW * 9/16);
+    const dpr = window.devicePixelRatio || 1;
+    vc.width = vW * dpr; vc.height = vH * dpr;
+    if(!G.vidPlaying) drawVidFrame(G.vidTime);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
    GLOBAL STATE
 ═══════════════════════════════════════════════════════════ */
 const G = {
-  step: 0,
-  hypothesis: '',
-  obs: [],
+  step: 0, hypothesis: '', obs: [],
   simMetrics: { balFL:0, balFR:0, maxVel:0 },
-  quizAnswers: [],
-  simRunning: false,
-  raf: null,
-  iconRaf: null,
-  vidRaf: null,
-  vidTime: 0,
-  vidDur: 30,
-  vidPlaying: false,
-  thresholdHit1: false,
-  thresholdHit2: false,
+  quizAnswers: [], simRunning: false,
+  raf: null, iconRaf: null, vidRaf: null,
+  vidTime: 0, vidDur: 30, vidPlaying: false,
+  thresholdHit1: false, thresholdHit2: false,
 };
 
 const P = { FL:0, FR:0, mass:50, vel:0, pos:0, dt:1/60 };
+
+/* ═══════════════════════════════════════════════════════════
+   TYPING ANIMATION
+═══════════════════════════════════════════════════════════ */
+const story = "INCIDENT BRIEFING: A falcon is locked in mid-air over the grid matrix. Its wings are working at maximum capacity against a heavy wind vector, yet its position coordinates are completely frozen.\n\nYour objective: enter the simulation and calculate how this physical state is mathematically possible without the payload dropping.";
+const textElement = document.getElementById('story-text');
+const launchBtn = document.getElementById('start-btn');
+const cursorEl = document.getElementById('cursor');
+let textIdx = 0;
+
+function typeWriter() {
+  if (textIdx < story.length) {
+    if (story.charAt(textIdx) === '\n') { textElement.innerHTML += '<br>'; }
+    else { textElement.innerHTML += story.charAt(textIdx); }
+    textIdx++; setTimeout(typeWriter, 16);
+  } else {
+    setTimeout(() => { launchBtn.classList.add('visible'); cursorEl.style.display = 'none'; }, 400);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════
    STARS
@@ -671,108 +606,80 @@ const P = { FL:0, FR:0, mass:50, vel:0, pos:0, dt:1/60 };
 (function(){
   const bg = document.getElementById('star-bg');
   for(let i=0;i<90;i++){
-    const s = document.createElement('div');
-    s.className = 'star';
+    const s = document.createElement('div'); s.className = 'star';
     const sz = Math.random()*2.4+.4;
     s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dl:-${Math.random()*5}s;`;
     bg.appendChild(s);
   }
+  setTimeout(typeWriter, 600);
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   INTRO ICON ANIMATION — box with two opposing arrows
+   INTRO ICON ANIMATION
 ═══════════════════════════════════════════════════════════ */
 (function(){
-  const c = document.getElementById('icon-canvas');
-  const ctx = c.getContext('2d');
-  let t = 0;
-
-  function arrow(ctx, x1,y1, x2,y2, col, w){
-    const ang = Math.atan2(y2-y1, x2-x1);
-    const h = 13;
-    ctx.strokeStyle = ctx.fillStyle = col;
-    ctx.lineWidth = w; ctx.lineCap = 'round';
+  const c = document.getElementById('icon-canvas'); const ctx = c.getContext('2d'); let t = 0;
+  function arrowI(ctx, x1,y1, x2,y2, col, w){
+    const ang = Math.atan2(y2-y1, x2-x1); const h = 13;
+    ctx.strokeStyle = ctx.fillStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2,y2);
+    ctx.beginPath(); ctx.moveTo(x2,y2);
     ctx.lineTo(x2-h*Math.cos(ang-.42), y2-h*Math.sin(ang-.42));
     ctx.lineTo(x2-h*Math.cos(ang+.42), y2-h*Math.sin(ang+.42));
     ctx.closePath(); ctx.fill();
   }
-
   function draw(){
-    ctx.clearRect(0,0,260,130);
-    const cx=130, cy=65, off=Math.sin(t*.05)*10;
-
-    /* glow halo */
+    ctx.clearRect(0,0,260,130); const cx=130, cy=65, off=Math.sin(t*.05)*10;
     const g = ctx.createRadialGradient(cx,cy,2,cx,cy,55);
-    g.addColorStop(0,'rgba(255,160,122,.12)'); g.addColorStop(1,'rgba(255,160,122,0)');
+    g.addColorStop(0,'rgba(56,189,248,.12)'); g.addColorStop(1,'rgba(56,189,248,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,55,0,Math.PI*2); ctx.fill();
-
-    /* arrows */
-    arrow(ctx, cx-22-off,cy, cx-95-off,cy, '#22D3EE', 3.5);
-    arrow(ctx, cx+22+off,cy, cx+95+off,cy, '#FFA07A', 3.5);
-
-    /* box */
-    ctx.fillStyle='rgba(255,255,255,.08)';
-    ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2.5;
-    ctx.beginPath(); ctx.roundRect(cx-20,cy-20,40,40,7); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.8)';
-    ctx.font='bold 15px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('=',cx,cy);
-
-    t++;
-    G.iconRaf = requestAnimationFrame(draw);
+    arrowI(ctx, cx-22-off,cy, cx-95-off,cy, '#38BDF8', 3.5);
+    arrowI(ctx, cx+22+off,cy, cx+95+off,cy, '#F59E0B', 3.5);
+    ctx.fillStyle='rgba(255,255,255,.04)'; ctx.strokeStyle='rgba(56,189,248,.4)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(cx-20,cy-20,40,40,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#38BDF8'; ctx.font='bold 15px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⚖',cx,cy);
+    t++; G.iconRaf = requestAnimationFrame(draw);
   }
   draw();
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   MODAL
+   MODAL & EXIT & WHOOSH
 ═══════════════════════════════════════════════════════════ */
 function toggleModal(){ document.getElementById('modal').classList.toggle('open'); }
 
-/* ═══════════════════════════════════════════════════════════
-   EXIT
-═══════════════════════════════════════════════════════════ */
 function exitMod(){
   if(confirm('Exit Module 3001? Progress will not be saved.')){
     if(G.iconRaf) cancelAnimationFrame(G.iconRaf);
     if(G.raf)     cancelAnimationFrame(G.raf);
     if(G.vidRaf)  cancelAnimationFrame(G.vidRaf);
-    document.body.innerHTML='<div style="position:fixed;inset:0;background:#0B0F19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:sans-serif"><div style="font-size:52px">✓</div><div style="color:rgba(255,255,255,.5);font-size:18px">You exited Module 3001.</div></div>';
+    document.body.innerHTML='<div style="position:fixed;inset:0;background:#0F172A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:monospace"><div style="font-size:52px">✓</div><div style="color:#94A3B8;font-size:18px">Module 3001 session closed.</div></div>';
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCREEN WHOOSH TRANSITION
-═══════════════════════════════════════════════════════════ */
 function whoosh(fromId, toId){
   const from = document.getElementById(fromId);
   const to   = document.getElementById(toId);
-  from.style.transition='opacity .38s ease,transform .38s ease';
-  from.style.opacity='0'; from.style.transform='translateX(-44px)';
+  from.style.transition='opacity .35s ease,transform .35s ease';
+  from.style.opacity='0'; from.style.transform='translateX(-40px)';
   setTimeout(()=>{
     from.classList.add('hidden');
     from.style.opacity=''; from.style.transform=''; from.style.transition='';
     to.classList.remove('hidden');
-    to.style.opacity='0'; to.style.transform='translateX(44px)';
-    to.style.transition='opacity .45s ease,transform .45s ease';
+    to.style.opacity='0'; to.style.transform='translateX(40px)';
+    to.style.transition='opacity .42s ease,transform .42s ease';
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       to.style.opacity='1'; to.style.transform='translateX(0)';
-      setTimeout(()=>{ to.style.opacity=''; to.style.transform=''; to.style.transition=''; }, 500);
+      setTimeout(()=>{ to.style.opacity=''; to.style.transform=''; to.style.transition=''; }, 480);
     }));
-  }, 380);
+  }, 350);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HYPOTHESIS SCREEN
+   HYPOTHESIS
 ═══════════════════════════════════════════════════════════ */
-function goHyp(){
-  cancelAnimationFrame(G.iconRaf);
-  whoosh('s-intro','s-hyp');
-  setTimeout(()=>document.getElementById('hyp-ta').focus(), 550);
-}
+function goHyp(){ cancelAnimationFrame(G.iconRaf); whoosh('s-intro','s-hyp'); setTimeout(()=>document.getElementById('hyp-ta').focus(), 550); }
 
 document.getElementById('hyp-ta').addEventListener('input', function(){
   document.getElementById('hyp-btn').disabled = this.value.trim().length === 0;
@@ -782,77 +689,62 @@ function submitHyp(){
   G.hypothesis = document.getElementById('hyp-ta').value.trim();
   document.getElementById('hyp-btn').disabled = true;
   document.getElementById('hyp-ta').disabled = true;
-
   const replies = [
-    'Bold prediction! 🤔 Real scientists test every hunch — let\'s fire up the simulation and see what actually happens. The answer might surprise you!',
-    'Love that thinking! Now let\'s put it to the test. Science is all about comparing predictions to real data. Ready to see the truth? 🚀',
-    'Great hypothesis! Whether you\'re right or wrong, what we discover next is going to be awesome. Let\'s go run the experiment!',
+    'Vector parameters logged. 🤔 Let\'s enter the test envelope and observe the true physics behavior.',
+    'Hypothesis framework accepted. Calibrating canvas arrays now. Ready to proceed? 🚀',
   ];
-  const rb = document.getElementById('v-hyp-reply');
   document.getElementById('v-hyp-txt').textContent = replies[Math.floor(Math.random()*replies.length)];
-  rb.classList.remove('hidden');
-  setTimeout(()=>{ whoosh('s-hyp','s-sim'); setTimeout(initSim, 550); }, 2600);
+  document.getElementById('v-hyp-reply').classList.remove('hidden');
+  setTimeout(()=>{ whoosh('s-hyp','s-sim'); setTimeout(initSim, 550); }, 2400);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SIMULATION — CANVAS SETUP
+   SIMULATION INIT
 ═══════════════════════════════════════════════════════════ */
 function initSim(){
-  const c   = document.getElementById('sim-canvas');
-  const wr  = document.getElementById('canvas-wrap');
-  const W   = wr.clientWidth;
-  const H   = Math.round(W * .52);
-  const dpr = window.devicePixelRatio || 1;
-  c.width   = W * dpr; c.height = H * dpr;
-  c.style.height = H + 'px';
-
+  const c = document.getElementById('sim-canvas'); const wr = document.getElementById('canvas-wrap');
+  const W = wr.clientWidth; const H = Math.round(W * .52); const dpr = window.devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr;
   G.step = 0; P.FL=0; P.FR=0; P.vel=0; P.pos=0;
   G.thresholdHit1=false; G.thresholdHit2=false;
+  setVal(`👋 <strong>Telemetry systems online.</strong><br><br>
+🔵 <strong>LEFT team slider</strong> commands force vector pointing west.<br>
+🔴 <strong>RIGHT team slider</strong> commands force vector pointing east.<br>
+📦 Center load sits on a frictionless benchmark track.<br><br>Initialize the sequence link below.`);
+  setSteps(0); document.getElementById('btn-start-sim').style.display='block';
+  drawSim(simCtx(), simDims()); showOverlay();
+}
 
-  setVal(`👋 <strong>Welcome to the Balanced Forces Lab!</strong><br><br>
-🔵 <strong>LEFT team</strong> pulls the box to the left<br>
-🔴 <strong>RIGHT team</strong> pulls the box to the right<br>
-📦 The <strong>box</strong> sits on a frictionless track in the center<br>
-➡ Force <strong>arrows</strong> on the box show each team's pull<br>
-📊 The <strong>Net Force</strong> chip is your KEY measurement<br><br>
-Your mission: discover what makes the box stop accelerating even while both teams pull! Hit <strong>"Start Simulation"</strong>!`);
-
-  setSteps(0);
-  document.getElementById('btn-start-sim').style.display='block';
-  drawSim(simCtx(), simDims());
-  showOverlay();
+/* ═══════════════════════════════════════════════════════════
+   ASK VALERIE (EASTER EGG)
+═══════════════════════════════════════════════════════════ */
+function askValerie(){
+  const b = document.getElementById('btn-v-help');
+  b.disabled = true; b.style.borderColor = '#f55'; b.style.color = '#fff'; b.style.background = 'rgba(255,70,70,.2)';
+  b.innerHTML = `Sleeping! Exit in <span id="v-sec">3</span>s<div class="v-prog-bg" id="v-prog"></div>`;
+  setTimeout(()=>document.getElementById('v-prog').style.width='100%', 50);
+  let s = 3;
+  const iv = setInterval(()=>{ s--; if(s>0) document.getElementById('v-sec').textContent = s; else { clearInterval(iv); exitMod(); } }, 1000);
 }
 
 /* ═══════════════════════════════════════════════════════════
    SLIDERS
 ═══════════════════════════════════════════════════════════ */
-document.getElementById('sl-L').addEventListener('input', function(){
-  P.FL = +this.value;
-  document.getElementById('lv').textContent = P.FL + ' N';
-  updateChips(); checkThresholds();
-});
-document.getElementById('sl-R').addEventListener('input', function(){
-  P.FR = +this.value;
-  document.getElementById('rv').textContent = P.FR + ' N';
-  updateChips(); checkThresholds();
-});
+document.getElementById('sl-L').addEventListener('input', function(){ P.FL = +this.value; document.getElementById('lv').textContent = P.FL + ' N'; updateChips(); checkThresholds(); });
+document.getElementById('sl-R').addEventListener('input', function(){ P.FR = +this.value; document.getElementById('rv').textContent = P.FR + ' N'; updateChips(); checkThresholds(); });
 
 function updateChips(){
   const fn = P.FR - P.FL;
   document.getElementById('c-FL').textContent = P.FL + ' N';
   document.getElementById('c-FR').textContent = P.FR + ' N';
   document.getElementById('c-FN').textContent = fn.toFixed(1) + ' N';
-  document.getElementById('c-FN').style.color = Math.abs(fn)<3 ? '#22D3EE' : '#FFA07A';
+  document.getElementById('c-FN').style.color = Math.abs(fn)<3 ? '#38BDF8' : '#F59E0B';
 }
 
 function checkThresholds(){
-  if(G.step===1 && !G.thresholdHit1 && P.FL >= 58){
-    G.thresholdHit1 = true; triggerObs1();
-  }
-  if(G.step===3 && !G.thresholdHit2 && Math.abs(P.FR-P.FL)<=3 && Math.abs(P.vel)<.6){
-    G.thresholdHit2 = true;
-    G.simMetrics.balFL = P.FL; G.simMetrics.balFR = P.FR;
-    triggerObs2();
+  if(G.step===1 && !G.thresholdHit1 && P.FL >= 58){ G.thresholdHit1 = true; triggerObs1(); }
+  if(G.step===3 && !G.thresholdHit2 && P.FL > 0 && Math.abs(P.FR-P.FL)<=2){
+    G.thresholdHit2 = true; G.simMetrics.balFL = P.FL; G.simMetrics.balFR = P.FR; triggerObs2();
   }
 }
 
@@ -860,86 +752,48 @@ function checkThresholds(){
    STATE MACHINE
 ═══════════════════════════════════════════════════════════ */
 function startSim(){
-  hideOverlay();
-  document.getElementById('btn-start-sim').style.display='none';
+  hideOverlay(); document.getElementById('btn-start-sim').style.display='none';
   document.getElementById('canvas-ov').classList.add('gone');
   G.step = 1; G.simRunning = true;
-  document.getElementById('sl-L').disabled = false;
-  setSteps(1);
-  setVal(`🎉 <strong>Lab is LIVE!</strong><br><br>
-Task: Drag the <strong>Left Force slider</strong> up to <strong>60 N</strong>.<br>
-Watch what happens to the pink force arrow on the left of the box. Which way does the box move? Why?`);
+  document.getElementById('sl-L').disabled = false; setSteps(1);
+  setVal(`🎉 <strong>Core Live.</strong><br>Task: Drive the <strong>Left Vector</strong> up to exactly <strong>60 N</strong>.<br>Track the displacement matrix.`);
   physicsLoop();
 }
 
 function triggerObs1(){
-  G.simRunning = false;
-  document.getElementById('sl-L').disabled = true;
-  glowCanvas(true);
-  showOverlay();
-  const fn = (P.FR - P.FL).toFixed(0);
-  setSteps(2);
-  setVal(`⚡ <strong>Freeze frame!</strong><br><br>
-Left force is <strong>${P.FL}N</strong>. Net force = <strong>${fn}N</strong> pointing right.<br>
-The box is <strong>accelerating to the right!</strong><br><br>
-What do you think happens if the right team matches that exact force? Write your prediction 👇`);
-  showObs('Observation 1',
-    `Left = ${P.FL}N, Net = ${fn}N. The box moved right. What would happen if the right team also applied ${P.FL}N? Why?`,
-    afterObs1);
+  G.simRunning = false; document.getElementById('sl-L').disabled = true;
+  glowCanvas(true); showOverlay();
+  const fn = (P.FR - P.FL).toFixed(0); setSteps(2);
+  setVal(`⚡ <strong>System Paused.</strong><br>Left vector = <strong>${P.FL}N</strong>. Net delta = <strong>${Math.abs(fn)}N</strong> West.<br>Payload is accelerating.<br>Predict what happens if the east vector matches exactly 👇`);
+  showObs('Observation 1', `Left vector active at ${P.FL}N. Core accelerated. Predict the impact of matching opposing force values.`, afterObs1);
 }
 
 function afterObs1(){
-  hideOverlay();
-  G.step = 3; G.simRunning = true;
-  P.vel = 0; P.pos = 0;
-  document.getElementById('sl-L').disabled = false;
-  document.getElementById('sl-R').disabled = false;
-  glowCanvas(false);
-  setSteps(3);
-  setVal(`🔬 <strong>Both sliders are now live!</strong><br><br>
-Experiment — find the combination of left and right force that makes the box <strong>stop accelerating</strong>. Watch the Net Force chip — what value does it need to hit?<br><br><em>Hint: try matching them!</em>`);
-  hideObs();
+  hideObs(); hideOverlay(); G.step = 3; G.simRunning = true; P.vel = 0; P.pos = 0;
+  document.getElementById('sl-L').disabled = false; document.getElementById('sl-R').disabled = false;
+  glowCanvas(false); setSteps(3);
+  setVal(`🔬 <strong>Opposing matrix unlocked.</strong><br>Experiment: Balance both sliders until the Net Delta chip resets to zero. Monitor acceleration.`);
   physicsLoop();
 }
 
 function triggerObs2(){
-  G.simRunning = false;
-  document.getElementById('sl-L').disabled = true;
-  document.getElementById('sl-R').disabled = true;
-  glowCanvas(true);
-  showOverlay();
-  setSteps(4);
-  setVal(`🎯 <strong>INCREDIBLE — look at the canvas!</strong><br><br>
-Left: <strong>${P.FL}N</strong> | Right: <strong>${P.FR}N</strong> | Net: <strong>${(P.FR-P.FL).toFixed(1)}N</strong><br><br>
-The net force arrow <strong>disappeared</strong> even though both teams are still pulling! Write exactly what you observe 👇`);
-  showObs('Observation 2 — The Big Discovery',
-    'Both forces are applied. The box stopped accelerating. The net force arrow is gone. WHY? Describe what you see and explain why the box behaves this way.',
-    goSynthesis);
+  G.simRunning = false; document.getElementById('sl-L').disabled = true; document.getElementById('sl-R').disabled = true;
+  glowCanvas(true); showOverlay(); setSteps(4);
+  setVal(`🎯 <strong>EQUILIBRIUM ACHIEVED.</strong><br>Left: <strong>${P.FL}N</strong> | Right: <strong>${P.FR}N</strong> | Net: <strong>0.0N</strong><br>Force lines cancelled out! Note the velocity behavior 👇`);
+  showObs('Discovery Log', 'System forces are equal and opposite. Explain what a net force value of zero implies for a payload already in motion.', goSynthesis);
 }
 
 function goSynthesis(){
-  hideOverlay();
-  G.step = 5; setSteps(5);
-  glowCanvas(false); hideObs();
+  hideObs(); hideOverlay(); G.step = 5; setSteps(5); glowCanvas(false);
   document.getElementById('ctrls').style.display = 'none';
-
-  const obs0 = G.obs[0] ? G.obs[0].substring(0,80)+'…' : '—';
   const obs1 = G.obs[1] ? G.obs[1].substring(0,80)+'…' : '—';
-
-  const synthHTML = `
-    <div class="synth-card">
-      <div class="synth-label">🏆 What YOU Proved</div>
-      ✅ Left = <strong>${G.simMetrics.balFL}N</strong> | Right = <strong>${G.simMetrics.balFR}N</strong> | Net = <strong>0N</strong><br><br>
-      ✅ Zero net force → zero acceleration — that's <strong>Newton's First Law!</strong><br><br>
-      ✅ Your words: <em>"${obs1}"</em><br><br>
-      You've just experimentally proven that <strong>BALANCED FORCES</strong> create equilibrium — an object won't speed up, slow down, or change direction when forces cancel out. That's real physics! 🚀
-    </div>`;
-
+  const synthHTML = `<div class="synth-card"><div class="synth-label">🏆 Data Proof Confirmed</div>
+    ✅ Left = <strong>${G.simMetrics.balFL}N</strong> | Right = <strong>${G.simMetrics.balFR}N</strong> | Net = <strong>0N</strong><br><br>
+    ✅ Delta Zero → Zero Acceleration — <strong>Newton's First Law Proved!</strong><br><br>
+    ✅ Log: <em>"${obs1}"</em></div>`;
   document.getElementById('action-area').innerHTML = synthHTML +
-    `<button class="btn-sim-primary" onclick="goVideo()" style="margin-top:10px">Watch Concept Video →</button>`;
-
-  setVal(`🏆 <strong>BRILLIANT deduction!</strong><br><br>
-You discovered that when forces are equal and opposite, they cancel — producing <strong>zero net force</strong> and therefore <strong>zero acceleration</strong>. That's the entire heart of Newton's First Law! Watch the concept video to see this in the real world.`);
+    `<button class="btn-sim-primary" onclick="goVideo()" style="margin-top:8px">Open Deep-Dive Telemetry →</button>`;
+  setVal(`🏆 <strong>Analysis Complete!</strong><br>You verified that balancing vector lines cancels net acceleration — locking the system into dynamic equilibrium.`);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -947,7 +801,7 @@ You discovered that when forces are equal and opposite, they cancel — producin
 ═══════════════════════════════════════════════════════════ */
 function showObs(label, prompt, cb){
   document.getElementById('action-area').innerHTML = `
-    <div class="obs-wrap">
+    <div class="obs-wrap" id="fluid-obs">
       <div class="obs-lbl">${label}</div>
       <div class="obs-prompt">${prompt}</div>
       <textarea class="obs-ta" id="obs-ta" placeholder="Write 2 or 3 sentences about your observation..."></textarea>
@@ -959,9 +813,13 @@ function showObs(label, prompt, cb){
   window._obsCallback = cb;
 }
 
-function hideObs(){ /* action-area cleared by caller */ }
+function hideObs(){
+  const wrap = document.getElementById('fluid-obs');
+  if(wrap){ wrap.classList.add('hiding'); setTimeout(()=>{ document.getElementById('action-area').innerHTML = ''; }, 400); }
+}
 
 function submitObs(){
+  document.getElementById('obs-btn').disabled = true;
   G.obs.push(document.getElementById('obs-ta').value.trim());
   if(window._obsCallback) window._obsCallback();
 }
@@ -972,37 +830,23 @@ function submitObs(){
 function physicsLoop(){
   if(G.raf) cancelAnimationFrame(G.raf);
   const [ctx,W,H] = [simCtx(), ...simDims()];
-
   function loop(){
     if(!G.simRunning){ drawSim(ctx,[W,H]); return; }
-    const fn = P.FR - P.FL;
-    const a  = fn / P.mass;
-    P.vel += a * P.dt;
-    P.vel *= .988; // slight damping simulating track
-    P.pos += P.vel * P.dt;
+    const fn = P.FR - P.FL; const a = fn / P.mass;
+    P.vel += a * P.dt; P.vel *= .988; P.pos += P.vel * P.dt;
     P.pos = Math.max(-9, Math.min(9, P.pos));
     G.simMetrics.maxVel = Math.max(G.simMetrics.maxVel, Math.abs(P.vel));
-
     document.getElementById('m-net').textContent = fn.toFixed(1);
     document.getElementById('m-acc').textContent = a.toFixed(3);
     document.getElementById('m-vel').textContent = P.vel.toFixed(2);
     document.getElementById('m-pos').textContent = P.pos.toFixed(2);
-    updateChips();
-    drawSim(ctx,[W,H]);
-    G.raf = requestAnimationFrame(loop);
+    updateChips(); drawSim(ctx,[W,H]); G.raf = requestAnimationFrame(loop);
   }
   loop();
 }
 
-function simCtx(){
-  const c = document.getElementById('sim-canvas');
-  return c.getContext('2d');
-}
-function simDims(){
-  const c = document.getElementById('sim-canvas');
-  const dpr = window.devicePixelRatio||1;
-  return [c.width/dpr, c.height/dpr];
-}
+function simCtx(){ return document.getElementById('sim-canvas').getContext('2d'); }
+function simDims(){ const c = document.getElementById('sim-canvas'); const dpr = window.devicePixelRatio||1; return [c.width/dpr, c.height/dpr]; }
 
 /* ═══════════════════════════════════════════════════════════
    DRAW SIMULATION
@@ -1011,172 +855,104 @@ function arrow(ctx,x1,y1,x2,y2,col,w){
   const ang = Math.atan2(y2-y1,x2-x1), h=13;
   ctx.strokeStyle=ctx.fillStyle=col; ctx.lineWidth=w; ctx.lineCap='round';
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x2,y2);
+  ctx.beginPath(); ctx.moveTo(x2,y2);
   ctx.lineTo(x2-h*Math.cos(ang-.42),y2-h*Math.sin(ang-.42));
   ctx.lineTo(x2-h*Math.cos(ang+.42),y2-h*Math.sin(ang+.42));
   ctx.closePath(); ctx.fill();
 }
 
 function drawSim(ctx,[W,H]){
-  const dpr = window.devicePixelRatio||1;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-
-  /* bg */
-  ctx.fillStyle='#0B0F19'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='rgba(255,255,255,.035)'; ctx.lineWidth=1;
+  const dpr = window.devicePixelRatio||1; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#0F172A'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(56,189,248,0.03)'; ctx.lineWidth=1;
   for(let x=0;x<W;x+=44){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
   for(let y=0;y<H;y+=44){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
-
   const cx = W/2 + (P.pos/9)*(W*.28), cy = H/2;
-
-  /* track */
-  ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.lineWidth=4; ctx.setLineDash([7,6]);
-  ctx.beginPath(); ctx.moveTo(48,cy); ctx.lineTo(W-48,cy); ctx.stroke();
-  ctx.setLineDash([]);
-
-  /* center marker */
-  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(56,189,248,0.2)'; ctx.lineWidth=3; ctx.setLineDash([7,6]);
+  ctx.beginPath(); ctx.moveTo(48,cy); ctx.lineTo(W-48,cy); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(56,189,248,0.1)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(W/2,cy-18); ctx.lineTo(W/2,cy+18); ctx.stroke();
-
-  /* teams */
-  drawTeam(ctx,66,cy,'left',P.FL);
-  drawTeam(ctx,W-66,cy,'right',P.FR);
-
-  /* ropes */
-  ctx.strokeStyle='rgba(255,160,122,.5)'; ctx.lineWidth=2.5; ctx.lineCap='round';
+  drawTeam(ctx,66,cy,'left',P.FL); drawTeam(ctx,W-66,cy,'right',P.FR);
+  ctx.strokeStyle='rgba(245,158,11,0.3)'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(94,cy); ctx.lineTo(cx-28,cy); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(W-94,cy); ctx.lineTo(cx+28,cy); ctx.stroke();
-
-  /* box */
   const bw=58, bh=58;
-  ctx.fillStyle='rgba(255,255,255,.06)';
-  ctx.strokeStyle='rgba(255,255,255,.82)'; ctx.lineWidth=2.5;
-  ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,10); ctx.fill(); ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='bold 11px sans-serif';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('50 kg',cx,cy);
-
-  /* force arrows on box */
+  ctx.fillStyle='rgba(15,23,42,0.6)'; ctx.strokeStyle='#38BDF8'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#38BDF8'; ctx.font='bold 11px monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('50 kg',cx,cy);
   const maxL=82;
-  if(P.FL>0){
-    const len=(P.FL/100)*maxL;
-    arrow(ctx,cx-bw/2,cy,cx-bw/2-len,cy,'#22D3EE',3.8);
-    ctx.fillStyle='#22D3EE'; ctx.font='bold 12px sans-serif';
-    ctx.textAlign='center'; ctx.fillText(P.FL+'N',cx-bw/2-len/2,cy-18);
-  }
-  if(P.FR>0){
-    const len=(P.FR/100)*maxL;
-    arrow(ctx,cx+bw/2,cy,cx+bw/2+len,cy,'#FFA07A',3.8);
-    ctx.fillStyle='#FFA07A'; ctx.font='bold 12px sans-serif';
-    ctx.textAlign='center'; ctx.fillText(P.FR+'N',cx+bw/2+len/2,cy-18);
-  }
-
-  /* net force arrow */
+  if(P.FL>0){ const len=(P.FL/100)*maxL; arrow(ctx,cx-bw/2,cy,cx-bw/2-len,cy,'#38BDF8',3.5); ctx.fillStyle='#38BDF8'; ctx.font='bold 11px monospace'; ctx.textAlign='center'; ctx.fillText(P.FL+'N',cx-bw/2-len/2,cy-18); }
+  if(P.FR>0){ const len=(P.FR/100)*maxL; arrow(ctx,cx+bw/2,cy,cx+bw/2+len,cy,'#F59E0B',3.5); ctx.fillStyle='#F59E0B'; ctx.font='bold 11px monospace'; ctx.textAlign='center'; ctx.fillText(P.FR+'N',cx+bw/2+len/2,cy-18); }
   const fn = P.FR - P.FL;
   if(Math.abs(fn)>1.5){
     const dir=Math.sign(fn), len=(Math.abs(fn)/100)*72;
-    arrow(ctx,cx,cy+42,cx+dir*len,cy+42,'#ffffff',4);
-    ctx.fillStyle='#fff'; ctx.font='bold 11px sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText('NET: '+fn.toFixed(0)+'N', cx+dir*len/2, cy+58);
+    arrow(ctx,cx,cy+42,cx+dir*len,cy+42,'#ffffff',3.5);
+    ctx.fillStyle='#fff'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
+    ctx.fillText('Δ F: '+Math.abs(fn).toFixed(0)+'N', cx+dir*len/2, cy+58);
   } else if(G.step>=1){
-    ctx.fillStyle='#22D3EE'; ctx.font='bold 14px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('⚖ BALANCED!', cx, cy+52);
+    ctx.fillStyle='#38BDF8'; ctx.font='bold 12px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('EQUILIBRIUM', cx, cy+52);
   }
-
-  /* velocity hint */
   if(Math.abs(P.vel)>0.06){
-    ctx.fillStyle='rgba(255,255,255,.42)'; ctx.font='11px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('v = '+P.vel.toFixed(2)+' m/s', cx, cy-46);
+    ctx.fillStyle='rgba(255,255,255,.3)'; ctx.font='11px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('v = '+P.vel.toFixed(2)+' m/s', cx, cy-46);
   }
-
   ctx.resetTransform();
 }
 
 function drawTeam(ctx,x,cy,side,force){
-  const col = side==='left' ? '#22D3EE' : '#FFA07A';
-  const alpha = Math.min(.35+(force/100)*.65, 1);
-  const dir = side==='left' ? 1 : -1;
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.lineCap='round';
-  ctx.beginPath(); ctx.arc(x,cy-24,9,0,Math.PI*2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x,cy-15); ctx.lineTo(x,cy+8); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x,cy-8); ctx.lineTo(x+dir*17,cy-3); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x,cy-8); ctx.lineTo(x-dir*10,cy-3); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x-8,cy+22); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x+8,cy+22); ctx.stroke();
+  const col = side==='left' ? '#38BDF8' : '#F59E0B';
+  const alpha = Math.min(.25+(force/100)*.75, 1); const dir = side==='left' ? 1 : -1;
+  ctx.globalAlpha = alpha; ctx.strokeStyle=col; ctx.lineWidth=2; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(x,cy-24,8,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy-16); ctx.lineTo(x,cy+8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy-8); ctx.lineTo(x+dir*14,cy-4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x-6,cy+20); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,cy+8); ctx.lineTo(x+6,cy+20); ctx.stroke();
   ctx.globalAlpha=1;
 }
 
 /* ═══════════════════════════════════════════════════════════
    UI HELPERS
 ═══════════════════════════════════════════════════════════ */
-function setSteps(active){
-  for(let i=0;i<=5;i++){
-    const el=document.getElementById('st-'+i); if(!el)continue;
-    el.classList.remove('active','done');
-    if(i<active) el.classList.add('done');
-    else if(i===active) el.classList.add('active');
-  }
-}
+function setSteps(active){ for(let i=0;i<=5;i++){ const el=document.getElementById('st-'+i); if(!el)continue; el.classList.remove('active','done'); if(i<active) el.classList.add('done'); else if(i===active) el.classList.add('active'); } }
 
 function setVal(html){
   const el=document.getElementById('v-panel');
-  el.style.opacity='0'; el.style.transform='translateY(8px)';
-  el.style.transition='opacity .3s,transform .3s';
-  setTimeout(()=>{
-    el.innerHTML=html; el.style.opacity='1'; el.style.transform='translateY(0)';
-  },280);
+  el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='opacity .2s,transform .2s';
+  setTimeout(()=>{ el.innerHTML=html; el.style.opacity='1'; el.style.transform='translateY(0)'; },200);
 }
 
-function glowCanvas(on){
-  document.getElementById('canvas-wrap').classList.toggle('glow',on);
-}
-
+function glowCanvas(on){ document.getElementById('canvas-wrap').classList.toggle('glow',on); }
 function showOverlay(){ document.getElementById('valerie-overlay').classList.add('active'); }
 function hideOverlay(){ document.getElementById('valerie-overlay').classList.remove('active'); }
 
 /* ═══════════════════════════════════════════════════════════
-   VIDEO SCREEN
+   VIDEO
 ═══════════════════════════════════════════════════════════ */
-function goVideo(){
-  if(G.raf) cancelAnimationFrame(G.raf);
-  whoosh('s-sim','s-video');
-  setTimeout(initVideo, 580);
-}
+function goVideo(){ if(G.raf) cancelAnimationFrame(G.raf); whoosh('s-sim','s-video'); setTimeout(initVideo, 580); }
 
 const CAPS = [
-  {s:0,  e:4,  t:'What are Balanced Forces?'},
-  {s:4,  e:9,  t:'Two forces — equal AND opposite...'},
-  {s:9,  e:14, t:'Net Force = ZERO → No acceleration!'},
-  {s:14, e:19, t:'Real example: a book resting on a table'},
-  {s:19, e:24, t:'Gravity pulls DOWN ↓ · Table pushes UP ↑'},
-  {s:24, e:30, t:'⚖ Balanced Forces = Equilibrium = Zero Net Force'},
+  {s:0,  e:4,  t:'Telemetry stream active: Balanced Forces Analysis.'},
+  {s:4,  e:9,  t:'Opposing vectors match magnitude directly...'},
+  {s:9,  e:14, t:'Net Delta shifts to absolute ZERO. Acceleration stops.'},
+  {s:14, e:19, t:'Physical example: Payload in constant velocity state.'},
+  {s:19, e:30, t:'Forces cancel → Velocity remains immutable. System in equilibrium.'},
 ];
 
 function initVideo(){
-  const player = document.getElementById('vid-player');
-  const c = document.getElementById('vid-canvas');
-  const W = player.clientWidth, H = player.clientHeight || Math.round(W*9/16);
-  const dpr = window.devicePixelRatio||1;
-  c.width=W*dpr; c.height=H*dpr;
-  c.style.width=W+'px'; c.style.height=H+'px';
+  const player = document.getElementById('vid-player'); const c = document.getElementById('vid-canvas');
+  const W = player.clientWidth, H = player.clientHeight || Math.round(W*9/16); const dpr = window.devicePixelRatio||1;
+  c.width=W*dpr; c.height=H*dpr; c.style.width=W+'px'; c.style.height=H+'px';
   G.vidTime=0; G.vidPlaying=false;
-
-  setTimeout(()=>{
-    document.getElementById('vid-loading').classList.add('gone');
-    drawVidFrame(0);
-  }, 1700);
+  setTimeout(()=>{ document.getElementById('vid-loading').classList.add('gone'); drawVidFrame(0); }, 1700);
 }
 
 function toggleVid(){
   G.vidPlaying=!G.vidPlaying;
   document.getElementById('vid-play-btn').textContent = G.vidPlaying ? '⏸' : '▶';
-  if(G.vidPlaying) runVid();
-  else cancelAnimationFrame(G.vidRaf);
+  if(G.vidPlaying) runVid(); else cancelAnimationFrame(G.vidRaf);
 }
 
 function runVid(){
@@ -1187,126 +963,40 @@ function runVid(){
     const pct=(G.vidTime/G.vidDur)*100;
     document.getElementById('vid-prog').style.width=pct+'%';
     document.getElementById('vid-time').textContent=fmt(G.vidTime)+' / '+fmt(G.vidDur);
-    drawVidFrame(G.vidTime);
-    updateCap(G.vidTime);
+    drawVidFrame(G.vidTime); updateCap(G.vidTime);
     if(G.vidTime>=G.vidDur){
-      G.vidPlaying=false;
-      document.getElementById('vid-play-btn').textContent='▶';
-      document.getElementById('vid-continue').classList.remove('hidden');
-      return;
+      G.vidPlaying=false; document.getElementById('vid-play-btn').textContent='▶';
+      document.getElementById('vid-continue').classList.remove('hidden'); return;
     }
     G.vidRaf=requestAnimationFrame(loop);
   }
   G.vidRaf=requestAnimationFrame(loop);
 }
 
-function seekVid(e){
-  const bar=e.currentTarget;
-  G.vidTime=(e.offsetX/bar.clientWidth)*G.vidDur;
-  drawVidFrame(G.vidTime); updateCap(G.vidTime);
-  document.getElementById('vid-prog').style.width=((G.vidTime/G.vidDur)*100)+'%';
-}
-
-function updateCap(t){
-  const cap=CAPS.find(c=>t>=c.s&&t<c.e);
-  const el=document.getElementById('vid-cap');
-  if(cap){ el.textContent=cap.t; el.classList.add('show'); }
-  else el.classList.remove('show');
-}
+function seekVid(e){ const bar=e.currentTarget; G.vidTime=(e.offsetX/bar.clientWidth)*G.vidDur; drawVidFrame(G.vidTime); updateCap(G.vidTime); document.getElementById('vid-prog').style.width=((G.vidTime/G.vidDur)*100)+'%'; }
+function updateCap(t){ const cap=CAPS.find(c=>t>=c.s&&t<c.e); const el=document.getElementById('vid-cap'); if(cap){ el.textContent=cap.t; el.classList.add('show'); } else el.classList.remove('show'); }
 
 function drawVidFrame(t){
-  const c=document.getElementById('vid-canvas');
-  const ctx=c.getContext('2d');
-  const dpr=window.devicePixelRatio||1;
-  const W=c.width/dpr, H=c.height/dpr;
+  const c=document.getElementById('vid-canvas'); const ctx=c.getContext('2d');
+  const dpr=window.devicePixelRatio||1; const W=c.width/dpr, H=c.height/dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
-
-  ctx.fillStyle='#06091a'; ctx.fillRect(0,0,W,H);
-  const cx=W/2, cy=H/2;
-
+  ctx.fillStyle='#0B1329'; ctx.fillRect(0,0,W,H); const cx=W/2, cy=H/2;
   if(t<4){
-    /* Title */
-    const p=Math.min(t,1);
-    ctx.globalAlpha=p;
-    ctx.fillStyle='#FFA07A'; ctx.font=`bold ${Math.round(W*.055)}px sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('Balanced Forces',cx,cy-22);
-    ctx.fillStyle='#22D3EE'; ctx.font=`${Math.round(W*.028)}px sans-serif`;
-    ctx.fillText("Newton's First Law",cx,cy+22);
-    ctx.globalAlpha=1;
-
+    ctx.fillStyle='#F59E0B'; ctx.font=`bold ${Math.round(W*.04)}px monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('> LINK INTERFACE ACTIVE',cx,cy-20);
+    ctx.fillStyle='#38BDF8'; ctx.font=`${Math.round(W*.025)}px monospace`; ctx.fillText("Newton's First Law Telemetry",cx,cy+20);
   } else if(t<14){
-    /* Two force arrows on a box */
-    const progress=Math.min((t-4)/5,1);
-    const len=70+progress*30;
-
-    /* box */
-    ctx.globalAlpha=progress;
-    ctx.strokeStyle='#fff'; ctx.fillStyle='rgba(255,255,255,.1)'; ctx.lineWidth=2.5;
-    ctx.beginPath(); ctx.roundRect(cx-32,cy-32,64,64,9); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#fff'; ctx.font='bold 15px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Box',cx,cy);
-    ctx.globalAlpha=1;
-
-    arrow(ctx,cx-32,cy,cx-32-len,cy,'#22D3EE',4);
-    ctx.fillStyle='#22D3EE'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
-    ctx.fillText(Math.round(70*progress)+'N', cx-32-len/2, cy-20);
-
-    arrow(ctx,cx+32,cy,cx+32+len,cy,'#FFA07A',4);
-    ctx.fillStyle='#FFA07A'; ctx.font='bold 13px sans-serif';
-    ctx.fillText(Math.round(70*progress)+'N', cx+32+len/2, cy-20);
-
-    if(t>=9){
-      const a=Math.min((t-9)/2,1);
-      ctx.globalAlpha=a;
-      ctx.fillStyle='#22D3EE'; ctx.font=`bold ${Math.round(W*.036)}px sans-serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('NET FORCE = 0 N', cx, cy+H*.28);
-      ctx.globalAlpha=1;
-    }
-
-  } else if(t<24){
-    /* Book on table */
-    const p=Math.min((t-14)/3,1);
-    /* table */
-    ctx.fillStyle='#6b4423';
-    ctx.fillRect(cx-130,cy+25,260,16);
-    ctx.fillRect(cx-130,cy+41,14,55); ctx.fillRect(cx+116,cy+41,14,55);
-    /* book */
-    ctx.fillStyle='#2563eb'; ctx.strokeStyle='#60a5fa'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.roundRect(cx-35,cy-12,70,37,5); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#fff'; ctx.font='12px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('BOOK',cx,cy+7);
-    /* arrows */
-    ctx.globalAlpha=p;
-    arrow(ctx,cx,cy-12,cx,cy-12-68,'#FFA07A',3.5);
-    ctx.fillStyle='#FFA07A'; ctx.font='bold 13px sans-serif';
-    ctx.textAlign='left'; ctx.fillText('Gravity ↓',cx+12,cy-48);
-    arrow(ctx,cx,cy+25,cx,cy+25+68,'#22D3EE',3.5);
-    ctx.fillStyle='#22D3EE'; ctx.fillText('Normal ↑',cx+12,cy+60);
-    ctx.globalAlpha=1;
-    if(t>=21){
-      ctx.globalAlpha=Math.min((t-21)/1.5,1);
-      ctx.fillStyle='#fff'; ctx.font=`bold ${Math.round(W*.032)}px sans-serif`;
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('Forces Balanced! ⚖',cx,cy+H*.35);
-      ctx.globalAlpha=1;
-    }
-
+    const progress=Math.min((t-4)/5,1); const len=60+progress*25;
+    ctx.strokeStyle='#38BDF8'; ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(cx-30,cy-30,60,60,4); ctx.fill(); ctx.stroke();
+    arrow(ctx,cx-30,cy,cx-30-len,cy,'#38BDF8',3.5);
+    arrow(ctx,cx+30,cy,cx+30+len,cy,'#F59E0B',3.5);
+    if(t>=9){ ctx.fillStyle='#fff'; ctx.font='bold 14px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('NET TARGET DETECTED = 0 N', cx, cy+H*.32); }
   } else {
-    /* Summary */
-    const p=Math.min((t-24)/2,1);
-    ctx.globalAlpha=p;
-    ctx.fillStyle='#FFA07A'; ctx.font=`bold ${Math.round(W*.05)}px sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('⚖ Equilibrium',cx,cy-36);
-    ctx.fillStyle='#fff'; ctx.font=`${Math.round(W*.028)}px sans-serif`;
-    ctx.fillText('Balanced Forces → Net Force = 0',cx,cy+2);
-    ctx.fillStyle='#22D3EE'; ctx.font=`${Math.round(W*.024)}px sans-serif`;
-    ctx.fillText('Net Force = 0 → No Acceleration',cx,cy+36);
-    ctx.globalAlpha=1;
+    ctx.fillStyle='#38BDF8'; ctx.font=`bold ${Math.round(W*.04)}px monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('⚖ UNIFORM MOTION VELOCITY',cx,cy-15);
+    ctx.fillStyle='#fff'; ctx.font=`${Math.round(W*.022)}px monospace`; ctx.fillText('Acceleration Resets. Vector Sustains Progress.',cx,cy+20);
   }
-
   ctx.resetTransform();
 }
 
@@ -1322,35 +1012,28 @@ const QUIZ = [
   {q:"A heavy book sits perfectly still on a desk. Are the forces on it balanced or unbalanced? How do you know — use evidence from the simulation.",
    hint:"💡 What does 'not accelerating' tell us about net force? Use Newton's First Law.",
    kw:['balanced','zero','gravity','normal','still','not moving','equilibrium','equal','newton']},
-  {q:"In our simulation, both teams pulled with 60N each. What is the net force? What happened to the box — and WHY?",
-   hint:"💡 Use: Net Force = Right Force − Left Force. Then connect it to acceleration.",
-   kw:['zero','0','cancel','balanced','no acceleration','stopped','constant','net force','equal']},
+  {q:"In our simulation, both teams pulled with equal force. What was the net force? What happened to the payload — and WHY?",
+   hint:"💡 Net Force = Right − Left. Then connect it to acceleration.",
+   kw:['zero','0','cancel','balanced','no acceleration','stopped','constant','net','equal']},
 ];
 
 let CQ = 0;
 
-function goQuiz(){
-  if(G.vidRaf) cancelAnimationFrame(G.vidRaf);
-  whoosh('s-video','s-quiz');
-  setTimeout(()=>showQ(0), 580);
-}
+function goQuiz(){ if(G.vidRaf) cancelAnimationFrame(G.vidRaf); whoosh('s-video','s-quiz'); setTimeout(()=>showQ(0), 400); }
 
 function showQ(idx){
-  CQ = idx;
-  const q = QUIZ[idx];
+  CQ = idx; const q = QUIZ[idx];
   document.getElementById('q-prog').style.width=((idx/QUIZ.length)*100)+'%';
-  document.getElementById('q-num').textContent=`Question ${idx+1} of ${QUIZ.length}`;
-
+  document.getElementById('q-num').textContent=`Assessment Node ${idx+1} of ${QUIZ.length}`;
   const card = document.getElementById('q-card');
-  card.style.opacity='0'; card.style.transform='translateX(32px)';
-  card.style.transition='opacity .35s,transform .35s';
+  card.style.opacity='0'; card.style.transform='translateX(32px)'; card.style.transition='opacity .3s,transform .3s';
   setTimeout(()=>{
     document.getElementById('q-text').textContent=q.q;
     document.getElementById('q-hint').textContent=q.hint;
     document.getElementById('q-ta').value='';
     document.getElementById('q-btn').disabled=true;
     card.style.opacity='1'; card.style.transform='translateX(0)';
-  },340);
+  },200);
 }
 
 document.getElementById('q-ta').addEventListener('input',function(){
@@ -1359,20 +1042,14 @@ document.getElementById('q-ta').addEventListener('input',function(){
 
 function submitQ(){
   G.quizAnswers.push({qi:CQ, ans:document.getElementById('q-ta').value.trim()});
-  if(CQ < QUIZ.length-1){ showQ(CQ+1); }
-  else {
-    document.getElementById('q-prog').style.width='100%';
-    setTimeout(goResults, 500);
-  }
+  if(CQ < QUIZ.length-1) showQ(CQ+1);
+  else { document.getElementById('q-prog').style.width='100%'; setTimeout(goResults, 400); }
 }
 
 /* ═══════════════════════════════════════════════════════════
    RESULTS
 ═══════════════════════════════════════════════════════════ */
-function goResults(){
-  whoosh('s-quiz','s-results');
-  setTimeout(buildResults, 580);
-}
+function goResults(){ whoosh('s-quiz','s-results'); setTimeout(buildResults, 400); }
 
 function buildResults(){
   const results = G.quizAnswers.map(a=>{
@@ -1381,71 +1058,30 @@ function buildResults(){
     const score = Math.min(hits.length / Math.max(kw.length*.45, 2), 1);
     return {score, hits, ans:a.ans, qi:a.qi};
   });
-
   const avg = results.reduce((s,r)=>s+r.score,0)/results.length;
-  const pct = Math.round(avg*100);
-
-  animRing(pct);
-
-  const grid = document.getElementById('res-grid');
-  grid.innerHTML='';
-
-  const strong = results.filter(r=>r.score>=.55);
-  const weak   = results.filter(r=>r.score<.55);
-
-  if(strong.length){
-    const c=document.createElement('div'); c.className='res-card good';
-    c.innerHTML=`<div class="res-card-lbl">✓ Strong Areas</div>`+
-      strong.map(r=>`<p>• Q${r.qi+1}: Good use of <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join('');
-    grid.appendChild(c);
-  }
-  if(weak.length){
-    const c=document.createElement('div'); c.className='res-card weak';
-    c.innerHTML=`<div class="res-card-lbl">⚠ Areas to Strengthen</div>`+
-      weak.map(r=>`<p>• Q${r.qi+1}: Try using terms like <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join('');
-    grid.appendChild(c);
-  }
-
-  let summary='';
-  if(pct>=80){
-    summary=`Outstanding — ${pct}%! 🎉 You clearly understand that balanced forces produce zero net force and therefore zero acceleration. Newton's First Law is fully in your toolkit. Keep this thinking sharp for Module 3007!`;
-  } else if(pct>=55){
-    summary=`Solid effort — ${pct}%! You're grasping the core idea. Focus on writing "net force = 0" explicitly when forces balance, and connecting that directly to "no acceleration." You're very close to full mastery!`;
-  } else {
-    summary=`You're building — ${pct}%. The key concept to revisit: equal opposite forces don't disappear — they CANCEL each other, making net force = 0. When net force = 0, acceleration = 0. Re-watch the concept video and retry!`;
-  }
-
-  const obsAll = G.obs.join(' ').toLowerCase();
-  if(!obsAll.includes('net')&&!obsAll.includes('zero')){
-    summary+=' Tip: In your simulation observations, explicitly mention "net force" — that\'s the core quantity!';
-  }
-
+  const pct = Math.round(avg*100); animRing(pct);
+  const grid = document.getElementById('res-grid'); grid.innerHTML='';
+  const strong = results.filter(r=>r.score>=.55); const weak = results.filter(r=>r.score<.55);
+  if(strong.length){ const c=document.createElement('div'); c.className='res-card good'; c.innerHTML=`<div class="res-card-lbl">✓ Verified Framework Blocks</div>`+strong.map(r=>`<p>• Node Q${r.qi+1}: Successfully integrated <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join(''); grid.appendChild(c); }
+  if(weak.length){ const c=document.createElement('div'); c.className='res-card weak'; c.innerHTML=`<div class="res-card-lbl">⚠ Core Gaps Tagged</div>`+weak.map(r=>`<p>• Node Q${r.qi+1}: Re-examine concepts like <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join(''); grid.appendChild(c); }
+  let summary = pct>=75
+    ? `Mastery logs validated at ${pct}%. System parameters fully understood. Newton's First Law framework confirmed.`
+    : `Logs compiled at ${pct}%. Re-evaluate velocity persistence inside zero net force models. The key: Net = 0 → acceleration = 0.`;
   document.getElementById('v-final').textContent=summary;
 }
 
 function animRing(pct){
-  const c=document.getElementById('score-ring');
-  const ctx=c.getContext('2d');
-  const sz=140, cx=70, cy=70, r=52;
-  const col = pct>=80?'#22D3EE':pct>=55?'#FFA07A':'#f55';
-  const start=-Math.PI/2;
-  let frame=0, total=72;
-
+  const c=document.getElementById('score-ring'); const ctx=c.getContext('2d');
+  const sz=140, cx=70, cy=70, r=52; const col = pct>75?'#38BDF8':pct>50?'#F59E0B':'#f55';
+  let frame=0, total=60;
   function draw(){
-    ctx.clearRect(0,0,sz,sz);
-    const p=Math.min(frame/total,1);
-    const end=start+(pct/100)*2*Math.PI*p;
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=10; ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx,cy,r,start,end);
-    ctx.strokeStyle=col; ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
-    ctx.fillStyle='#fff'; ctx.font='bold 28px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(Math.round(pct*p)+'%',cx,cy-6);
-    ctx.fillStyle='rgba(255,255,255,.38)'; ctx.font='11px sans-serif';
-    ctx.fillText('score',cx,cy+14);
-    frame++;
-    if(frame<=total) requestAnimationFrame(draw);
+    ctx.clearRect(0,0,sz,sz); const p=Math.min(frame/total,1);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=8; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(pct/100)*2*Math.PI*p);
+    ctx.strokeStyle=col; ctx.lineWidth=8; ctx.lineCap='round'; ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 24px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(pct*p)+'%',cx,cy);
+    frame++; if(frame<=total) requestAnimationFrame(draw);
   }
   draw();
 }
