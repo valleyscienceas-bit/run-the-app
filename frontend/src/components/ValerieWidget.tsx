@@ -38,9 +38,14 @@ export function ValerieWidget() {
       >
         <ValerieMascot size={60} isWaving={!isOpen} />
         {!isOpen && (
-          <div className="absolute -top-12 -left-20 bg-white px-4 py-2 rounded-2xl shadow-lg border border-slate-100 text-xs font-bold whitespace-nowrap animate-bounce">
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute -top-12 -left-20 bg-white px-4 py-2 rounded-2xl shadow-lg border border-slate-100 text-xs font-bold whitespace-nowrap"
+          >
             Need a hint? 🤖
-          </div>
+          </motion.div>
         )}
       </motion.button>
     </div>
