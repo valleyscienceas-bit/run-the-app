@@ -241,6 +241,78 @@ async function startServer() {
   });
 
   // ==========================================
+  // PARENT: LINKED STUDENT OVERVIEW ROUTE
+  // ==========================================
+  app.post("/api/student-overview", async (req, res) => {
+    const { parentUid } = req.body;
+    if (!parentUid) return res.status(400).json({ error: "parentUid is required" });
+    try {
+      const parentSnap = await adminDb.collection("users").doc(parentUid).get();
+      if (!parentSnap.exists) return res.status(404).json({ error: "Parent profile not found." });
+
+      const parentData = parentSnap.data() || {};
+      const studentUid = parentData.linkedStudentUid;
+      if (!studentUid) return res.status(404).json({ error: "No student is linked to this parent account." });
+
+      const [studentSnap, resultsSnap, statsSnap] = await Promise.all([
+        adminDb.collection("users").doc(studentUid).get(),
+        adminDb.collection("results").doc(studentUid).get(),
+        adminDb.collection("stats").doc(studentUid).get()
+      ]);
+
+      res.json({
+        studentProfile: studentSnap.exists ? studentSnap.data() : null,
+        results: resultsSnap.exists ? (resultsSnap.data()?.results || []) : [],
+        stats: statsSnap.exists ? statsSnap.data() : { totalSeconds: 0 }
+      });
+    } catch (error: any) {
+      console.error("Student overview error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // PARENT: DELETE LINKED STUDENT ACCOUNT ROUTE
+  // ==========================================
+  app.post("/api/delete-student", async (req, res) => {
+    const { parentUid } = req.body;
+    if (!parentUid) return res.status(400).json({ error: "parentUid is required" });
+    try {
+      const parentSnap = await adminDb.collection("users").doc(parentUid).get();
+      if (!parentSnap.exists) return res.status(404).json({ error: "Parent profile not found." });
+
+      const parentData = parentSnap.data() || {};
+      const studentUid = parentData.linkedStudentUid;
+      if (!studentUid) return res.status(404).json({ error: "No student is linked to this parent account." });
+
+      // Delete student data + auth
+      const studentDocs = ["users", "results", "stats", "chat_history"].map((c) =>
+        adminDb.collection(c).doc(studentUid).delete().catch(() => {})
+      );
+      await Promise.all(studentDocs);
+      await adminAuth.deleteUser(studentUid).catch((e: any) => {
+        if (e.code !== "auth/user-not-found") console.error("Delete student auth error:", e);
+      });
+
+      // Delete the parent's own data + auth (parent is tied to the student)
+      const legacyParentDocId = `parent_${studentUid}`;
+      await Promise.all([
+        adminDb.collection("users").doc(parentUid).delete().catch(() => {}),
+        adminDb.collection("users").doc(legacyParentDocId).delete().catch(() => {}),
+        adminDb.collection("stats").doc(parentUid).delete().catch(() => {})
+      ]);
+      await adminAuth.deleteUser(parentUid).catch((e: any) => {
+        if (e.code !== "auth/user-not-found") console.error("Delete parent auth error:", e);
+      });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete student error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
   // SAVE TEST RESULTS ROUTE
   // ==========================================
   app.post("/api/save-results", async (req, res) => {

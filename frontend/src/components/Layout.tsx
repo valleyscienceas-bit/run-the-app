@@ -1,8 +1,8 @@
 import React from 'react';
-import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck } from 'lucide-react';
+import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck, UserCircle, CreditCard } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { UserState } from '../types';
+import { UserState, AppTab } from '../types';
 import { ValerieMascot } from './ValerieMascot';
 
 function cn(...inputs: ClassValue[]) {
@@ -11,8 +11,8 @@ function cn(...inputs: ClassValue[]) {
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeTab: 'curriculum' | 'dashboard' | 'chat';
-  onTabChange: (tab: 'curriculum' | 'dashboard' | 'chat' | 'founder') => void;
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
   userState: UserState;
   onLogout?: () => void;
 }
@@ -56,6 +56,22 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout }
             active={activeTab === 'dashboard'} 
             onClick={() => onTabChange('dashboard')}
           />
+          {userState.role === 'parent' && (
+            <>
+              <NavItem 
+                icon={<UserCircle size={22} />} 
+                label="Student Account" 
+                active={activeTab === 'student-account'} 
+                onClick={() => onTabChange('student-account')}
+              />
+              <NavItem 
+                icon={<CreditCard size={22} />} 
+                label="Billing" 
+                active={activeTab === 'billing'} 
+                onClick={() => onTabChange('billing')}
+              />
+            </>
+          )}
           {userState.role === 'founder' && (
             <NavItem 
               icon={<ShieldCheck size={22} />} 
@@ -104,6 +120,19 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout }
         )}
         <button onClick={() => onTabChange('dashboard')} className={cn("p-2", activeTab === 'dashboard' ? "text-soft-pink" : "text-slate-300")}>
           <LayoutDashboard size={28} />
+        </button>
+        {userState.role === 'parent' && (
+          <>
+            <button onClick={() => onTabChange('student-account')} className={cn("p-2", activeTab === 'student-account' ? "text-soft-pink" : "text-slate-300")}>
+              <UserCircle size={28} />
+            </button>
+            <button onClick={() => onTabChange('billing')} className={cn("p-2", activeTab === 'billing' ? "text-soft-pink" : "text-slate-300")}>
+              <CreditCard size={28} />
+            </button>
+          </>
+        )}
+        <button onClick={() => onTabChange('settings' as any)} className={cn("p-2", activeTab === 'settings' ? "text-soft-pink" : "text-slate-300")}>
+          <Settings size={28} />
         </button>
         <button onClick={onLogout} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
           <LogOut size={28} />

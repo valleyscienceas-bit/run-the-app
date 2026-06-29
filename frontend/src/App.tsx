@@ -14,8 +14,11 @@ import { PlacementTest } from './components/PlacementTest';
 import { UnitView } from './components/UnitView';
 import { ValerieWidget } from './components/ValerieWidget';
 import { PaymentFirewall } from './components/PaymentFirewall';
+import { ParentDashboard } from './components/ParentDashboard';
+import { StudentAccount } from './components/StudentAccount';
+import { Billing } from './components/Billing';
 import { FULL_CURRICULUM, UNITS } from './curriculum';
-import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult } from './types';
+import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview } from './types';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -26,7 +29,7 @@ export default function App() {
     isLoggedIn: false
   });
   const [view, setView] = useState<'landing' | 'login' | 'dashboard'>('landing');
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'dashboard' | 'chat' | 'founder' | 'settings'>('curriculum');
+  const [activeTab, setActiveTab] = useState<AppTab>('curriculum');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedModule, setSelectedModule] = useState<NGSSModule | null>(null);
   const [showPlacementPopup, setShowPlacementPopup] = useState(false);
@@ -34,6 +37,8 @@ export default function App() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [lastTestResult, setLastTestResult] = useState<TestResult | null>(null);
   const [totalLearningSeconds, setTotalLearningSeconds] = useState(0);
+  const [studentOverview, setStudentOverview] = useState<StudentOverview | null>(null);
+  const [overviewLoading, setOverviewLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -69,6 +74,12 @@ export default function App() {
             });
             
             setView('dashboard');
+
+            // Parents land on the Student Progress (dashboard) tab and load linked student data
+            if (profileData.role === 'parent') {
+              setActiveTab('dashboard');
+              loadStudentOverview(user.uid);
+            }
             
             // Only show placement popup if student, first time, and has no results at all
             const hasExistingResults = results.length > 0;
@@ -268,6 +279,48 @@ export default function App() {
     }));
   };
 
+  const loadStudentOverview = async (parentUid: string) => {
+    setOverviewLoading(true);
+    try {
+      const res = await fetch('/api/student-overview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentUid })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentOverview(data);
+      } else {
+        setStudentOverview(null);
+      }
+    } catch (err) {
+      console.error("Error loading student overview:", err);
+      setStudentOverview(null);
+    } finally {
+      setOverviewLoading(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/delete-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentUid: user.uid })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to delete the student account.');
+      }
+      // The parent account is removed along with the student; sign out.
+      await handleLogout();
+    } catch (err: any) {
+      console.error("Delete student error:", err);
+      throw err;
+    }
+  };
+
   const isGated = appState.profile?.role === 'student' && appState.path === 'individual' && !appState.profile?.isPaid;
 
   if (view === 'landing') {
@@ -430,7 +483,27 @@ export default function App() {
       )}
 
       {activeTab === 'dashboard' && (
-        <Dashboard results={testResults} userState={appState} totalLearningSeconds={totalLearningSeconds} />
+        appState.role === 'parent' ? (
+          <ParentDashboard
+            overview={studentOverview}
+            loading={overviewLoading}
+            onRefresh={() => user && loadStudentOverview(user.uid)}
+          />
+        ) : (
+          <Dashboard results={testResults} userState={appState} totalLearningSeconds={totalLearningSeconds} />
+        )
+      )}
+
+      {activeTab === 'student-account' && appState.role === 'parent' && (
+        <StudentAccount
+          overview={studentOverview}
+          loading={overviewLoading}
+          onDeleteStudent={handleDeleteStudent}
+        />
+      )}
+
+      {activeTab === 'billing' && appState.role === 'parent' && (
+        <Billing profile={appState.profile} />
       )}
 
       {activeTab === 'settings' && (

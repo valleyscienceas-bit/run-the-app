@@ -1,6 +1,15 @@
 export type UserRole = 'student' | 'teacher' | 'parent' | 'admin' | 'founder';
 export type AccessPath = 'district' | 'individual';
 
+export type AppTab =
+  | 'curriculum'
+  | 'dashboard'
+  | 'chat'
+  | 'founder'
+  | 'settings'
+  | 'student-account'
+  | 'billing';
+
 export interface UserProfile {
   uid: string;
   name: string;
@@ -91,4 +100,15 @@ export interface ChatHistory {
   userId: string;
   messages: ChatMessage[];
   lastUpdated: string;
+}
+
+export interface LearningStats {
+  totalSeconds?: number;
+  lastUpdated?: string;
+}
+
+export interface StudentOverview {
+  studentProfile: UserProfile | null;
+  results: TestResult[];
+  stats: LearningStats;
 }
