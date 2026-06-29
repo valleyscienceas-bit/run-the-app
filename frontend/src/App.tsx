@@ -285,12 +285,12 @@ export default function App() {
   return (
     <Layout 
       activeTab={activeTab === 'founder' ? 'dashboard' : activeTab} 
-      onTabChange={(tab) => setActiveTab(tab as any)}
+      onTabChange={(tab) => { if (!showPlacementPopup) setActiveTab(tab as any); }}
       userState={appState}
       onLogout={handleLogout}
     >
       {showPlacementPopup && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -300,23 +300,16 @@ export default function App() {
               <Brain size={40} className="text-soft-pink" />
             </div>
             <h2 className="text-3xl font-black text-slate-900 mb-4">Welcome to Valley Science!</h2>
-            <p className="text-slate-600 font-medium leading-relaxed mb-10">
-              Would you like to take a quick placement test? This helps Valerie identify your conceptual gaps and customize your learning path.
+            <p className="text-slate-600 font-medium leading-relaxed mb-4">
+              Before you start, you need to take a quick placement test. This helps Valerie identify your conceptual gaps and build a personalized learning path just for you.
             </p>
-            <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => { setShowPlacementPopup(false); handleStartTest('placement'); }}
-                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
-              >
-                Yes, Start Test
-              </button>
-              <button 
-                onClick={handleDismissPlacement}
-                className="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all"
-              >
-                Maybe Later
-              </button>
-            </div>
+            <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-10">Required to get started</p>
+            <button 
+              onClick={() => { setShowPlacementPopup(false); handleStartTest('placement'); }}
+              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+            >
+              Start Placement Test
+            </button>
           </motion.div>
         </div>
       )}
