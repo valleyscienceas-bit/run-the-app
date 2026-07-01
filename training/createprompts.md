@@ -1,0 +1,39 @@
+when giving a District Inquiry, only say Phone #, do not add whatsapp to that label. Do the same for the contact us form. Also, create a tab on the main website for a demo.
+
+Information about a "demo":
+
+-- require the person to give their name and email so that they can give a survey sent to their email after their demo ends
+-- require the person to also give them a reason why they want to do the demo
+-- the demo will only be able to start if it is approved; send an email to valley science and allow me to press a button on that email to approve the demo.
+-- the demo with be able to switch between parent and student accounts
+-- I will give you a few modules to use for the demo later; the demo account should be for a 7th grader
+-- create a tab just for the demo account (both parent and student) explaining what everything is and how valley science works and what we want to help kids with in detail. it will explain all the statistics and what valerie is etc. Do not show too much, keep it demo style
+-- allow the user to click around and understand how it all works
+-- only allow the user access to the demo for 48hrs
+-- after that deny them access and send an email to the email provided asking for their feedback on valley science and what we could do to make it better.
+
+For regular users (once their account is created):
+
+For parents:
+-- Once they are signed in for the first time, give them a option to take a quick tour around their account, the different pages, and different functions and the different things they can do. At the end of the tour show them that they can return to it using a button on the settings page.
+-- allow the parents to see the exact questions their student answered, and allow them to see what their student got wrong as well as topics and the usual statistics I gave earlier
+-- allow parents to connect their account to multiple students. how would I do that. Do not continue on with this bullet point without giving me a detailed plan on how you are going to go through with this point about having multiple student accounts connected to one parent. Just a suggestion, let me know if there is a better one; when you create one student account and the parent has set up their own account for that one student, for the next student do not have them set up an account the normal route. have the parent log into their own account and there should be a button to link another student and creating a new account. just a suggestions let me know if there is a better way.
+-- Do not allow parents to create their own account, only allow them to log in. When clicking parent in the welcome area, only give the option to log in.
+
+For students:
+-- Once they are signed in for the first time and after they have taken their placement test, give them a option to take a quick tour around their account, the different pages, and different functions and the different things they can do. At the end of the tour show them that they can return to it using a button on the settings page. include more information, as there are actual modules and more functions on a student account than there is on a parent
+
+For all accounts:
+-- Explain to me what I need to do to enable 2-factor Authentication for the accounts. Am I able to enable passkeys, sms messages, Authentication apps, what can I do
+-- For any verification code needed, make it so that the code expires after 10 minutes
+
+Throughout the entire site:
+-- After giving an error, and if ther person either clicks submit again or refreshes the page, make it so that the error will dissappear and if needed with pop another error message up after some time. make it so that a consecutive error messages after one another are noticible and it shows that the form submitted there was just an error
+
+
+Just wanting to start on the district side:
+-- give me some information about how I can run a district side, because I know I need an admin account that can handle linked students with different teachers (creating different classrooms that only the admin can look at all of them). The admin is able to see each students progress like the teacher by going into that "classroom" and then clicking on students names, same this as what a teacher can do, but the admin has access to all the classrooms part of that district
+Make the teacher account similar to the parent account with all the statistics, but only give necessary ones like the ones you did for the parent account overhaul, but do not over give numbers as teachers have lots of students. Only give the necessary ones, like how much time did each student spend on a lesson, or section of a module/lesson, etc. what topics each student need to learn more about
+-- when clicking district give me the option for a sandbox enviornment to work with the teacher account, look around make sure it looks good (like add fake students and how it would look like if it was real people); for testing purposes
+-- In the teacher account, give the list of their students that are linked to that teacher's account and the teacher can click on each student/view a preview before clicking (like a table with information that the teacher cna use) or can click on a student for more detailed information/stats.
+-- In each classroom, allow the teacher and admin to see the average score done on each test. there would be a section for the teacher and admin to click on "tests" and view the average score on each test, the frequently missed questions, topics a lot of the class would need to review, etc.
