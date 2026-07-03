@@ -44,12 +44,16 @@ export interface UserProfile {
   hasCompletedParentTour?: boolean;
   hasCompletedStudentTour?: boolean;
   hasCompletedTeacherTour?: boolean;
+  hasSeenDemoStudentGuide?: boolean;
+  hasSeenDemoParentGuide?: boolean;
   districtId?: string;
   classroomIds?: string[];
   teacherUid?: string;
   demoPassword?: string; // Sandbox/demo accounts — visible to teachers
   progressByGrade?: Record<string, GradeProgressArchive>;
   gradeOverrides?: { grade: string; at: string; by: string }[];
+  mfaEnabled?: boolean;
+  mfaMethod?: 'email' | 'totp' | null;
 }
 
 export interface GradeProgressArchive {
@@ -193,4 +197,26 @@ export interface StudentOverview {
 export interface DemoProfileRefs {
   demoStudentUid?: string;
   demoParentUid?: string;
+}
+
+export type ClassQuestionStatus = 'open' | 'answered';
+
+export interface ClassQuestionMessage {
+  role: 'student' | 'teacher';
+  text: string;
+  timestamp: string;
+}
+
+export interface ClassQuestionThread {
+  id: string;
+  classroomId: string;
+  studentUid: string;
+  teacherUid: string;
+  studentName: string;
+  status: ClassQuestionStatus;
+  teacherUnreadCount: number;
+  studentUnreadCount: number;
+  messages: ClassQuestionMessage[];
+  createdAt: string;
+  updatedAt: string;
 }

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
-import { DollarSign, Users, School, TrendingUp, Activity, ShieldCheck } from 'lucide-react';
+import { DollarSign, Users, School, TrendingUp, Activity, ShieldCheck, Mail, ExternalLink, Copy, Check, RefreshCw } from 'lucide-react';
 
 const REVENUE_DATA = [
   { month: 'Jan', rev: 12000 },
@@ -14,7 +14,56 @@ const USER_STATS = [
   { name: 'Individual', value: 1200, color: '#87A96B' },
 ];
 
-export function FounderDashboard() {
+interface PendingDemoRequest {
+  id: string;
+  name: string;
+  email: string;
+  reason: string;
+  requestedAt: string;
+  approveUrl: string;
+}
+
+interface FounderDashboardProps {
+  founderUid: string;
+}
+
+export function FounderDashboard({ founderUid }: FounderDashboardProps) {
+  const [pendingDemos, setPendingDemos] = useState<PendingDemoRequest[]>([]);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [loadingDemos, setLoadingDemos] = useState(true);
+  const [demoLoadError, setDemoLoadError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const loadPendingDemos = async () => {
+    setLoadingDemos(true);
+    setDemoLoadError(null);
+    try {
+      const res = await fetch(`/api/demo-requests/pending?founderUid=${encodeURIComponent(founderUid)}`);
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setPendingDemos(data.requests || []);
+      setAdminEmail(data.adminEmail || null);
+    } catch (err: any) {
+      setDemoLoadError(err.message || 'Failed to load demo requests');
+    } finally {
+      setLoadingDemos(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPendingDemos();
+  }, [founderUid]);
+
+  const copyApproveLink = async (request: PendingDemoRequest) => {
+    try {
+      await navigator.clipboard.writeText(request.approveUrl);
+      setCopiedId(request.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      window.prompt('Copy this approve link:', request.approveUrl);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex items-center justify-between">
@@ -27,6 +76,74 @@ export function FounderDashboard() {
           Admin Verified
         </div>
       </header>
+
+      {/* Pending demo requests */}
+      <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-black flex items-center gap-2">
+              <Mail size={22} className="text-soft-pink" />
+              Pending Demo Requests
+            </h3>
+            <p className="text-sm text-slate-500 font-medium mt-1">
+              Approve here if the email didn&apos;t arrive{adminEmail ? ` (notifications go to ${adminEmail})` : ''}.
+            </p>
+          </div>
+          <button
+            onClick={loadPendingDemos}
+            disabled={loadingDemos}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={loadingDemos ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </div>
+
+        {demoLoadError && (
+          <p className="text-sm font-bold text-red-600 mb-4">{demoLoadError}</p>
+        )}
+
+        {loadingDemos ? (
+          <p className="text-slate-500 font-medium">Loading demo requests…</p>
+        ) : pendingDemos.length === 0 ? (
+          <p className="text-slate-500 font-medium">No pending demo requests right now.</p>
+        ) : (
+          <div className="space-y-4">
+            {pendingDemos.map((request) => (
+              <div key={request.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/80">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="font-black text-slate-900">{request.name}</p>
+                    <p className="text-sm font-bold text-slate-500">{request.email}</p>
+                    <p className="text-sm text-slate-600 mt-2">{request.reason}</p>
+                    <p className="text-xs text-slate-400 font-bold mt-2">
+                      Requested {request.requestedAt ? new Date(request.requestedAt).toLocaleString() : 'recently'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={request.approveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-soft-pink text-white text-sm font-black hover:opacity-90"
+                    >
+                      Approve Demo
+                      <ExternalLink size={14} />
+                    </a>
+                    <button
+                      onClick={() => copyApproveLink(request)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50"
+                    >
+                      {copiedId === request.id ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedId === request.id ? 'Copied' : 'Copy link'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

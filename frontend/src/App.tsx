@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Brain, ClipboardCheck, ArrowRight } from 'lucide-react';
-import { auth, onAuthStateChanged, User, db, doc, setDoc, getDoc, updateDoc } from './lib/firebase';
+import { auth, onAuthStateChanged, signOut, User, db, doc, setDoc, getDoc, updateDoc } from './lib/firebase';
+import { getMfaPending } from './lib/mfaSession';
 import { Layout } from './components/Layout';
 import { ModuleGrid } from './components/ModuleGrid';
 import { SocraticChat } from './components/SocraticChat';
@@ -39,6 +40,7 @@ export default function App() {
   });
   const [view, setView] = useState<'landing' | 'login' | 'dashboard'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [resumeMfaLogin, setResumeMfaLogin] = useState(false);
   const [activeTab, setActiveTab] = useState<AppTab>('curriculum');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedModule, setSelectedModule] = useState<NGSSModule | null>(null);
@@ -60,10 +62,16 @@ export default function App() {
   const [activeClassroomId, setActiveClassroomId] = useState<string | undefined>();
   const [activeStudentUid, setActiveStudentUid] = useState<string | undefined>();
   const [demoParentUid, setDemoParentUid] = useState<string | undefined>();
+  const [teacherUnreadCount, setTeacherUnreadCount] = useState(0);
+  const [studentUnreadCount, setStudentUnreadCount] = useState(0);
+
+  const [demoApprovalNotice, setDemoApprovalNotice] = useState<'approved' | 'already' | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === 'approved') {
+    const demoParam = params.get('demo');
+    if (demoParam === 'approved' || demoParam === 'already') {
+      setDemoApprovalNotice(demoParam);
       window.history.replaceState({}, '', window.location.pathname);
     }
     applyTheme(loadThemePreference());
@@ -72,6 +80,14 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        const pending = getMfaPending();
+        if (pending && pending.uid === user.uid) {
+          await signOut(auth);
+          setResumeMfaLogin(true);
+          setView('login');
+          return;
+        }
+
         setUser(user);
         try {
           const profileDoc = await getDoc(doc(db, 'users', user.uid));
@@ -122,8 +138,15 @@ export default function App() {
             
             setView('dashboard');
 
-            // Parents land on the Student Progress (dashboard) tab and load linked student data
-            if (profileData.role === 'parent') {
+            if (profileData.isDemo) {
+              setShowPlacementPopup(false);
+              setDemoViewRole('student');
+              if (!profileData.hasSeenDemoStudentGuide) {
+                setActiveTab('demo-guide');
+              } else {
+                setActiveTab('curriculum');
+              }
+            } else if (profileData.role === 'parent') {
               setActiveTab('dashboard');
               loadStudentOverview(user.uid);
             }
@@ -140,31 +163,39 @@ export default function App() {
               loadAdminClassrooms(profileData.districtId);
             }
 
-            // Onboarding tours
-            if (profileData.role === 'parent' && !profileData.hasCompletedParentTour) {
-              setTourRole('parent');
-              setShowTour(true);
-            } else if (profileData.role === 'teacher' && !profileData.hasCompletedTeacherTour) {
-              setTourRole('teacher');
-              setShowTour(true);
-            } else if (profileData.role === 'student' && !profileData.hasCompletedStudentTour && results.length > 0) {
-              setTourRole('student');
-              setShowTour(true);
-            }
-            
-            // Only show placement popup if student, first time, and has no results at all
-            const hasExistingResults = results.length > 0;
-            if (hasExistingResults) {
+            if (profileData.isDemo) {
+              setDemoViewRole('student');
+              setActiveTab(profileData.hasSeenDemoStudentGuide ? 'curriculum' : 'demo-guide');
               setShowPlacementPopup(false);
-              // Self-heal profile isFirstTime state if database had the stale flag
-              if (profileData.isFirstTime) {
-                profileData.isFirstTime = false;
-                updateDoc(doc(db, 'users', user.uid), { isFirstTime: false }).catch(err => {
-                  console.error("Failed to auto-cleanse isFirstTime state:", err);
-                });
+            } else {
+            // Onboarding tours (demo users start tours from Demo Guide instead)
+            if (!profileData.isDemo) {
+              if (profileData.role === 'parent' && !profileData.hasCompletedParentTour) {
+                setTourRole('parent');
+                setShowTour(true);
+              } else if (profileData.role === 'teacher' && !profileData.hasCompletedTeacherTour) {
+                setTourRole('teacher');
+                setShowTour(true);
+              } else if (profileData.role === 'student' && !profileData.hasCompletedStudentTour && results.length > 0) {
+                setTourRole('student');
+                setShowTour(true);
               }
-            } else if (profileData.role === 'student' && profileData.isFirstTime) {
-              setShowPlacementPopup(true);
+            }
+
+              // Only show placement popup if student, first time, and has no results at all
+              const hasExistingResults = results.length > 0;
+              if (hasExistingResults) {
+                setShowPlacementPopup(false);
+                // Self-heal profile isFirstTime state if database had the stale flag
+                if (profileData.isFirstTime) {
+                  profileData.isFirstTime = false;
+                  updateDoc(doc(db, 'users', user.uid), { isFirstTime: false }).catch(err => {
+                    console.error("Failed to auto-cleanse isFirstTime state:", err);
+                  });
+                }
+              } else if (profileData.role === 'student' && profileData.isFirstTime) {
+                setShowPlacementPopup(true);
+              }
             }
           }
         } catch (err) {
@@ -172,6 +203,13 @@ export default function App() {
         }
       } else {
         setUser(null);
+        const pending = getMfaPending();
+        if (pending) {
+          setResumeMfaLogin(true);
+          setView('login');
+          return;
+        }
+        setResumeMfaLogin(false);
         setAppState({
           role: 'student',
           path: 'individual',
@@ -201,6 +239,9 @@ export default function App() {
   };
 
   const handleLogin = (path: AccessPath, role: UserRole, details?: any) => {
+    setResumeMfaLogin(false);
+    const isDistrictGuestEntry = path === 'district' && details?.isGuestEntry === true;
+    const effectiveRole: UserRole = isDistrictGuestEntry ? 'student' : role;
     const profile: UserProfile = {
       uid: user?.uid || details?.uid || 'guest',
       name: details?.name || 'Guest User',
@@ -208,7 +249,7 @@ export default function App() {
       email: details?.email || '',
       parentEmail: details?.parentEmail || null,
       linkedStudentUid: details?.linkedStudentUid || null,
-      role,
+      role: effectiveRole,
       path,
       grade: details?.grade || (path === 'district' ? '6' : '3'),
       xp: details?.xp || 0,
@@ -219,14 +260,14 @@ export default function App() {
 
     setAppState({
       path,
-      role,
+      role: effectiveRole,
       isLoggedIn: true,
       grade: profile.grade,
       profile
     });
     
     setView('dashboard');
-    if (role === 'founder') {
+    if (effectiveRole === 'founder') {
       setActiveTab('founder');
     }
   };
@@ -329,8 +370,8 @@ export default function App() {
           handleUpdateProfile({ ...appState.profile, isFirstTime: false });
         }
 
-        // Trigger student tour after first placement test
-        if (appState.profile && !appState.profile.hasCompletedStudentTour) {
+        // Trigger student tour after first placement test (not for demo accounts)
+        if (appState.profile && !appState.profile.hasCompletedStudentTour && !appState.profile.isDemo) {
           setTourRole('student');
           setShowTour(true);
         }
@@ -400,9 +441,42 @@ export default function App() {
             setTeacherStudents(studData.students || []);
           }
         }
+        loadTeacherNotifications(teacherUid);
       }
     } catch (err) {
       console.error("Error loading teacher data:", err);
+    }
+  };
+
+  const loadTeacherNotifications = async (teacherUid: string) => {
+    try {
+      const res = await fetch('/api/teacher-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherUid })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTeacherUnreadCount(data.unreadCount || 0);
+      }
+    } catch (err) {
+      console.error("Error loading teacher notifications:", err);
+    }
+  };
+
+  const loadStudentNotifications = async (studentUid: string) => {
+    try {
+      const res = await fetch('/api/student-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentUid })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentUnreadCount(data.unreadCount || 0);
+      }
+    } catch (err) {
+      console.error("Error loading student notifications:", err);
     }
   };
 
@@ -443,6 +517,20 @@ export default function App() {
     fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'App.tsx:chat-tab',message:'chat tab activated',data:{activeTab,role:appState.role,hasModule:!!selectedModule},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
   }, [activeTab, appState.role, selectedModule]);
+
+  useEffect(() => {
+    if (appState.role !== 'teacher' || !user?.uid) return;
+    loadTeacherNotifications(user.uid);
+    const interval = setInterval(() => loadTeacherNotifications(user.uid), 30000);
+    return () => clearInterval(interval);
+  }, [appState.role, user?.uid, activeTab]);
+
+  useEffect(() => {
+    if (appState.role !== 'student' || appState.path !== 'district' || !user?.uid) return;
+    loadStudentNotifications(user.uid);
+    const interval = setInterval(() => loadStudentNotifications(user.uid), 30000);
+    return () => clearInterval(interval);
+  }, [appState.role, appState.path, user?.uid, activeTab]);
 
   const handleModuleTourComplete = () => {
     if (selectedModule) {
@@ -499,11 +587,37 @@ export default function App() {
     setDemoViewRole(role);
     if (role === 'parent' && demoParentUid && user) {
       loadStudentOverview(demoParentUid);
-      setActiveTab('dashboard');
+    }
+    const profile = appState.profile;
+    if (role === 'parent') {
+      setActiveTab(profile?.hasSeenDemoParentGuide ? 'dashboard' : 'demo-guide');
     } else {
-      setActiveTab('curriculum');
+      setActiveTab(profile?.hasSeenDemoStudentGuide ? 'curriculum' : 'demo-guide');
     }
   };
+
+  const handleDemoStartTour = () => {
+    setTourRole(demoViewRole);
+    setShowTour(true);
+  };
+
+  const markDemoGuideSeen = async (role: 'student' | 'parent') => {
+    if (!user || !appState.profile?.isDemo) return;
+    const field = role === 'parent' ? 'hasSeenDemoParentGuide' : 'hasSeenDemoStudentGuide';
+    if (appState.profile[field]) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { [field]: true });
+      handleUpdateProfile({ ...appState.profile, [field]: true });
+    } catch (err) {
+      console.error('Failed to mark demo guide seen:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'demo-guide' && appState.profile?.isDemo) {
+      markDemoGuideSeen(demoViewRole);
+    }
+  }, [activeTab, demoViewRole, appState.profile?.isDemo, appState.profile?.hasSeenDemoStudentGuide, appState.profile?.hasSeenDemoParentGuide]);
 
   const isDemo = appState.profile?.isDemo === true;
   const effectiveRole: UserRole = isDemo
@@ -533,6 +647,7 @@ export default function App() {
   };
 
   const isGated = appState.profile?.role === 'student' && appState.path === 'individual' && !appState.profile?.isPaid && !appState.profile?.isDemo;
+  const tourActive = showTour || showModuleTour;
 
   if (demoExpired) {
     return (
@@ -558,12 +673,14 @@ export default function App() {
       <LandingPage
         onLoginClick={() => { setAuthMode('login'); setView('login'); }}
         onSignUpClick={() => { setAuthMode('signup'); setView('login'); }}
+        demoApprovalNotice={demoApprovalNotice}
+        onDismissDemoNotice={() => setDemoApprovalNotice(null)}
       />
     );
   }
 
   if (view === 'login') {
-    return <LoginSelection initialMode={authMode} onBack={goToLanding} onLogin={handleLogin} />;
+    return <LoginSelection initialMode={authMode} resumeMfaLogin={resumeMfaLogin} onBack={goToLanding} onLogin={handleLogin} />;
   }
 
   if (isGated) {
@@ -573,12 +690,14 @@ export default function App() {
   return (
     <Layout 
       activeTab={activeTab === 'founder' ? 'dashboard' : activeTab} 
-      onTabChange={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
+      onTabChange={(tab) => { if (!showPlacementPopup || tourActive) setActiveTab(tab); }}
       userState={layoutUserState}
       onLogout={handleLogout}
       isDemo={isDemo}
       demoViewRole={demoViewRole}
       onDemoRoleSwitch={handleDemoRoleSwitch}
+      teacherUnreadCount={appState.role === 'teacher' ? teacherUnreadCount : 0}
+      studentUnreadCount={appState.role === 'student' && appState.path === 'district' ? studentUnreadCount : 0}
     >
       {showTour && (
         <SpotlightTour
@@ -594,7 +713,7 @@ export default function App() {
           }
           onComplete={handleTourComplete}
           onDismiss={() => setShowTour(false)}
-          onNavigateTab={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
+          onNavigateTab={(tab) => { if (!showPlacementPopup || tourActive) setActiveTab(tab); }}
         />
       )}
       {showModuleTour && effectiveRole === 'student' && (
@@ -602,10 +721,10 @@ export default function App() {
           steps={MODULE_SPOTLIGHT_STEPS}
           onComplete={handleModuleTourComplete}
           onDismiss={handleModuleTourComplete}
-          onNavigateTab={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
+          onNavigateTab={(tab) => { if (!showPlacementPopup || tourActive) setActiveTab(tab); }}
         />
       )}
-      {showPlacementPopup && (
+      {showPlacementPopup && !tourActive && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
@@ -638,7 +757,7 @@ export default function App() {
               onComplete={handleTestComplete} 
               onCancel={() => setIsTakingTest(null)}
             />
-          ) : lastTestResult ? (
+          ) : lastTestResult && !tourActive ? (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -757,9 +876,14 @@ export default function App() {
           <TeacherDashboard
             students={teacherStudents}
             teacherUid={user?.uid}
+            classroomId={activeClassroomId}
             selectedOverview={selectedTeacherStudentUid ? teacherStudents.find(s => s.studentProfile?.uid === selectedTeacherStudentUid) || null : null}
             onSelectStudent={setSelectedTeacherStudentUid}
             onRefresh={() => user && activeClassroomId && loadTeacherData(user.uid, activeClassroomId)}
+            onNotificationsChange={(count) => {
+              setTeacherUnreadCount(count);
+              if (user) loadTeacherNotifications(user.uid);
+            }}
           />
         ) : appState.role === 'admin' ? (
           <AdminDashboard
@@ -772,7 +896,15 @@ export default function App() {
       )}
 
       {activeTab === 'demo-guide' && isDemo && (
-        <DemoGuide />
+        <DemoGuide
+          demoViewRole={demoViewRole}
+          onStartTour={handleDemoStartTour}
+          showTourButton={
+            demoViewRole === 'parent'
+              ? !appState.profile?.hasCompletedParentTour
+              : !appState.profile?.hasCompletedStudentTour
+          }
+        />
       )}
 
       {activeTab === 'assignments' && appState.role === 'teacher' && (
@@ -788,7 +920,14 @@ export default function App() {
       )}
 
       {activeTab === 'my-class' && effectiveRole === 'student' && appState.path === 'district' && (
-        <StudentClassTab studentUid={user?.uid} />
+        <StudentClassTab
+          studentUid={user?.uid}
+          unreadCount={studentUnreadCount}
+          onUnreadChange={(count) => {
+            setStudentUnreadCount(count);
+            if (user) loadStudentNotifications(user.uid);
+          }}
+        />
       )}
 
       {activeTab === 'my-assignments' && effectiveRole === 'student' && appState.path === 'district' && (
@@ -816,7 +955,8 @@ export default function App() {
           userState={appState}
           onUpdateProfile={handleUpdateProfile}
           onReplayTour={() => {
-            if (appState.role === 'parent') setTourRole('parent');
+            if (isDemo) setTourRole(demoViewRole);
+            else if (appState.role === 'parent') setTourRole('parent');
             else if (appState.role === 'teacher') setTourRole('teacher');
             else setTourRole('student');
             setShowTour(true);
@@ -824,8 +964,8 @@ export default function App() {
         />
       )}
 
-      {activeTab === 'founder' && (
-        <FounderDashboard />
+      {activeTab === 'founder' && user && (
+        <FounderDashboard founderUid={user.uid} />
       )}
     </Layout>
   );

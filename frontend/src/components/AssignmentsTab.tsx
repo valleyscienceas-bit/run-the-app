@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
 import { ClipboardList, Calendar, Plus, ChevronLeft, Trash2, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
-import { GradeLevel, ClassroomAssignment, AssignmentStudentRow } from '../types';
+import { GradeLevel, ClassroomAssignment, AssignmentStudentRow, AssignmentSubmission } from '../types';
+
+type AssignmentSummary = { completed: number; inProgress: number; notStarted: number; late: number; total: number };
+
+function computeAssignmentSummary(assignment: ClassroomAssignment): AssignmentSummary {
+  const submissions = assignment.submissions || {};
+  const dueAt = new Date(assignment.dueAt);
+  const now = new Date();
+  let completed = 0, inProgress = 0, notStarted = 0, late = 0;
+  for (const sub of Object.values(submissions) as AssignmentSubmission[]) {
+    const status = sub.status || 'not_started';
+    if (status === 'completed') completed++;
+    else if (status === 'in_progress') inProgress++;
+    else notStarted++;
+    if (status !== 'completed' && dueAt < now) late++;
+  }
+  return { completed, inProgress, notStarted, late, total: Object.keys(submissions).length };
+}
 import { INPUT_CLASS_PX } from '../lib/formStyles';
 import { BACK_LINK_CLASS, CANCEL_BUTTON_CLASS, DANGER_LINK_CLASS } from '../lib/buttonStyles';
 import { DueDateTimeInput } from './DueDateTimeInput';
@@ -17,7 +34,7 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
   const [showForm, setShowForm] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailStudents, setDetailStudents] = useState<AssignmentStudentRow[]>([]);
-  const [detailSummary, setDetailSummary] = useState<{ completed: number; inProgress: number; notStarted: number; late: number; total: number } | null>(null);
+  const [detailSummary, setDetailSummary] = useState<AssignmentSummary | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [form, setForm] = useState({ title: '', dueAt: '', grade: '7' as GradeLevel, minScore: '' });
   const [loading, setLoading] = useState(false);
@@ -344,12 +361,13 @@ function AssignmentSection({ title, empty, items, onOpen, onDelete, isPast }: {
               onClick={() => onOpen(a.id)}
               className="w-full bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg hover:border-soft-pink/40 transition-all flex items-center justify-between text-left group"
             >
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="font-black text-slate-900 dark:text-slate-100 text-lg group-hover:text-soft-pink transition-colors">{a.title}</h3>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1 flex items-center gap-2">
                   <Calendar size={14} /> Due {new Date(a.dueAt).toLocaleString()}
                   {isPast && <span className="text-orange-500">· Past due</span>}
                 </p>
+                <AssignmentCardStats assignment={a} />
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:inline">Grade {a.grade}</span>
@@ -367,6 +385,27 @@ function AssignmentSection({ title, empty, items, onOpen, onDelete, isPast }: {
         </div>
       )}
     </section>
+  );
+}
+
+function AssignmentCardStats({ assignment }: { assignment: ClassroomAssignment }) {
+  const summary = computeAssignmentSummary(assignment);
+  if (summary.total === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 mt-3">
+      <CardStatBadge icon={<CheckCircle2 size={12} />} label="Turned In" value={summary.completed} className="text-sage-green bg-sage-green/10" />
+      <CardStatBadge icon={<Clock size={12} />} label="In Progress" value={summary.inProgress} className="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30" />
+      <CardStatBadge icon={<AlertCircle size={12} />} label="Not Started" value={summary.notStarted} className="text-slate-500 bg-slate-100 dark:bg-slate-800" />
+      <CardStatBadge icon={<AlertCircle size={12} />} label="Late" value={summary.late} className="text-orange-600 bg-orange-50 dark:bg-orange-950/30" />
+    </div>
+  );
+}
+
+function CardStatBadge({ icon, label, value, className }: { icon: React.ReactNode; label: string; value: number; className: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${className}`}>
+      {icon} {value} {label}
+    </span>
   );
 }
 

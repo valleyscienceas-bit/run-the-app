@@ -10,6 +10,8 @@ import { NAV_LINK_CLASS, TEXT_LINK_CLASS } from '../lib/buttonStyles';
 interface LandingPageProps {
   onLoginClick: () => void;
   onSignUpClick?: () => void;
+  demoApprovalNotice?: 'approved' | 'already' | null;
+  onDismissDemoNotice?: () => void;
 }
 
 const VALERIE_MESSAGES = [
@@ -20,7 +22,7 @@ const VALERIE_MESSAGES = [
   "Think of me as your personal scientific guide. What shall we explore?"
 ];
 
-export function LandingPage({ onLoginClick, onSignUpClick }: LandingPageProps) {
+export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, onDismissDemoNotice }: LandingPageProps) {
   const [messageIndex, setMessageIndex] = useState(0);
   const [activeForm, setActiveForm] = useState<'none' | 'district' | 'contact' | 'feedback' | 'demo'>('none');
   const [contactForm, setContactForm] = useState({
@@ -181,6 +183,30 @@ export function LandingPage({ onLoginClick, onSignUpClick }: LandingPageProps) {
 
   return (
     <div className="min-h-screen bg-cream dark:bg-slate-950">
+      {demoApprovalNotice && (
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800 px-6 py-4">
+          <div className="max-w-7xl mx-auto flex items-start gap-3 justify-between">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="text-emerald-600 shrink-0 mt-0.5" size={22} />
+              <div>
+                <p className="font-black text-emerald-900 dark:text-emerald-100">
+                  {demoApprovalNotice === 'approved' ? 'Demo approved successfully' : 'Demo was already approved'}
+                </p>
+                <p className="text-sm text-emerald-800 dark:text-emerald-200 mt-1">
+                  {demoApprovalNotice === 'approved'
+                    ? 'Login credentials were emailed to the person who requested the demo. They can sign in from the Log In page.'
+                    : 'This approval link was already used. If they need help logging in, check your email or Firebase for their account.'}
+                </p>
+              </div>
+            </div>
+            {onDismissDemoNotice && (
+              <button onClick={onDismissDemoNotice} className="text-emerald-700 dark:text-emerald-300 text-sm font-bold shrink-0">
+                Dismiss
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       {/* Navigation */}
       <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto sticky top-0 bg-cream/80 dark:bg-slate-950/90 backdrop-blur-md z-50 border-b border-transparent dark:border-slate-800">
         <button 
@@ -711,7 +737,7 @@ export function LandingPage({ onLoginClick, onSignUpClick }: LandingPageProps) {
             <h4 className="text-sm font-black uppercase tracking-[0.2em] text-soft-pink">Legal</h4>
             <div className="space-y-2 text-sm text-slate-400 font-medium">
               <p>Privacy Policy</p>
-              <p>Terms of Service</p>
+              <p className="text-base">Terms of Service</p>
               <p>COPPA/FERPA Compliance</p>
             </div>
           </div>
@@ -784,7 +810,10 @@ function PricingCard({ title, price, subPrice, features, buttonText, highlight =
           {buttonText}
         </button>
         {secondaryButtonText && onSecondaryClick && (
-          <button onClick={onSecondaryClick} className={`w-full ${TEXT_LINK_CLASS} py-3 hover:text-soft-pink dark:hover:text-soft-pink`}>
+          <button
+            onClick={onSecondaryClick}
+            className="w-full bg-rose-600 text-white py-4 rounded-2xl font-bold hover:bg-rose-700 transition-colors shadow-lg shadow-rose-600/30"
+          >
             {secondaryButtonText}
           </button>
         )}

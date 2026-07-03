@@ -4,6 +4,7 @@ import { UserState, UserProfile } from '../types';
 import { auth, db, doc, updateDoc } from '../lib/firebase';
 import { updatePassword } from 'firebase/auth';
 import { ThemeToggle } from './ThemeToggle';
+import { MfaSettings } from './MfaSettings';
 
 interface SettingsProps {
   userState: UserState;
@@ -168,6 +169,10 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
             </button>
           </div>
         </div>
+
+        {isIndividual && profile && (
+          <MfaSettings profile={profile} onUpdateProfile={onUpdateProfile} />
+        )}
 
         <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800 lg:col-span-2" data-tour="settings-appearance">
           <div className="flex items-center gap-3 text-blue-500 font-black text-xs uppercase tracking-widest mb-6">

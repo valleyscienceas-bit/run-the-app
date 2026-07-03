@@ -1,13 +1,39 @@
 import React from 'react';
-import { BookOpen, MessageCircle, BarChart3, Users, Sparkles } from 'lucide-react';
+import { BookOpen, MessageCircle, BarChart3, Users, Sparkles, Play } from 'lucide-react';
 
-export function DemoGuide() {
+interface DemoGuideProps {
+  demoViewRole: 'student' | 'parent';
+  onStartTour: () => void;
+  showTourButton: boolean;
+}
+
+export function DemoGuide({ demoViewRole, onStartTour, showTourButton }: DemoGuideProps) {
+  const roleLabel = demoViewRole === 'parent' ? 'parent' : 'student';
+
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <header>
         <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Demo Guide</h1>
         <p className="text-xl text-slate-700 font-medium">A quick tour of what Valley Science offers. Click around freely — this is your sandbox.</p>
       </header>
+
+      {showTourButton && (
+        <div className="bg-slate-900 text-white p-8 rounded-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-2xl">
+          <div>
+            <p className="text-[10px] font-black text-soft-pink uppercase tracking-widest mb-2">Recommended first step</p>
+            <h2 className="text-2xl font-black mb-2">Take the {roleLabel} tour</h2>
+            <p className="text-slate-300 font-medium text-sm leading-relaxed max-w-xl">
+              A guided walkthrough of the {roleLabel} experience — where to find curriculum, stats, and key features.
+            </p>
+          </div>
+          <button
+            onClick={onStartTour}
+            className="shrink-0 bg-soft-pink text-white px-8 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+          >
+            <Play size={20} fill="currentColor" /> Take the Tour
+          </button>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         <GuideCard icon={<BookOpen className="text-blue-500" />} title="Curriculum" text="Browse NGSS-aligned units and modules for Grade 7. Each module targets a specific scientific concept." />

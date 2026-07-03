@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'motion/react';
-import { TrendingUp, CheckCircle2, Clock, Brain, Flame, Star, Target, BookOpen, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, CheckCircle2, Clock, Brain, Flame, Star, Target, BookOpen, Layers, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { TestResult, UserState } from '../types';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
 
@@ -114,7 +114,8 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0 }: Dash
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20" data-tour="student-performance-chart">
-          <h3 className="text-xl font-black mb-8 text-slate-900 dark:text-slate-100">Test Performance History</h3>
+          <h3 className="text-xl font-black mb-2 text-slate-900 dark:text-slate-100">Test Performance Over Time</h3>
+          <p className="text-sm font-bold text-slate-400 mb-8">Each bar is one test. Higher is better (green = strong).</p>
           <div className="h-72">
             {results.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -175,6 +176,25 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0 }: Dash
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20" data-tour="student-module-progress">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center">
+            <BookOpen size={20} className="text-blue-500" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Module Progress</h3>
+            <p className="text-sm font-bold text-slate-400">Per-module completion and time spent</p>
+          </div>
+        </div>
+        <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+          <Layers size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+          <p className="font-black text-slate-500 dark:text-slate-400 mb-1">Detailed module stats arrive as modules roll out</p>
+          <p className="text-sm font-bold text-slate-400 max-w-md mx-auto">
+            Once you begin curriculum modules and simulations, you'll see completion status, time spent per module, and unit-test results here.
+          </p>
         </div>
       </div>
     </div>
@@ -303,7 +323,7 @@ function StatCard({ icon, label, value, subtext, accent, onClick }: {
   };
   const bg = accent ? accentMap[accent] || 'bg-slate-50' : 'bg-slate-50';
   return (
-    <button type="button" onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:shadow-xl hover:border-soft-pink/30 transition-all flex flex-col text-left w-full cursor-pointer">
+    <button type="button" onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:scale-105 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-black/40 hover:border-soft-pink/30 transition-all duration-200 flex flex-col text-left w-full cursor-pointer">
       <div className={`w-11 h-11 ${bg} rounded-2xl flex items-center justify-center mb-5`}>{icon}</div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</p>
       <h4 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{value}</h4>

@@ -1,0 +1,50 @@
+---
+description: Light and dark mode styling for buttons and UI controls
+globs: frontend/src/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Dark mode UI
+
+All new buttons, inputs, panels, and interactive controls must work in both light and dark mode. Pair every surface/text/border class with a `dark:` variant.
+
+## Reuse shared classes
+
+Import from `frontend/src/lib/buttonStyles.ts` when possible:
+
+- `GHOST_BUTTON_CLASS` — secondary toolbar actions (Refresh, etc.)
+- `CANCEL_BUTTON_CLASS` — modal dismiss / cancel
+- `ICON_GHOST_BUTTON_CLASS` — icon-only controls
+- `TEXT_LINK_CLASS`, `BACK_LINK_CLASS`, `NAV_LINK_CLASS` — text links
+
+## Primary actions
+
+Solid CTAs and submit/send buttons:
+
+```
+bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900
+```
+
+Add `hover:opacity-90` and `disabled:opacity-50` as needed.
+
+## Surfaces and text
+
+- Cards/panels: `bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800`
+- Headings: `text-slate-900 dark:text-slate-100`
+- Body/muted: `text-slate-700 dark:text-slate-400` or `text-slate-500 dark:text-slate-400`
+- Inputs: `bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100`
+
+## Accent tints (soft-pink, sage-green)
+
+Use low-opacity backgrounds with dark variants:
+
+- `bg-soft-pink/10 dark:bg-soft-pink/15` (icons, list highlights)
+- `bg-soft-pink/15 dark:bg-soft-pink/20` (message bubbles)
+- `bg-sage-green/15 dark:bg-sage-green/20` (reply bubbles)
+
+Avoid full `bg-soft-pink text-white` on buttons in dark mode — it reads too bright; prefer the slate primary pattern above.
+
+## Errors and hovers
+
+- Errors: `bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400`
+- Hover fills: `hover:bg-slate-100 dark:hover:bg-slate-800`
