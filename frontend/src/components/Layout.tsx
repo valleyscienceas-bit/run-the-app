@@ -1,10 +1,10 @@
-import React from 'react';
-import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck, UserCircle, CreditCard, ClipboardList, BarChart2, HelpCircle } from 'lucide-react';
+import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck, UserCircle, CreditCard, ClipboardList, BarChart2, HelpCircle, Users } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { UserState, AppTab } from '../types';
 import { ValerieMascot } from './ValerieMascot';
 import { ThemeToggle } from './ThemeToggle';
+import { DANGER_LINK_CLASS, ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,6 +24,7 @@ interface LayoutProps {
 export function Layout({ children, activeTab, onTabChange, userState, onLogout, isDemo, demoViewRole, onDemoRoleSwitch }: LayoutProps) {
   const role = isDemo ? demoViewRole : userState.role;
   const showStudentNav = role === 'student';
+  const showDistrictStudentNav = role === 'student' && userState.path === 'district';
   const showParentNav = role === 'parent';
   const showTeacherNav = userState.role === 'teacher';
   const showAdminNav = userState.role === 'admin';
@@ -56,8 +57,14 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
         <div className="space-y-3">
           {showStudentNav && (
             <>
-              <NavItem icon={<BookOpen size={22} />} label="Curriculum" active={activeTab === 'curriculum'} onClick={() => onTabChange('curriculum')} />
-              <NavItem icon={<Beaker size={22} />} label="Socratic Lab" active={activeTab === 'chat'} onClick={() => onTabChange('chat')} />
+              <NavItem icon={<BookOpen size={22} />} label="Curriculum" active={activeTab === 'curriculum'} onClick={() => onTabChange('curriculum')} tourId="nav-curriculum" />
+              <NavItem icon={<Beaker size={22} />} label="Socratic Lab" active={activeTab === 'chat'} onClick={() => onTabChange('chat')} tourId="nav-chat" />
+            </>
+          )}
+          {showDistrictStudentNav && (
+            <>
+              <NavItem icon={<Users size={22} />} label="My Class" active={activeTab === 'my-class'} onClick={() => onTabChange('my-class')} tourId="nav-my-class" />
+              <NavItem icon={<ClipboardList size={22} />} label="My Assignments" active={activeTab === 'my-assignments'} onClick={() => onTabChange('my-assignments')} tourId="nav-my-assignments" />
             </>
           )}
           {(showStudentNav || showParentNav || showTeacherNav) && (
@@ -66,6 +73,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
               label={showParentNav ? "Student Progress" : showTeacherNav ? "My Class" : "Stats Page"} 
               active={activeTab === 'dashboard'} 
               onClick={() => onTabChange('dashboard')}
+              tourId="nav-dashboard"
             />
           )}
           {showAdminNav && (
@@ -76,20 +84,20 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
           )}
           {showParentNav && (
             <>
-              <NavItem icon={<UserCircle size={22} />} label="Student Account" active={activeTab === 'student-account'} onClick={() => onTabChange('student-account')} />
-              <NavItem icon={<CreditCard size={22} />} label="Billing" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} />
+              <NavItem icon={<UserCircle size={22} />} label="Student Account" active={activeTab === 'student-account'} onClick={() => onTabChange('student-account')} tourId="nav-student-account" />
+              <NavItem icon={<CreditCard size={22} />} label="Billing" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} tourId="nav-billing" />
             </>
           )}
           {showTeacherNav && (
             <>
-              <NavItem icon={<ClipboardList size={22} />} label="Assignments" active={activeTab === 'assignments'} onClick={() => onTabChange('assignments')} />
-              <NavItem icon={<BarChart2 size={22} />} label="Class Tests" active={activeTab === 'class-tests'} onClick={() => onTabChange('class-tests')} />
+              <NavItem icon={<ClipboardList size={22} />} label="Assignments" active={activeTab === 'assignments'} onClick={() => onTabChange('assignments')} tourId="nav-assignments" />
+              <NavItem icon={<BarChart2 size={22} />} label="Class Tests" active={activeTab === 'class-tests'} onClick={() => onTabChange('class-tests')} tourId="nav-class-tests" />
             </>
           )}
           {userState.role === 'founder' && (
             <NavItem icon={<ShieldCheck size={22} />} label="Founder View" active={activeTab === 'founder'} onClick={() => onTabChange('founder')} />
           )}
-          <NavItem icon={<Settings size={22} />} label="Settings" active={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
+          <NavItem icon={<Settings size={22} />} label="Settings" active={activeTab === 'settings'} onClick={() => onTabChange('settings')} tourId="nav-settings" />
         </div>
 
         <div className="absolute bottom-10 left-8 right-8 space-y-3">
@@ -106,7 +114,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
             </p>
             <button 
               onClick={onLogout}
-              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors"
+              className={cn(DANGER_LINK_CLASS, 'text-xs')}
             >
               <LogOut size={14} /> Log Out
             </button>
@@ -141,6 +149,16 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
             </button>
           </>
         )}
+        {showDistrictStudentNav && (
+          <>
+            <button onClick={() => onTabChange('my-class')} className={cn("p-2", activeTab === 'my-class' ? "text-soft-pink" : "text-slate-300 dark:text-slate-600")}>
+              <Users size={28} />
+            </button>
+            <button onClick={() => onTabChange('my-assignments')} className={cn("p-2", activeTab === 'my-assignments' ? "text-soft-pink" : "text-slate-300 dark:text-slate-600")}>
+              <ClipboardList size={28} />
+            </button>
+          </>
+        )}
         {showTeacherNav && (
           <>
             <button onClick={() => onTabChange('assignments')} className={cn("p-2", activeTab === 'assignments' ? "text-soft-pink" : "text-slate-300")}>
@@ -159,7 +177,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
         <button onClick={() => onTabChange('settings')} className={cn("p-2", activeTab === 'settings' ? "text-soft-pink" : "text-slate-300")}>
           <Settings size={28} />
         </button>
-        <button onClick={onLogout} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+        <button onClick={onLogout} className={cn(ICON_GHOST_BUTTON_CLASS, 'hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30')}>
           <LogOut size={28} />
         </button>
       </nav>
@@ -174,10 +192,11 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
   );
 }
 
-function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) {
+function NavItem({ icon, label, active, onClick, tourId }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, tourId?: string }) {
   return (
     <button
       onClick={onClick}
+      data-tour={tourId}
       className={cn(
         "w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group",
         active 

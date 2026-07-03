@@ -14,17 +14,19 @@ import { PlacementTest } from './components/PlacementTest';
 import { UnitView } from './components/UnitView';
 import { PaymentFirewall } from './components/PaymentFirewall';
 import { ParentDashboard } from './components/ParentDashboard';
+import { TEXT_LINK_CLASS } from './lib/buttonStyles';
 import { StudentAccount } from './components/StudentAccount';
 import { Billing } from './components/Billing';
 import { DemoGuide } from './components/DemoGuide';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
-import { TourOverlay } from './components/TourOverlay';
+import { SpotlightTour, PARENT_SPOTLIGHT_STEPS, STUDENT_SPOTLIGHT_STEPS, DISTRICT_STUDENT_SPOTLIGHT_STEPS, TEACHER_SPOTLIGHT_STEPS, MODULE_SPOTLIGHT_STEPS } from './components/SpotlightTour';
+import { StudentClassTab } from './components/StudentClassTab';
+import { StudentAssignmentsTab } from './components/StudentAssignmentsTab';
 import { AssignmentsTab } from './components/AssignmentsTab';
 import { ClassTestsTab } from './components/ClassTestsTab';
 import { FULL_CURRICULUM, UNITS } from './curriculum';
 import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview, TestAnswer } from './types';
-import { PARENT_TOUR_STEPS, STUDENT_TOUR_STEPS } from './components/TourOverlay';
 import { loadThemePreference, applyTheme, saveThemePreference } from './lib/theme';
 
 export default function App() {
@@ -36,6 +38,7 @@ export default function App() {
     isLoggedIn: false
   });
   const [view, setView] = useState<'landing' | 'login' | 'dashboard'>('landing');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [activeTab, setActiveTab] = useState<AppTab>('curriculum');
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedModule, setSelectedModule] = useState<NGSSModule | null>(null);
@@ -48,7 +51,8 @@ export default function App() {
   const [overviewLoading, setOverviewLoading] = useState(false);
   const [demoViewRole, setDemoViewRole] = useState<'student' | 'parent'>('student');
   const [showTour, setShowTour] = useState(false);
-  const [tourRole, setTourRole] = useState<'student' | 'parent'>('student');
+  const [showModuleTour, setShowModuleTour] = useState(false);
+  const [tourRole, setTourRole] = useState<'student' | 'parent' | 'teacher'>('student');
   const [demoExpired, setDemoExpired] = useState(false);
   const [teacherStudents, setTeacherStudents] = useState<StudentOverview[]>([]);
   const [selectedTeacherStudentUid, setSelectedTeacherStudentUid] = useState('');
@@ -140,6 +144,9 @@ export default function App() {
             if (profileData.role === 'parent' && !profileData.hasCompletedParentTour) {
               setTourRole('parent');
               setShowTour(true);
+            } else if (profileData.role === 'teacher' && !profileData.hasCompletedTeacherTour) {
+              setTourRole('teacher');
+              setShowTour(true);
             } else if (profileData.role === 'student' && !profileData.hasCompletedStudentTour && results.length > 0) {
               setTourRole('student');
               setShowTour(true);
@@ -224,6 +231,8 @@ export default function App() {
     }
   };
 
+  const goToLanding = () => setView('landing');
+
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -233,8 +242,8 @@ export default function App() {
         path: 'individual',
         isLoggedIn: false
       });
-      setView('landing');
       setActiveTab('curriculum');
+      goToLanding();
     } catch (err) {
       console.error("Logout error:", err);
     }
@@ -285,11 +294,6 @@ export default function App() {
     setTimeout(() => {
       isProcessingPayment.current = false;
     }, 5000);
-  };
-
-  const handleModuleSelect = (module: NGSSModule) => {
-    setSelectedModule(module);
-    setActiveTab('chat');
   };
 
   const handleTestComplete = async (score: number, gaps: string[], answers: TestAnswer[] = []) => {
@@ -356,7 +360,7 @@ export default function App() {
       const res = await fetch('/api/student-overview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parentUid, studentUid: studentUid || activeStudentUid })
+        body: JSON.stringify({ parentUid, studentUid })
       });
       if (res.ok) {
         const data = await res.json();
@@ -420,7 +424,31 @@ export default function App() {
 
   const handleSwitchStudent = (studentUid: string) => {
     setActiveStudentUid(studentUid);
+    setStudentOverview(null);
     if (user) loadStudentOverview(user.uid, studentUid);
+  };
+
+  const handleModuleSelect = (module: NGSSModule) => {
+    setSelectedModule(module);
+    setActiveTab('chat');
+    const tourKey = `vs-module-tour:${module.id}`;
+    if (!localStorage.getItem(tourKey)) {
+      setTimeout(() => setShowModuleTour(true), 400);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'chat') return;
+    // #region agent log
+    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'App.tsx:chat-tab',message:'chat tab activated',data:{activeTab,role:appState.role,hasModule:!!selectedModule},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [activeTab, appState.role, selectedModule]);
+
+  const handleModuleTourComplete = () => {
+    if (selectedModule) {
+      localStorage.setItem(`vs-module-tour:${selectedModule.id}`, '1');
+    }
+    setShowModuleTour(false);
   };
 
   const handleAddStudent = async (data: { name: string; username: string; email: string; password: string; grade: GradeLevel }) => {
@@ -454,7 +482,11 @@ export default function App() {
   const handleTourComplete = async () => {
     setShowTour(false);
     if (!user || !appState.profile) return;
-    const field = tourRole === 'parent' ? 'hasCompletedParentTour' : 'hasCompletedStudentTour';
+    const field = tourRole === 'parent'
+      ? 'hasCompletedParentTour'
+      : tourRole === 'teacher'
+      ? 'hasCompletedTeacherTour'
+      : 'hasCompletedStudentTour';
     try {
       await updateDoc(doc(db, 'users', user.uid), { [field]: true });
       handleUpdateProfile({ ...appState.profile, [field]: true });
@@ -510,10 +542,10 @@ export default function App() {
           <p className="text-slate-600 font-medium mb-8 leading-relaxed">
             Your 48-hour demo access has expired. We'd love to hear your feedback, and you can sign up anytime for full access at $8/month or $90/year.
           </p>
-          <button onClick={() => { setDemoExpired(false); handleLogout(); }} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all mb-4">
+          <button onClick={() => { setDemoExpired(false); handleLogout(); }} className={`w-full ${TEXT_LINK_CLASS} py-3 mb-4 hover:text-soft-pink dark:hover:text-soft-pink`}>
             Back to Home
           </button>
-          <a href="#how-it-works" onClick={() => { handleLogout(); setView('landing'); }} className="text-sm font-bold text-soft-pink hover:underline">
+          <a href="#how-it-works" onClick={() => { setDemoExpired(false); handleLogout(); }} className="text-sm font-bold text-soft-pink hover:underline">
             Learn more about Valley Science
           </a>
         </div>
@@ -522,11 +554,16 @@ export default function App() {
   }
 
   if (view === 'landing') {
-    return <LandingPage onLoginClick={() => setView('login')} />;
+    return (
+      <LandingPage
+        onLoginClick={() => { setAuthMode('login'); setView('login'); }}
+        onSignUpClick={() => { setAuthMode('signup'); setView('login'); }}
+      />
+    );
   }
 
   if (view === 'login') {
-    return <LoginSelection onBack={() => setView('landing')} onLogin={handleLogin} />;
+    return <LoginSelection initialMode={authMode} onBack={goToLanding} onLogin={handleLogin} />;
   }
 
   if (isGated) {
@@ -544,10 +581,28 @@ export default function App() {
       onDemoRoleSwitch={handleDemoRoleSwitch}
     >
       {showTour && (
-        <TourOverlay
-          steps={tourRole === 'parent' ? PARENT_TOUR_STEPS : STUDENT_TOUR_STEPS}
+        <SpotlightTour
+          steps={
+            tourRole === 'parent'
+              ? PARENT_SPOTLIGHT_STEPS.filter(s => s.target !== '[data-tour="parent-student-switcher"]' || (studentOverview?.linkedStudents?.length || 0) > 1)
+              : tourRole === 'teacher'
+              ? TEACHER_SPOTLIGHT_STEPS
+              : [
+                  ...STUDENT_SPOTLIGHT_STEPS,
+                  ...(appState.path === 'district' ? DISTRICT_STUDENT_SPOTLIGHT_STEPS : []),
+                ]
+          }
           onComplete={handleTourComplete}
           onDismiss={() => setShowTour(false)}
+          onNavigateTab={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
+        />
+      )}
+      {showModuleTour && effectiveRole === 'student' && (
+        <SpotlightTour
+          steps={MODULE_SPOTLIGHT_STEPS}
+          onComplete={handleModuleTourComplete}
+          onDismiss={handleModuleTourComplete}
+          onNavigateTab={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
         />
       )}
       {showPlacementPopup && (
@@ -645,7 +700,7 @@ export default function App() {
                 </button>
               </header>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8" data-tour="curriculum-units">
                 {UNITS.filter(u => u.gradeLevel === appState.grade).map((unit, index) => (
                   <motion.div
                     key={unit.id}
@@ -696,12 +751,15 @@ export default function App() {
             overview={studentOverview}
             loading={overviewLoading}
             onRefresh={() => effectiveParentUid && loadStudentOverview(effectiveParentUid, activeStudentUid)}
+            onSwitchStudent={handleSwitchStudent}
           />
         ) : appState.role === 'teacher' ? (
           <TeacherDashboard
             students={teacherStudents}
+            teacherUid={user?.uid}
             selectedOverview={selectedTeacherStudentUid ? teacherStudents.find(s => s.studentProfile?.uid === selectedTeacherStudentUid) || null : null}
             onSelectStudent={setSelectedTeacherStudentUid}
+            onRefresh={() => user && activeClassroomId && loadTeacherData(user.uid, activeClassroomId)}
           />
         ) : appState.role === 'admin' ? (
           <AdminDashboard
@@ -718,11 +776,23 @@ export default function App() {
       )}
 
       {activeTab === 'assignments' && appState.role === 'teacher' && (
-        <AssignmentsTab classroomId={activeClassroomId} teacherUid={user?.uid} />
+        <AssignmentsTab
+          classroomId={activeClassroomId}
+          fallbackClassroomId={appState.profile?.classroomIds?.[0]}
+          teacherUid={user?.uid}
+        />
       )}
 
       {activeTab === 'class-tests' && appState.role === 'teacher' && (
         <ClassTestsTab classroomId={activeClassroomId} />
+      )}
+
+      {activeTab === 'my-class' && effectiveRole === 'student' && appState.path === 'district' && (
+        <StudentClassTab studentUid={user?.uid} />
+      )}
+
+      {activeTab === 'my-assignments' && effectiveRole === 'student' && appState.path === 'district' && (
+        <StudentAssignmentsTab studentUid={user?.uid} />
       )}
 
       {activeTab === 'student-account' && effectiveRole === 'parent' && user && (
@@ -738,7 +808,7 @@ export default function App() {
       )}
 
       {activeTab === 'billing' && effectiveRole === 'parent' && (
-        <Billing profile={appState.profile} />
+        <Billing profile={appState.profile} linkedStudents={studentOverview?.linkedStudents} />
       )}
 
       {activeTab === 'settings' && (
@@ -746,7 +816,9 @@ export default function App() {
           userState={appState}
           onUpdateProfile={handleUpdateProfile}
           onReplayTour={() => {
-            setTourRole(effectiveRole === 'parent' ? 'parent' : 'student');
+            if (appState.role === 'parent') setTourRole('parent');
+            else if (appState.role === 'teacher') setTourRole('teacher');
+            else setTourRole('student');
             setShowTour(true);
           }}
         />

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { StudentOverview, GradeLevel } from '../types';
 import { FormError } from './FormError';
+import { CANCEL_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface StudentAccountProps {
   overview: StudentOverview | null;
@@ -36,6 +37,7 @@ export function StudentAccount({
   const [errorShake, setErrorShake] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', username: '', email: '', password: '', grade: '6' as GradeLevel });
   const [adding, setAdding] = useState(false);
+  const [gradeWarning, setGradeWarning] = useState<{ open: boolean; newGrade: GradeLevel | null }>({ open: false, newGrade: null });
 
   if (loading && !overview) {
     return (
@@ -99,11 +101,17 @@ export function StudentAccount({
     setError(null);
     try {
       await onGradeChange(student.uid, newGrade);
+      setGradeWarning({ open: false, newGrade: null });
     } catch (err: any) {
       setError(err.message);
     } finally {
       setSavingGrade(false);
     }
+  };
+
+  const requestGradeChange = (newGrade: GradeLevel) => {
+    if (newGrade === student.grade) return;
+    setGradeWarning({ open: true, newGrade });
   };
 
   const studentName = student.name || 'Student';
@@ -170,9 +178,10 @@ export function StudentAccount({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Grade Level</p>
               <select
+                data-tour="parent-grade-select"
                 value={student.grade || '6'}
                 disabled={savingGrade}
-                onChange={e => handleGradeChange(e.target.value as GradeLevel)}
+                onChange={e => requestGradeChange(e.target.value as GradeLevel)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-black text-slate-900 text-sm outline-none focus:border-soft-pink disabled:opacity-50"
               >
                 {['3','4','5','6','7','8'].map(g => <option key={g} value={g}>Grade {g}</option>)}
@@ -229,6 +238,48 @@ export function StudentAccount({
         </div>
       )}
 
+      {gradeWarning.open && gradeWarning.newGrade && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="bg-white max-w-md w-full rounded-[40px] p-10 shadow-2xl relative">
+            <button
+              onClick={() => !savingGrade && setGradeWarning({ open: false, newGrade: null })}
+              className="absolute top-6 right-6 text-slate-300 hover:text-slate-500"
+            >
+              <X size={22} />
+            </button>
+            <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+              <AlertTriangle size={32} className="text-orange-500" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-3">Change grade level?</h3>
+            <p className="text-slate-600 font-medium leading-relaxed mb-4">
+              You are changing {studentName} from <span className="font-black">Grade {student.grade}</span> to{' '}
+              <span className="font-black">Grade {gradeWarning.newGrade}</span>.
+            </p>
+            <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl mb-6">
+              <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                {studentName} will <span className="font-black text-orange-600">not be able to access Grade {student.grade} curriculum</span> until you change the grade level back. Their test scores and module progress for Grade {student.grade} are saved and will not be deleted.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setGradeWarning({ open: false, newGrade: null })}
+                disabled={savingGrade}
+                className={CANCEL_BUTTON_CLASS}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleGradeChange(gradeWarning.newGrade!)}
+                disabled={savingGrade}
+                className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black disabled:opacity-50"
+              >
+                {savingGrade ? 'Saving...' : 'Confirm Change'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {showConfirm && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="bg-white max-w-md w-full rounded-[40px] p-10 shadow-2xl relative">
@@ -245,7 +296,7 @@ export function StudentAccount({
             <input type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Type DELETE" disabled={deleting}
               className="w-full bg-slate-50 border-2 border-transparent focus:border-red-300 rounded-2xl px-5 py-4 font-bold text-slate-900 outline-none transition-all mb-6" />
             <div className="flex gap-3">
-              <button onClick={() => setShowConfirm(false)} disabled={deleting} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black disabled:opacity-50">Cancel</button>
+              <button onClick={() => setShowConfirm(false)} disabled={deleting} className={CANCEL_BUTTON_CLASS}>Cancel</button>
               <button onClick={handleDelete} disabled={confirmText !== 'DELETE' || deleting} className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black disabled:opacity-40">
                 {deleting ? 'Deleting...' : 'Delete Forever'}
               </button>

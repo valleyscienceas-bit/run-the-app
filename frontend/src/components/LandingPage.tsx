@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ValerieMascot } from './ValerieMascot';
 import { ThemeToggle } from './ThemeToggle';
+import { PhoneInput } from './PhoneInput';
+import { getSubmitErrorMessage, parseApiError } from '../utils/formSubmit';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, CheckCircle2, Users, School, Zap, Brain, Beaker, BarChart3, MessageCircle, Layers, Sparkles } from 'lucide-react';
+import { NAV_LINK_CLASS, TEXT_LINK_CLASS } from '../lib/buttonStyles';
 
 interface LandingPageProps {
   onLoginClick: () => void;
+  onSignUpClick?: () => void;
 }
 
 const VALERIE_MESSAGES = [
@@ -16,7 +20,7 @@ const VALERIE_MESSAGES = [
   "Think of me as your personal scientific guide. What shall we explore?"
 ];
 
-export function LandingPage({ onLoginClick }: LandingPageProps) {
+export function LandingPage({ onLoginClick, onSignUpClick }: LandingPageProps) {
   const [messageIndex, setMessageIndex] = useState(0);
   const [activeForm, setActiveForm] = useState<'none' | 'district' | 'contact' | 'feedback' | 'demo'>('none');
   const [contactForm, setContactForm] = useState({
@@ -36,12 +40,14 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
     file: null as File | null
   });
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [contactError, setContactError] = useState<string | null>(null);
   const [demoForm, setDemoForm] = useState({ name: '', email: '', reason: '' });
 
   // Reset form status when opening a new form or after delay
   useEffect(() => {
     if (activeForm !== 'none') {
       setContactStatus('idle');
+      setContactError(null);
     }
   }, [activeForm]);
 
@@ -53,16 +59,14 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
       }, 2500);
       return () => clearTimeout(timer);
     } else if (contactStatus === 'error') {
-      const timer = setTimeout(() => {
-        setContactStatus('idle');
-      }, 5000);
-      return () => clearTimeout(timer);
+      // Keep error visible until user closes the form or resubmits
     }
   }, [contactStatus]);
 
   const handleDemoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setContactStatus('sending');
+    setContactError(null);
     try {
       const res = await fetch('/api/demo-request', {
         method: 'POST',
@@ -70,66 +74,100 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
         body: JSON.stringify(demoForm)
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to submit demo request.');
+        throw new Error(await parseApiError(res, 'Failed to submit demo request.'));
       }
       setContactStatus('sent');
       setDemoForm({ name: '', email: '', reason: '' });
     } catch (err) {
       console.error('Demo request error:', err);
+      setContactError(getSubmitErrorMessage(err));
       setContactStatus('error');
     }
   };
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
+  const emptyContactForm = () => ({
+    name: '',
+    email: '',
+    phone: '',
+    district: '',
+    role: '',
+    message: '',
+  });
+
+  const handleInquirySubmit = async (e: React.FormEvent, type: 'district' | 'contact') => {
     e.preventDefault();
     setContactStatus('sending');
-    
-    try {
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: 'valley.science.as@gmail.com',
-          subject: `District Inquiry: ${contactForm.district}`,
-          text: `Name: ${contactForm.name}\nEmail: ${contactForm.email}\nPhone #: ${contactForm.phone || 'N/A'}\nDistrict: ${contactForm.district}\nRole: ${contactForm.role}\nMessage: ${contactForm.message}`,
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-              <h2 style="color: #0f172a;">New District Inquiry</h2>
-              <p><strong>From:</strong> ${contactForm.name} (${contactForm.email})</p>
-              ${contactForm.phone ? `<p><strong>Phone #:</strong> ${contactForm.phone}</p>` : ''}
-              <p><strong>District:</strong> ${contactForm.district}</p>
-              <p><strong>Role:</strong> ${contactForm.role}</p>
-              <p><strong>Message:</strong></p>
-              <div style="background: #f8fafc; padding: 15px; border-radius: 8px;">${contactForm.message}</div>
-            </div>
-          `
-        })
-      });
+    setContactError(null);
 
-      // Send confirmation to user
-      await fetch('/api/send-email', {
+    try {
+      const res = await fetch('/api/inquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: contactForm.email,
-          subject: 'We received your Valley Science inquiry',
-          text: `Hi ${contactForm.name}, thank you for reaching out. Our team will get back to you shortly regarding ${contactForm.district}.`,
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-              <h2 style="color: #0f172a;">Inquiry Received</h2>
-              <p>Hi ${contactForm.name},</p>
-              <p>Thank you for reaching out to Valley Science. We've received your inquiry regarding <strong>${contactForm.district}</strong> and our team will be in touch shortly.</p>
-              <p style="color: #64748b; font-size: 14px;">Best regards,<br>The Valley Science Team</p>
-            </div>
-          `
-        })
+          type,
+          name: contactForm.name,
+          email: contactForm.email,
+          phone: contactForm.phone,
+          district: type === 'district' ? contactForm.district : undefined,
+          role: type === 'district' ? contactForm.role : undefined,
+          message: contactForm.message,
+        }),
       });
+      if (!res.ok) {
+        throw new Error(await parseApiError(res, 'Failed to submit. Please try again.'));
+      }
 
       setContactStatus('sent');
-      setContactForm({ name: '', email: '', district: '', role: '', message: '' });
+      setContactForm(emptyContactForm());
     } catch (err) {
-      console.error("Contact form error:", err);
+      console.error('Inquiry form error:', err);
+      setContactError(getSubmitErrorMessage(err));
+      setContactStatus('error');
+    }
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactStatus('sending');
+    setContactError(null);
+
+    try {
+      let filePayload: { name: string; data: string; mimeType: string } | undefined;
+      if (feedbackForm.file) {
+        const buffer = await feedbackForm.file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        filePayload = {
+          name: feedbackForm.file.name,
+          data: btoa(binary),
+          mimeType: feedbackForm.file.type || 'application/octet-stream',
+        };
+      }
+
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: feedbackForm.name,
+          email: feedbackForm.email,
+          phone: feedbackForm.phone,
+          role: feedbackForm.role,
+          message: feedbackForm.message,
+          file: filePayload,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(await parseApiError(res, 'Failed to submit feedback. Please try again.'));
+      }
+
+      setContactStatus('sent');
+      setFeedbackForm({ name: '', email: '', phone: '', role: '', message: '', file: null });
+    } catch (err) {
+      console.error('Feedback form error:', err);
+      setContactError(getSubmitErrorMessage(err));
       setContactStatus('error');
     }
   };
@@ -152,23 +190,29 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
           }}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <ValerieMascot size={40} />
+          <ValerieMascot size={40} forceLightPalette />
           <span className="text-2xl font-black tracking-tighter text-slate-900 dark:text-slate-100">VALLEY SCIENCE</span>
         </button>
         <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-400">
-          <a href="#how-it-works" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">How It Works</a>
-          <a href="#about" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">About Us</a>
-          <a href="#plans" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Plans & Pricing</a>
-          <button onClick={() => setActiveForm('contact')} className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Contact Us</button>
-          <button onClick={() => setActiveForm('feedback')} className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Feedback</button>
+          <a href="#how-it-works" className={NAV_LINK_CLASS}>How It Works</a>
+          <a href="#about" className={NAV_LINK_CLASS}>About Us</a>
+          <a href="#plans" className={NAV_LINK_CLASS}>Plans & Pricing</a>
+          <button onClick={() => setActiveForm('contact')} className={NAV_LINK_CLASS}>Contact Us</button>
+          <button onClick={() => setActiveForm('feedback')} className={NAV_LINK_CLASS}>Feedback</button>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700" />
           <button 
             onClick={onLoginClick}
-            className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
+            className={`hidden sm:inline-flex ${NAV_LINK_CLASS}`}
           >
-            Login/Sign Up
+            Log In
+          </button>
+          <button 
+            onClick={onSignUpClick || onLoginClick}
+            className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 sm:px-6 py-2.5 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
+          >
+            Sign Up
           </button>
         </div>
       </nav>
@@ -208,7 +252,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
             </button>
             <a 
               href="#how-it-works"
-              className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 px-8 py-4 rounded-2xl font-bold hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex items-center gap-2 text-slate-900 dark:text-slate-100"
+              className={`${TEXT_LINK_CLASS} flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-soft-pink dark:hover:text-soft-pink`}
             >
               Learn More
             </a>
@@ -227,7 +271,8 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
               size={400} 
               isWaving={true} 
               expression={messageIndex % 2 === 0 ? 'happy' : 'excited'}
-              className="drop-shadow-2xl" 
+              className="drop-shadow-2xl"
+              forceLightPalette
             />
             <AnimatePresence mode="wait">
               <motion.div 
@@ -235,9 +280,9 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                 initial={{ opacity: 0, y: 10, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                className="absolute -top-16 -right-20 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 max-w-[240px] z-10"
+                className="absolute -top-16 -right-20 bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 max-w-[240px] z-10"
               >
-                <div className="absolute -bottom-2 left-10 w-4 h-4 bg-white border-b border-r border-slate-100 rotate-45" />
+                <div className="absolute -bottom-2 left-10 w-4 h-4 bg-white dark:bg-slate-800 border-b border-r border-slate-100 dark:border-slate-700 rotate-45" />
                 <p className="text-sm font-bold text-slate-900 leading-tight">
                   "{VALERIE_MESSAGES[messageIndex]}"
                 </p>
@@ -291,33 +336,6 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
               <DiffItem title="Simulations, not videos" text="Students interact with science — they don't just watch someone else do it." />
               <DiffItem title="Gap-driven learning" text="Placement and unit tests identify exactly which concepts need work, then Valerie targets those gaps." />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="bg-white py-24 px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-900 mb-4">The "Definition Trap"</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Students can memorize formulas, but often fail to conceptualize the underlying physics. We bridge that gap.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Brain className="text-blue-600" />}
-              title="Socratic AI"
-              description="Valerie never gives direct answers. She asks leading questions to guide your discovery."
-            />
-            <FeatureCard 
-              icon={<Zap className="text-orange-600" />}
-              title="NGSS Aligned"
-              description="Every module is mapped to California NGSS Evidence Statements for grades 3-8."
-            />
-            <FeatureCard 
-              icon={<Users className="text-sage-green" />}
-              title="Dual-Track Access"
-              description="Customized experiences for both District Partnerships and Individual Learners."
-            />
           </div>
         </div>
       </section>
@@ -423,7 +441,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <>
                     <h2 className="text-3xl font-black text-slate-900 mb-2">District Inquiry</h2>
                     <p className="text-slate-500 font-medium mb-8">Bring Valley Science to your school or district.</p>
-                    <form className="space-y-4" onSubmit={handleContactSubmit}>
+                    <form className="space-y-4" onSubmit={(e) => handleInquirySubmit(e, 'district')}>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
                         <input 
@@ -442,15 +460,10 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                           placeholder="jane@district.edu" 
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone # (Optional)</label>
-                        <input 
-                          type="tel" value={contactForm.phone}
-                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
-                          placeholder="+1 (650) 555-0000" 
-                        />
-                      </div>
+                      <PhoneInput
+                        value={contactForm.phone}
+                        onChange={(phone) => setContactForm({ ...contactForm, phone })}
+                      />
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">District/School</label>
                         <input 
@@ -509,7 +522,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <>
                     <h2 className="text-3xl font-black text-slate-900 mb-2">Contact Us</h2>
                     <p className="text-slate-500 font-medium mb-8">Have a question? We'd love to hear from you.</p>
-                    <form className="space-y-4" onSubmit={handleContactSubmit}>
+                    <form className="space-y-4" onSubmit={(e) => handleInquirySubmit(e, 'contact')}>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Name</label>
                         <input 
@@ -528,15 +541,10 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                           placeholder="jane@example.com" 
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone # (Optional)</label>
-                        <input 
-                          type="tel" value={contactForm.phone}
-                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
-                          placeholder="+1 (650) 555-0000" 
-                        />
-                      </div>
+                      <PhoneInput
+                        value={contactForm.phone}
+                        onChange={(phone) => setContactForm({ ...contactForm, phone })}
+                      />
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Message</label>
                         <textarea 
@@ -587,15 +595,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <>
                     <h2 className="text-3xl font-black text-slate-900 mb-2">Feedback</h2>
                     <p className="text-slate-500 font-medium mb-8">Help us improve Valerie and Valley Science.</p>
-                    <form className="space-y-4" onSubmit={async (e) => {
-                      e.preventDefault();
-                      setContactStatus('sending');
-                      // Simulate feedback submission with file
-                      setTimeout(() => {
-                        setContactStatus('sent');
-                        setFeedbackForm({ name: '', email: '', phone: '', role: '', message: '', file: null });
-                      }, 1500);
-                    }}>
+                    <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Name</label>
                         <input 
@@ -612,15 +612,11 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                           className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all" 
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
-                        <input 
-                          type="tel" value={feedbackForm.phone}
-                          onChange={(e) => setFeedbackForm({...feedbackForm, phone: e.target.value})}
-                          className="w-full bg-slate-50 border-2 border-transparent focus:border-sage-green rounded-2xl px-6 py-4 font-bold outline-none transition-all"
-                          placeholder="+1 (650) 555-0000"
-                        />
-                      </div>
+                      <PhoneInput
+                        value={feedbackForm.phone}
+                        onChange={(phone) => setFeedbackForm({ ...feedbackForm, phone })}
+                        label="Phone / WhatsApp"
+                      />
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Role</label>
                         <select 
@@ -676,7 +672,9 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <p className="text-sage-green text-center font-bold text-sm mt-4">Submitted successfully!</p>
                 )}
                 {contactStatus === 'error' && (
-                  <p className="text-soft-pink text-center font-bold text-sm mt-4">Error submitting. Please try again.</p>
+                  <p className="text-soft-pink text-center font-bold text-sm mt-4">
+                    {contactError || 'Error submitting. Please try again.'}
+                  </p>
                 )}
               </div>
             </motion.div>
@@ -689,7 +687,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <ValerieMascot size={30} />
+              <ValerieMascot size={30} forceLightPalette />
               <span className="text-xl font-black tracking-tighter">VALLEY SCIENCE</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -786,7 +784,7 @@ function PricingCard({ title, price, subPrice, features, buttonText, highlight =
           {buttonText}
         </button>
         {secondaryButtonText && onSecondaryClick && (
-          <button onClick={onSecondaryClick} className="w-full py-4 rounded-2xl font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-md shadow-rose-600/20">
+          <button onClick={onSecondaryClick} className={`w-full ${TEXT_LINK_CLASS} py-3 hover:text-soft-pink dark:hover:text-soft-pink`}>
             {secondaryButtonText}
           </button>
         )}

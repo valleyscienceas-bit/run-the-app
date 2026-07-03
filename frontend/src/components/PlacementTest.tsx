@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NGSSModule, Question, TestAnswer } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
+import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface PlacementTestProps {
   module: NGSSModule | null;
@@ -186,7 +187,7 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
           </div>
           <button 
             onClick={onCancel}
-            className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-slate-900 transition-colors"
+            className={ICON_GHOST_BUTTON_CLASS}
           >
             <X size={20} />
           </button>
