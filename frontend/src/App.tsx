@@ -12,13 +12,20 @@ import { LoginSelection } from './components/LoginSelection';
 import { FounderDashboard } from './components/FounderDashboard';
 import { PlacementTest } from './components/PlacementTest';
 import { UnitView } from './components/UnitView';
-import { ValerieWidget } from './components/ValerieWidget';
 import { PaymentFirewall } from './components/PaymentFirewall';
 import { ParentDashboard } from './components/ParentDashboard';
 import { StudentAccount } from './components/StudentAccount';
 import { Billing } from './components/Billing';
+import { DemoGuide } from './components/DemoGuide';
+import { TeacherDashboard } from './components/TeacherDashboard';
+import { AdminDashboard } from './components/AdminDashboard';
+import { TourOverlay } from './components/TourOverlay';
+import { AssignmentsTab } from './components/AssignmentsTab';
+import { ClassTestsTab } from './components/ClassTestsTab';
 import { FULL_CURRICULUM, UNITS } from './curriculum';
-import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview } from './types';
+import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview, TestAnswer } from './types';
+import { PARENT_TOUR_STEPS, STUDENT_TOUR_STEPS } from './components/TourOverlay';
+import { loadThemePreference, applyTheme, saveThemePreference } from './lib/theme';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -39,6 +46,24 @@ export default function App() {
   const [totalLearningSeconds, setTotalLearningSeconds] = useState(0);
   const [studentOverview, setStudentOverview] = useState<StudentOverview | null>(null);
   const [overviewLoading, setOverviewLoading] = useState(false);
+  const [demoViewRole, setDemoViewRole] = useState<'student' | 'parent'>('student');
+  const [showTour, setShowTour] = useState(false);
+  const [tourRole, setTourRole] = useState<'student' | 'parent'>('student');
+  const [demoExpired, setDemoExpired] = useState(false);
+  const [teacherStudents, setTeacherStudents] = useState<StudentOverview[]>([]);
+  const [selectedTeacherStudentUid, setSelectedTeacherStudentUid] = useState('');
+  const [classrooms, setClassrooms] = useState<{ id: string; name: string; grade: string; studentCount: number }[]>([]);
+  const [activeClassroomId, setActiveClassroomId] = useState<string | undefined>();
+  const [activeStudentUid, setActiveStudentUid] = useState<string | undefined>();
+  const [demoParentUid, setDemoParentUid] = useState<string | undefined>();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === 'approved') {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    applyTheme(loadThemePreference());
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -48,6 +73,24 @@ export default function App() {
           const profileDoc = await getDoc(doc(db, 'users', user.uid));
           if (profileDoc.exists()) {
             const profileData = profileDoc.data() as UserProfile;
+
+            applyTheme(loadThemePreference(profileData));
+            if (profileData.theme) saveThemePreference(profileData.theme);
+
+            // Demo expiry check
+            if (profileData.isDemo && profileData.demoExpiresAt) {
+              if (new Date(profileData.demoExpiresAt) < new Date()) {
+                setDemoExpired(true);
+                fetch('/api/demo-feedback', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email: profileData.email, uid: user.uid })
+                }).catch(() => {});
+                return;
+              }
+            }
+            setDemoExpired(false);
+            if (profileData.demoParentUid) setDemoParentUid(profileData.demoParentUid);
             
             // Fetch test results
             const resultsSnap = await getDoc(doc(db, 'results', user.uid));
@@ -79,6 +122,27 @@ export default function App() {
             if (profileData.role === 'parent') {
               setActiveTab('dashboard');
               loadStudentOverview(user.uid);
+            }
+
+            // Teacher: load classroom students
+            if (profileData.role === 'teacher') {
+              setActiveTab('dashboard');
+              loadTeacherData(user.uid, profileData.classroomIds?.[0]);
+            }
+
+            // Admin: load district classrooms
+            if (profileData.role === 'admin' && profileData.districtId) {
+              setActiveTab('dashboard');
+              loadAdminClassrooms(profileData.districtId);
+            }
+
+            // Onboarding tours
+            if (profileData.role === 'parent' && !profileData.hasCompletedParentTour) {
+              setTourRole('parent');
+              setShowTour(true);
+            } else if (profileData.role === 'student' && !profileData.hasCompletedStudentTour && results.length > 0) {
+              setTourRole('student');
+              setShowTour(true);
             }
             
             // Only show placement popup if student, first time, and has no results at all
@@ -228,7 +292,7 @@ export default function App() {
     setActiveTab('chat');
   };
 
-  const handleTestComplete = async (score: number, gaps: string[]) => {
+  const handleTestComplete = async (score: number, gaps: string[], answers: TestAnswer[] = []) => {
     const result: TestResult = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user?.uid || 'guest',
@@ -236,7 +300,8 @@ export default function App() {
       targetId: isTakingTest?.type === 'unit' ? isTakingTest.target.id : appState.grade,
       score,
       gaps,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      answers
     };
 
     const newResults = [...testResults, result];
@@ -259,6 +324,12 @@ export default function App() {
         if (appState.profile) {
           handleUpdateProfile({ ...appState.profile, isFirstTime: false });
         }
+
+        // Trigger student tour after first placement test
+        if (appState.profile && !appState.profile.hasCompletedStudentTour) {
+          setTourRole('student');
+          setShowTour(true);
+        }
       } catch (err) {
         console.error("Error saving test results or updating profile:", err);
       }
@@ -279,17 +350,18 @@ export default function App() {
     }));
   };
 
-  const loadStudentOverview = async (parentUid: string) => {
+  const loadStudentOverview = async (parentUid: string, studentUid?: string) => {
     setOverviewLoading(true);
     try {
       const res = await fetch('/api/student-overview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parentUid })
+        body: JSON.stringify({ parentUid, studentUid: studentUid || activeStudentUid })
       });
       if (res.ok) {
         const data = await res.json();
         setStudentOverview(data);
+        if (data.activeStudentUid) setActiveStudentUid(data.activeStudentUid);
       } else {
         setStudentOverview(null);
       }
@@ -300,6 +372,113 @@ export default function App() {
       setOverviewLoading(false);
     }
   };
+
+  const loadTeacherData = async (teacherUid: string, classroomId?: string) => {
+    try {
+      const classRes = await fetch('/api/teacher-classrooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherUid })
+      });
+      if (classRes.ok) {
+        const classData = await classRes.json();
+        setClassrooms(classData.classrooms || []);
+        const cid = classroomId || classData.classrooms?.[0]?.id;
+        setActiveClassroomId(cid);
+        if (cid) {
+          const studRes = await fetch('/api/classroom-students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ classroomId: cid })
+          });
+          if (studRes.ok) {
+            const studData = await studRes.json();
+            setTeacherStudents(studData.students || []);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error loading teacher data:", err);
+    }
+  };
+
+  const loadAdminClassrooms = async (districtId: string) => {
+    try {
+      const res = await fetch('/api/admin-classrooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ districtId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClassrooms(data.classrooms || []);
+      }
+    } catch (err) {
+      console.error("Error loading admin classrooms:", err);
+    }
+  };
+
+  const handleSwitchStudent = (studentUid: string) => {
+    setActiveStudentUid(studentUid);
+    if (user) loadStudentOverview(user.uid, studentUid);
+  };
+
+  const handleAddStudent = async (data: { name: string; username: string; email: string; password: string; grade: GradeLevel }) => {
+    if (!user) return;
+    const res = await fetch('/api/parent-create-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parentUid: user.uid, ...data })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to create student');
+    }
+    await loadStudentOverview(user.uid);
+  };
+
+  const handleGradeChange = async (studentUid: string, newGrade: GradeLevel) => {
+    if (!user) return;
+    const res = await fetch('/api/update-student-grade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parentUid: user.uid, studentUid, newGrade })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update grade');
+    }
+    await loadStudentOverview(user.uid, studentUid);
+  };
+
+  const handleTourComplete = async () => {
+    setShowTour(false);
+    if (!user || !appState.profile) return;
+    const field = tourRole === 'parent' ? 'hasCompletedParentTour' : 'hasCompletedStudentTour';
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { [field]: true });
+      handleUpdateProfile({ ...appState.profile, [field]: true });
+    } catch (err) {
+      console.error("Tour completion save error:", err);
+    }
+  };
+
+  const handleDemoRoleSwitch = (role: 'student' | 'parent') => {
+    setDemoViewRole(role);
+    if (role === 'parent' && demoParentUid && user) {
+      loadStudentOverview(demoParentUid);
+      setActiveTab('dashboard');
+    } else {
+      setActiveTab('curriculum');
+    }
+  };
+
+  const isDemo = appState.profile?.isDemo === true;
+  const effectiveRole: UserRole = isDemo
+    ? (demoViewRole === 'parent' ? 'parent' : 'student')
+    : appState.role;
+  const layoutUserState: UserState = { ...appState, role: effectiveRole };
+  const effectiveParentUid = isDemo && demoViewRole === 'parent' && demoParentUid ? demoParentUid : user?.uid;
 
   const handleDeleteStudent = async () => {
     if (!user) return;
@@ -321,7 +500,26 @@ export default function App() {
     }
   };
 
-  const isGated = appState.profile?.role === 'student' && appState.path === 'individual' && !appState.profile?.isPaid;
+  const isGated = appState.profile?.role === 'student' && appState.path === 'individual' && !appState.profile?.isPaid && !appState.profile?.isDemo;
+
+  if (demoExpired) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center p-8">
+        <div className="bg-white max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl border border-slate-100">
+          <h2 className="text-3xl font-black text-slate-900 mb-4">Demo Ended</h2>
+          <p className="text-slate-600 font-medium mb-8 leading-relaxed">
+            Your 48-hour demo access has expired. We'd love to hear your feedback, and you can sign up anytime for full access at $8/month or $90/year.
+          </p>
+          <button onClick={() => { setDemoExpired(false); handleLogout(); }} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all mb-4">
+            Back to Home
+          </button>
+          <a href="#how-it-works" onClick={() => { handleLogout(); setView('landing'); }} className="text-sm font-bold text-soft-pink hover:underline">
+            Learn more about Valley Science
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   if (view === 'landing') {
     return <LandingPage onLoginClick={() => setView('login')} />;
@@ -338,10 +536,20 @@ export default function App() {
   return (
     <Layout 
       activeTab={activeTab === 'founder' ? 'dashboard' : activeTab} 
-      onTabChange={(tab) => { if (!showPlacementPopup) setActiveTab(tab as any); }}
-      userState={appState}
+      onTabChange={(tab) => { if (!showPlacementPopup) setActiveTab(tab); }}
+      userState={layoutUserState}
       onLogout={handleLogout}
+      isDemo={isDemo}
+      demoViewRole={demoViewRole}
+      onDemoRoleSwitch={handleDemoRoleSwitch}
     >
+      {showTour && (
+        <TourOverlay
+          steps={tourRole === 'parent' ? PARENT_TOUR_STEPS : STUDENT_TOUR_STEPS}
+          onComplete={handleTourComplete}
+          onDismiss={() => setShowTour(false)}
+        />
+      )}
       {showPlacementPopup && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <motion.div 
@@ -367,7 +575,7 @@ export default function App() {
         </div>
       )}
 
-      {activeTab === 'curriculum' && (
+      {activeTab === 'curriculum' && effectiveRole === 'student' && (
         <div className="space-y-8 animate-in fade-in duration-500">
           {isTakingTest ? (
             <PlacementTest 
@@ -472,7 +680,7 @@ export default function App() {
         </div>
       )}
 
-      {activeTab === 'chat' && (
+      {activeTab === 'chat' && effectiveRole === 'student' && (
         <SocraticChat 
           selectedModule={selectedModule} 
           onBack={() => {
@@ -483,38 +691,70 @@ export default function App() {
       )}
 
       {activeTab === 'dashboard' && (
-        appState.role === 'parent' ? (
+        effectiveRole === 'parent' ? (
           <ParentDashboard
             overview={studentOverview}
             loading={overviewLoading}
-            onRefresh={() => user && loadStudentOverview(user.uid)}
+            onRefresh={() => effectiveParentUid && loadStudentOverview(effectiveParentUid, activeStudentUid)}
+          />
+        ) : appState.role === 'teacher' ? (
+          <TeacherDashboard
+            students={teacherStudents}
+            selectedOverview={selectedTeacherStudentUid ? teacherStudents.find(s => s.studentProfile?.uid === selectedTeacherStudentUid) || null : null}
+            onSelectStudent={setSelectedTeacherStudentUid}
+          />
+        ) : appState.role === 'admin' ? (
+          <AdminDashboard
+            classrooms={classrooms}
+            onSelectClassroom={(id) => setActiveClassroomId(id)}
           />
         ) : (
           <Dashboard results={testResults} userState={appState} totalLearningSeconds={totalLearningSeconds} />
         )
       )}
 
-      {activeTab === 'student-account' && appState.role === 'parent' && (
+      {activeTab === 'demo-guide' && isDemo && (
+        <DemoGuide />
+      )}
+
+      {activeTab === 'assignments' && appState.role === 'teacher' && (
+        <AssignmentsTab classroomId={activeClassroomId} teacherUid={user?.uid} />
+      )}
+
+      {activeTab === 'class-tests' && appState.role === 'teacher' && (
+        <ClassTestsTab classroomId={activeClassroomId} />
+      )}
+
+      {activeTab === 'student-account' && effectiveRole === 'parent' && user && (
         <StudentAccount
           overview={studentOverview}
           loading={overviewLoading}
+          parentUid={effectiveParentUid || user.uid}
           onDeleteStudent={handleDeleteStudent}
+          onSwitchStudent={handleSwitchStudent}
+          onAddStudent={handleAddStudent}
+          onGradeChange={handleGradeChange}
         />
       )}
 
-      {activeTab === 'billing' && appState.role === 'parent' && (
+      {activeTab === 'billing' && effectiveRole === 'parent' && (
         <Billing profile={appState.profile} />
       )}
 
       {activeTab === 'settings' && (
-        <Settings userState={appState} onUpdateProfile={handleUpdateProfile} />
+        <Settings
+          userState={appState}
+          onUpdateProfile={handleUpdateProfile}
+          onReplayTour={() => {
+            setTourRole(effectiveRole === 'parent' ? 'parent' : 'student');
+            setShowTour(true);
+          }}
+        />
       )}
 
       {activeTab === 'founder' && (
         <FounderDashboard />
       )}
-
-      <ValerieWidget />
     </Layout>
   );
 }

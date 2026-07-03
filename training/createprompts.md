@@ -20,6 +20,8 @@ For parents:
 -- allow parents to connect their account to multiple students. how would I do that. Do not continue on with this bullet point without giving me a detailed plan on how you are going to go through with this point about having multiple student accounts connected to one parent. Just a suggestion, let me know if there is a better one; when you create one student account and the parent has set up their own account for that one student, for the next student do not have them set up an account the normal route. have the parent log into their own account and there should be a button to link another student and creating a new account. just a suggestions let me know if there is a better way.
 -- Do not allow parents to create their own account, only allow them to log in. When clicking parent in the welcome area, only give the option to log in.
 -- They do not need access to Valerie, only student accounts should have access
+-- In the statistics page for the child, make it so that the four statistics are buttons and if I click on one of them they give me a detailed list of what the child did to contribute to that statistical value
+-- If a parent would like to increase their child's grade level without the completion of all modules, they are able to through their parent account.
 
 For students:
 -- Once they are signed in for the first time and after they have taken their placement test, give them a option to take a quick tour around their account, the different pages, and different functions and the different things they can do. At the end of the tour show them that they can return to it using a button on the settings page. include more information, as there are actual modules and more functions on a student account than there is on a parent
@@ -28,7 +30,8 @@ For all accounts:
 -- Explain to me what I need to do to enable 2-factor Authentication for the accounts. Am I able to enable passkeys, sms messages, Authentication apps, what can I do
 -- For any verification code needed, make it so that the code expires after 10 minutes
 -- Remove valerie from the bottom corner and don't add her again. The student should be able to go to the socratic chat tab to just ask any questions they need. Remove the bottom right corner valerie.
--- There should be a points system in which answering questions correctly, completing a simulation, finishing a module/lesson with a certain score etc. Points will allow the child to buy avatars. This system will be included with the modules. When giving the modules, there will be informaiton about how much each question/lesson/module is worth.
+
+-- If a student has completed all modules in a grade level and have reached a passable score (determined by modules), they have the opportunity to move to a higher grade level.
 
 Throughout the entire site:
 -- After giving an error, and if ther person either clicks submit again or refreshes the page, make it so that the error will dissappear and if needed with pop another error message up after some time. make it so that a consecutive error messages after one another are noticible and it shows that the form submitted there was just an error
@@ -51,4 +54,6 @@ Just wanting to start on the district side:
 
 Questions to ask Sidak:
 -- I was thinking about impletmenting a points system for the students (both individual/district). The students can then use those points to buy like an avatar or something digital (has no real value). What do you think?
+    -- prompt if true:
+        -- There should be a points system in which answering questions correctly, completing a simulation, finishing a module/lesson with a certain score etc. Points will allow the child to buy avatars. This system will be included with the modules. When giving the modules, there will be informaiton about how much each question/lesson/module is worth.
 -- Do we want to create a desktop app not just web app in which Valerie's model can be downloaded with the app and any modules you would want to complete offline you can download for some time (you cannot access the files of Valerie or the download files), then once you either complete the module or the module is inactive for x amount of time, it deletes the download.

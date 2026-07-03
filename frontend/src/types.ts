@@ -8,7 +8,13 @@ export type AppTab =
   | 'founder'
   | 'settings'
   | 'student-account'
-  | 'billing';
+  | 'billing'
+  | 'demo-guide'
+  | 'assignments'
+  | 'class-tests'
+  | 'sandbox';
+
+export type ThemeMode = 'light' | 'dark';
 
 export interface UserProfile {
   uid: string;
@@ -16,7 +22,10 @@ export interface UserProfile {
   username: string;
   email: string;
   parentEmail?: string; // For students
-  linkedStudentUid?: string; // For parents
+  linkedStudentUid?: string; // For parents (legacy single)
+  linkedStudentUids?: string[]; // For parents (multi-student)
+  activeStudentUid?: string; // Which child parent is viewing
+  parentUid?: string; // For students — primary managing parent
   role: UserRole;
   path: AccessPath;
   grade?: GradeLevel;
@@ -25,6 +34,16 @@ export interface UserProfile {
   isPaid: boolean;
   createdAt: string;
   totalLearningSeconds?: number;
+  theme?: ThemeMode;
+  isDemo?: boolean;
+  demoExpiresAt?: string;
+  demoParentUid?: string;
+  demoStudentUid?: string;
+  hasCompletedParentTour?: boolean;
+  hasCompletedStudentTour?: boolean;
+  districtId?: string;
+  classroomIds?: string[];
+  teacherUid?: string;
 }
 
 export interface UserState {
@@ -88,6 +107,15 @@ export interface TestResult {
   score: number;
   gaps: string[];
   timestamp: string;
+  answers?: TestAnswer[];
+}
+
+export interface TestAnswer {
+  questionId: string;
+  questionText: string;
+  selectedAnswer?: string;
+  correct: boolean;
+  concept?: string;
 }
 
 export interface ChatMessage {
@@ -111,4 +139,11 @@ export interface StudentOverview {
   studentProfile: UserProfile | null;
   results: TestResult[];
   stats: LearningStats;
+  linkedStudents?: Pick<UserProfile, 'uid' | 'name' | 'grade' | 'username'>[];
+  activeStudentUid?: string;
+}
+
+export interface DemoProfileRefs {
+  demoStudentUid?: string;
+  demoParentUid?: string;
 }

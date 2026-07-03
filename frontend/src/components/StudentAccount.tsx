@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import {
   User, AtSign, Mail, GraduationCap, CalendarDays, BadgeCheck,
-  Trash2, AlertTriangle, ShieldAlert, X
+  Trash2, AlertTriangle, ShieldAlert, X, Plus, ChevronDown
 } from 'lucide-react';
-import { StudentOverview } from '../types';
+import { StudentOverview, GradeLevel } from '../types';
+import { FormError } from './FormError';
 
 interface StudentAccountProps {
   overview: StudentOverview | null;
   loading: boolean;
+  parentUid: string;
   onDeleteStudent: () => Promise<void>;
+  onSwitchStudent: (studentUid: string) => void;
+  onAddStudent: (data: { name: string; username: string; email: string; password: string; grade: GradeLevel }) => Promise<void>;
+  onGradeChange: (studentUid: string, newGrade: GradeLevel) => Promise<void>;
 }
 
 function formatDate(dateStr?: string): string {
@@ -19,11 +24,18 @@ function formatDate(dateStr?: string): string {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAccountProps) {
+export function StudentAccount({
+  overview, loading, parentUid, onDeleteStudent, onSwitchStudent, onAddStudent, onGradeChange
+}: StudentAccountProps) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [savingGrade, setSavingGrade] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorShake, setErrorShake] = useState(false);
+  const [addForm, setAddForm] = useState({ name: '', username: '', email: '', password: '', grade: '6' as GradeLevel });
+  const [adding, setAdding] = useState(false);
 
   if (loading && !overview) {
     return (
@@ -35,13 +47,14 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
   }
 
   const student = overview?.studentProfile;
+  const linkedStudents = overview?.linkedStudents || [];
 
   if (!student) {
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
         <header>
           <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Student Account</h1>
-          <p className="text-xl text-slate-600 font-medium">Your linked student's account details.</p>
+          <p className="text-xl text-slate-700 font-medium">Your linked student's account details.</p>
         </header>
         <div className="bg-white p-12 rounded-[40px] border border-slate-100 shadow-xl text-center">
           <AlertTriangle size={36} className="text-soft-pink mx-auto mb-4" />
@@ -56,10 +69,40 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
     setDeleting(true);
     try {
       await onDeleteStudent();
-      // On success, the parent is signed out and the app navigates away.
     } catch (err: any) {
       setError(err.message || 'Could not delete the account. Please try again.');
+      setErrorShake(true);
+      setTimeout(() => setErrorShake(false), 400);
       setDeleting(false);
+    }
+  };
+
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdding(true);
+    setError(null);
+    try {
+      await onAddStudent(addForm);
+      setShowAddForm(false);
+      setAddForm({ name: '', username: '', email: '', password: '', grade: '6' });
+    } catch (err: any) {
+      setError(err.message);
+      setErrorShake(true);
+      setTimeout(() => setErrorShake(false), 400);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleGradeChange = async (newGrade: GradeLevel) => {
+    setSavingGrade(true);
+    setError(null);
+    try {
+      await onGradeChange(student.uid, newGrade);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSavingGrade(false);
     }
   };
 
@@ -68,20 +111,45 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
-      <header>
-        <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Student Account</h1>
-        <p className="text-xl text-slate-600 font-medium">
-          Account details for <span className="font-black text-slate-900">{studentName}</span>.
-        </p>
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Student Account</h1>
+          <p className="text-xl text-slate-700 font-medium">
+            Account details for <span className="font-black text-slate-900">{studentName}</span>.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+        >
+          <Plus size={18} /> Add Another Student
+        </button>
       </header>
 
-      {/* Identity card */}
+      {linkedStudents.length > 1 && (
+        <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-lg">
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Switch Student</label>
+          <div className="relative">
+            <select
+              value={overview?.activeStudentUid || student.uid}
+              onChange={e => onSwitchStudent(e.target.value)}
+              className="w-full appearance-none bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-5 py-4 font-bold text-slate-900 outline-none pr-10"
+            >
+              {linkedStudents.map(s => (
+                <option key={s.uid} value={s.uid}>{s.name} (Grade {s.grade})</option>
+              ))}
+            </select>
+            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+        </div>
+      )}
+
+      <FormError message={error} shake={errorShake} />
+
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="bg-gradient-to-r from-soft-pink to-sage-green px-10 py-10 flex items-center gap-6">
           <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg">
-            <span className="text-3xl font-black text-slate-900">
-              {studentName.charAt(0).toUpperCase()}
-            </span>
+            <span className="text-3xl font-black text-slate-900">{studentName.charAt(0).toUpperCase()}</span>
           </div>
           <div>
             <h2 className="text-3xl font-black text-white">{studentName}</h2>
@@ -95,13 +163,27 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
           <InfoRow icon={<User size={18} />} label="Full Name" value={student.name || '—'} />
           <InfoRow icon={<AtSign size={18} />} label="Username" value={student.username || '—'} />
           <InfoRow icon={<Mail size={18} />} label="Email" value={student.email || '—'} />
-          <InfoRow icon={<GraduationCap size={18} />} label="Grade Level" value={student.grade ? `Grade ${student.grade}` : '—'} />
+          <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-slate-400 shrink-0">
+              <GraduationCap size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Grade Level</p>
+              <select
+                value={student.grade || '6'}
+                disabled={savingGrade}
+                onChange={e => handleGradeChange(e.target.value as GradeLevel)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-black text-slate-900 text-sm outline-none focus:border-soft-pink disabled:opacity-50"
+              >
+                {['3','4','5','6','7','8'].map(g => <option key={g} value={g}>Grade {g}</option>)}
+              </select>
+            </div>
+          </div>
           <InfoRow icon={<CalendarDays size={18} />} label="Joined" value={formatDate(student.createdAt)} />
           <InfoRow icon={<BadgeCheck size={18} />} label="Plan Status" value={planLabel} />
         </div>
       </div>
 
-      {/* Danger zone (parent-only control) */}
       <div className="bg-white rounded-[40px] border-2 border-red-100 shadow-xl shadow-red-100/30 overflow-hidden">
         <div className="flex items-center gap-3 px-10 py-6 border-b border-red-50 bg-red-50/40">
           <ShieldAlert size={22} className="text-red-500" />
@@ -122,57 +204,49 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
         </div>
       </div>
 
-      {/* Confirmation modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="bg-white max-w-md w-full rounded-[40px] p-10 shadow-2xl relative">
+            <button onClick={() => !adding && setShowAddForm(false)} className="absolute top-6 right-6 text-slate-300 hover:text-slate-500"><X size={22} /></button>
+            <h3 className="text-2xl font-black text-slate-900 mb-6">Add Another Student</h3>
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <AddInput label="Full Name" value={addForm.name} onChange={v => setAddForm({ ...addForm, name: v })} required />
+              <AddInput label="Username" value={addForm.username} onChange={v => setAddForm({ ...addForm, username: v })} />
+              <AddInput label="Email" type="email" value={addForm.email} onChange={v => setAddForm({ ...addForm, email: v })} required />
+              <AddInput label="Password" type="password" value={addForm.password} onChange={v => setAddForm({ ...addForm, password: v })} required />
+              <div>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Grade</label>
+                <select value={addForm.grade} onChange={e => setAddForm({ ...addForm, grade: e.target.value as GradeLevel })}
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-5 py-4 font-bold outline-none">
+                  {['3','4','5','6','7','8'].map(g => <option key={g} value={g}>Grade {g}</option>)}
+                </select>
+              </div>
+              <button type="submit" disabled={adding} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black disabled:opacity-50">
+                {adding ? 'Creating...' : 'Create Student Account'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
       {showConfirm && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white max-w-md w-full rounded-[40px] p-10 shadow-2xl relative"
-          >
-            <button
-              onClick={() => !deleting && setShowConfirm(false)}
-              className="absolute top-6 right-6 text-slate-300 hover:text-slate-500"
-            >
-              <X size={22} />
-            </button>
+          <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="bg-white max-w-md w-full rounded-[40px] p-10 shadow-2xl relative">
+            <button onClick={() => !deleting && setShowConfirm(false)} className="absolute top-6 right-6 text-slate-300 hover:text-slate-500"><X size={22} /></button>
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6">
               <AlertTriangle size={32} className="text-red-500" />
             </div>
             <h3 className="text-2xl font-black text-slate-900 mb-3">Are you absolutely sure?</h3>
             <p className="text-slate-500 font-medium leading-relaxed mb-6">
               This will permanently delete <span className="font-black text-slate-900">{studentName}'s</span> account
-              and your parent account. To confirm, type <span className="font-black text-red-500">DELETE</span> below.
+              and your parent account. Type <span className="font-black text-red-500">DELETE</span> to confirm.
             </p>
-
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold mb-4 flex items-center gap-2">
-                <AlertTriangle size={18} /> {error}
-              </div>
-            )}
-
-            <input
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type DELETE"
-              disabled={deleting}
-              className="w-full bg-slate-50 border-2 border-transparent focus:border-red-300 rounded-2xl px-5 py-4 font-bold text-slate-900 outline-none transition-all mb-6"
-            />
-
+            <FormError message={error} shake={errorShake} />
+            <input type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Type DELETE" disabled={deleting}
+              className="w-full bg-slate-50 border-2 border-transparent focus:border-red-300 rounded-2xl px-5 py-4 font-bold text-slate-900 outline-none transition-all mb-6" />
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirm(false)}
-                disabled={deleting}
-                className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={confirmText !== 'DELETE' || deleting}
-                className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black hover:bg-red-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
+              <button onClick={() => setShowConfirm(false)} disabled={deleting} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black disabled:opacity-50">Cancel</button>
+              <button onClick={handleDelete} disabled={confirmText !== 'DELETE' || deleting} className="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black disabled:opacity-40">
                 {deleting ? 'Deleting...' : 'Delete Forever'}
               </button>
             </div>
@@ -186,13 +260,23 @@ export function StudentAccount({ overview, loading, onDeleteStudent }: StudentAc
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-3xl border border-slate-100">
-      <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-slate-400 shrink-0">
-        {icon}
-      </div>
+      <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-slate-400 shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">{label}</p>
+        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">{label}</p>
         <p className="text-sm font-black text-slate-900 truncate">{value}</p>
       </div>
+    </div>
+  );
+}
+
+function AddInput({ label, value, onChange, type = 'text', required }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">{label}</label>
+      <input type={type} required={required} value={value} onChange={e => onChange(e.target.value)}
+        className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-5 py-4 font-bold outline-none" />
     </div>
   );
 }
