@@ -19,14 +19,17 @@ interface LayoutProps {
   isDemo?: boolean;
   demoViewRole?: 'student' | 'parent';
   onDemoRoleSwitch?: (role: 'student' | 'parent') => void;
+  teacherUnreadCount?: number;
+  studentUnreadCount?: number;
 }
 
-export function Layout({ children, activeTab, onTabChange, userState, onLogout, isDemo, demoViewRole, onDemoRoleSwitch }: LayoutProps) {
+export function Layout({ children, activeTab, onTabChange, userState, onLogout, isDemo, demoViewRole, onDemoRoleSwitch, teacherUnreadCount = 0, studentUnreadCount = 0 }: LayoutProps) {
   const role = isDemo ? demoViewRole : userState.role;
+  const isDistrictGuestSession = userState.path === 'district' && userState.profile?.uid === 'guest';
   const showStudentNav = role === 'student';
-  const showDistrictStudentNav = role === 'student' && userState.path === 'district';
+  const showDistrictStudentNav = role === 'student' && userState.path === 'district' && !isDistrictGuestSession;
   const showParentNav = role === 'parent';
-  const showTeacherNav = userState.role === 'teacher';
+  const showTeacherNav = userState.role === 'teacher' && !isDistrictGuestSession;
   const showAdminNav = userState.role === 'admin';
 
   return (
@@ -63,7 +66,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
           )}
           {showDistrictStudentNav && (
             <>
-              <NavItem icon={<Users size={22} />} label="My Class" active={activeTab === 'my-class'} onClick={() => onTabChange('my-class')} tourId="nav-my-class" />
+              <NavItem icon={<Users size={22} />} label="My Class" active={activeTab === 'my-class'} onClick={() => onTabChange('my-class')} tourId="nav-my-class" badgeCount={studentUnreadCount} />
               <NavItem icon={<ClipboardList size={22} />} label="My Assignments" active={activeTab === 'my-assignments'} onClick={() => onTabChange('my-assignments')} tourId="nav-my-assignments" />
             </>
           )}
@@ -74,6 +77,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
               active={activeTab === 'dashboard'} 
               onClick={() => onTabChange('dashboard')}
               tourId="nav-dashboard"
+              badgeCount={showTeacherNav ? teacherUnreadCount : undefined}
             />
           )}
           {showAdminNav && (
@@ -135,8 +139,13 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
           </>
         )}
         {(showStudentNav || showParentNav || showTeacherNav || showAdminNav) && (
-          <button onClick={() => onTabChange('dashboard')} className={cn("p-2", activeTab === 'dashboard' ? "text-soft-pink" : "text-slate-300")}>
+          <button onClick={() => onTabChange('dashboard')} className={cn("p-2 relative", activeTab === 'dashboard' ? "text-soft-pink" : "text-slate-300")}>
             <LayoutDashboard size={28} />
+            {showTeacherNav && teacherUnreadCount > 0 && (
+              <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+                {teacherUnreadCount > 9 ? '9+' : teacherUnreadCount}
+              </span>
+            )}
           </button>
         )}
         {showParentNav && (
@@ -151,8 +160,13 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
         )}
         {showDistrictStudentNav && (
           <>
-            <button onClick={() => onTabChange('my-class')} className={cn("p-2", activeTab === 'my-class' ? "text-soft-pink" : "text-slate-300 dark:text-slate-600")}>
+            <button onClick={() => onTabChange('my-class')} className={cn("p-2 relative", activeTab === 'my-class' ? "text-soft-pink" : "text-slate-300 dark:text-slate-600")}>
               <Users size={28} />
+              {studentUnreadCount > 0 && (
+                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+                  {studentUnreadCount > 9 ? '9+' : studentUnreadCount}
+                </span>
+              )}
             </button>
             <button onClick={() => onTabChange('my-assignments')} className={cn("p-2", activeTab === 'my-assignments' ? "text-soft-pink" : "text-slate-300 dark:text-slate-600")}>
               <ClipboardList size={28} />
@@ -192,7 +206,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
   );
 }
 
-function NavItem({ icon, label, active, onClick, tourId }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, tourId?: string }) {
+function NavItem({ icon, label, active, onClick, tourId, badgeCount }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, tourId?: string, badgeCount?: number }) {
   return (
     <button
       onClick={onClick}
@@ -204,10 +218,18 @@ function NavItem({ icon, label, active, onClick, tourId }: { icon: React.ReactNo
           : "text-slate-400 dark:text-slate-500 font-bold hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-slate-800/60"
       )}
     >
-      <div className={cn("transition-transform duration-300 group-hover:scale-110", active ? "text-soft-pink" : "text-slate-300 dark:text-slate-600 group-hover:text-slate-900 dark:group-hover:text-slate-100")}>
+      <div className={cn("relative transition-transform duration-300 group-hover:scale-110", active ? "text-soft-pink" : "text-slate-300 dark:text-slate-600 group-hover:text-slate-900 dark:group-hover:text-slate-100")}>
         {icon}
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+            {badgeCount > 9 ? '9+' : badgeCount}
+          </span>
+        )}
       </div>
-      <span>{label}</span>
+      <span className="flex-1 text-left">{label}</span>
+      {badgeCount !== undefined && badgeCount > 0 && (
+        <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" aria-label={`${badgeCount} unread notifications`} />
+      )}
     </button>
   );
 }

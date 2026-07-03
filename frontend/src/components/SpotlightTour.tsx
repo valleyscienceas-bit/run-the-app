@@ -259,7 +259,7 @@ export const STUDENT_SPOTLIGHT_STEPS: SpotlightStep[] = [
 ];
 
 export const DISTRICT_STUDENT_SPOTLIGHT_STEPS: SpotlightStep[] = [
-  { title: 'My Class', body: 'See who else is in your district class — classmates, usernames, and average scores.', target: '[data-tour="nav-my-class"]', tab: 'my-class', placement: 'right' },
+  { title: 'My Class', body: 'See who else is in your district class — classmates, usernames, and grades.', target: '[data-tour="nav-my-class"]', tab: 'my-class', placement: 'right' },
   { title: 'Classmates', body: 'Everyone enrolled in your section appears here.', target: '[data-tour="student-class-list"]', tab: 'my-class', placement: 'bottom' },
   { title: 'My Assignments', body: 'Work your teacher assigned specifically. The full curriculum is still under Curriculum.', target: '[data-tour="nav-my-assignments"]', tab: 'my-assignments', placement: 'right' },
   { title: 'Assigned Work', body: 'Track due dates, progress bars, and whether you\'ve turned each assignment in.', target: '[data-tour="student-assigned-list"]', tab: 'my-assignments', placement: 'bottom' },

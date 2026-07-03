@@ -262,19 +262,19 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
         )}
       </div>
 
-      <div className="bg-white p-8 md:p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20" data-tour="parent-module-progress">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 rounded-2xl flex items-center justify-center">
             <BookOpen size={20} className="text-blue-500" />
           </div>
           <div>
-            <h3 className="text-xl font-black text-slate-900">Module Progress</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Module Progress</h3>
             <p className="text-sm font-bold text-slate-400">Per-module completion and time spent</p>
           </div>
         </div>
-        <div className="p-8 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center">
-          <Layers size={32} className="text-slate-300 mx-auto mb-4" />
-          <p className="font-black text-slate-500 mb-1">Detailed module stats arrive as modules roll out</p>
+        <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+          <Layers size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+          <p className="font-black text-slate-500 dark:text-slate-400 mb-1">Detailed module stats arrive as modules roll out</p>
           <p className="text-sm font-bold text-slate-400 max-w-md mx-auto">
             Once your student begins curriculum modules and simulations, you'll see completion status, time spent per module, and unit-test results here.
           </p>
@@ -407,7 +407,7 @@ function PlainStatCard({ icon, value, label, explanation, accent, onClick }: {
   };
   const bg = accent ? accentMap[accent] || 'bg-slate-50' : 'bg-slate-50';
   return (
-    <button onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:shadow-xl hover:border-soft-pink/30 transition-all flex flex-col text-left cursor-pointer w-full">
+    <button onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:scale-105 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-black/40 hover:border-soft-pink/30 transition-all duration-200 flex flex-col text-left cursor-pointer w-full">
       <div className={`w-11 h-11 ${bg} rounded-2xl flex items-center justify-center mb-5`}>{icon}</div>
       <h4 className="text-3xl font-black text-slate-900 mb-1">{value}</h4>
       <p className="text-sm font-black text-slate-700 mb-2">{label}</p>

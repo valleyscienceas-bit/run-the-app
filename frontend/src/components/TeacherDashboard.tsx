@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { ChevronLeft, Eye, EyeOff, KeyRound, RefreshCw, ChevronRight } from 'lucide-react';
 import { StudentOverview } from '../types';
 import { ParentDashboard } from './ParentDashboard';
+import { TeacherQuestionsPanel } from './TeacherQuestionsPanel';
 import { BACK_LINK_CLASS, GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface TeacherDashboardProps {
   students: StudentOverview[];
   teacherUid?: string;
+  classroomId?: string;
   onSelectStudent: (uid: string) => void;
   selectedOverview: StudentOverview | null;
   onRefresh: () => void;
+  onNotificationsChange?: (count: number) => void;
 }
 
 export function TeacherDashboard({
-  students, teacherUid, onSelectStudent, selectedOverview, onRefresh
+  students, teacherUid, onSelectStudent, selectedOverview, onRefresh, onNotificationsChange
 }: TeacherDashboardProps) {
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [passwordDraft, setPasswordDraft] = useState<Record<string, string>>({});
@@ -130,6 +133,11 @@ export function TeacherDashboard({
       {message && !selectedOverview && (
         <div className="p-4 bg-sage-green/10 border border-sage-green/20 rounded-2xl text-sage-green text-sm font-bold">{message}</div>
       )}
+
+      <TeacherQuestionsPanel
+        teacherUid={teacherUid}
+        onUnreadChange={(count) => onNotificationsChange?.(count)}
+      />
 
       {students.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 p-12 rounded-[40px] border border-slate-100 dark:border-slate-800 text-center">

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BACK_LINK_CLASS, TEXT_LINK_CLASS } from '../lib/buttonStyles';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
 import { UserRole, AccessPath, GradeLevel, UserProfile } from '../types';
 import { FormError } from './FormError';
 import { INPUT_CLASS, INPUT_CLASS_WITH_ICON } from '../lib/formStyles';
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
+import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken, signOut, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
+import { getMfaPending, setMfaPending, clearMfaPending } from '../lib/mfaSession';
 import { getDoc } from 'firebase/firestore';
+import { getSubmitErrorMessage, parseApiError } from '../utils/formSubmit';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -18,6 +20,7 @@ interface LoginSelectionProps {
   onBack: () => void;
   onLogin: (path: AccessPath, role: UserRole, details?: any) => void;
   initialMode?: 'login' | 'signup';
+  resumeMfaLogin?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -30,20 +33,81 @@ const EMPTY_FORM = {
   grade: '6' as GradeLevel
 };
 
-export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: LoginSelectionProps) {
+export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeMfaLogin = false }: LoginSelectionProps) {
   const [path, setPath] = useState<AccessPath | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile'>('selection');
+  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'login-2fa' | 'guest' | 'complete-profile'>('selection');
   
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [twoFACode, setTwoFACode] = useState('');
+  const [loginMfaMethod, setLoginMfaMethod] = useState<'email' | 'totp' | null>(null);
+  const [loginMfaEmail, setLoginMfaEmail] = useState('');
   const [googleUser, setGoogleUser] = useState<any>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!resumeMfaLogin) return;
+    const pending = getMfaPending();
+    if (!pending) return;
+    setPath('individual');
+    setMode('login');
+    setLoginMfaMethod(pending.method);
+    setLoginMfaEmail(pending.email);
+    setFormData((prev) => ({ ...prev, email: pending.email }));
+    setStep('login-2fa');
+  }, [resumeMfaLogin]);
+
+  const beginMfaLogin = async (
+    profileData: UserProfile,
+    user: { uid: string; email: string | null; getIdToken: () => Promise<string> }
+  ) => {
+    const email = profileData.email || user.email || '';
+    const method = profileData.mfaMethod!;
+    setMfaPending({ uid: user.uid, email, method });
+    setLoginMfaMethod(method);
+    setLoginMfaEmail(email);
+    setFormData((prev) => ({ ...prev, email }));
+
+    if (method === 'email') {
+      const idToken = await user.getIdToken();
+      const codeRes = await fetch('/api/mfa/send-login-code', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      if (!codeRes.ok) {
+        const err = await codeRes.json();
+        throw new Error(err.error || 'Failed to send login verification code.');
+      }
+    }
+
+    await signOut(auth);
+    setTwoFACode('');
+    setStep('login-2fa');
+  };
+
+  const completeProfileLogin = async (profileData: UserProfile) => {
+    onLogin(profileData.path, profileData.role, profileData);
+  };
+
+  const handleAuthenticatedLogin = async (
+    profileData: UserProfile,
+    user: { uid: string; email: string | null; getIdToken: () => Promise<string> }
+  ) => {
+    if (
+      profileData.path === 'individual' &&
+      profileData.mfaEnabled &&
+      (profileData.mfaMethod === 'email' || profileData.mfaMethod === 'totp')
+    ) {
+      await beginMfaLogin(profileData, user);
+      return;
+    }
+    await completeProfileLogin(profileData);
+  };
 
   const setFormError = (msg: string) => {
     setError(msg);
@@ -91,18 +155,27 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
     }
   };
 
+  const ensureSandboxSeeded = async () => {
+    const res = await fetch('/api/seed-sandbox', { method: 'POST' });
+    if (!res.ok) {
+      throw new Error(await parseApiError(res, 'Failed to prepare the district sandbox.'));
+    }
+    return res.json();
+  };
+
   const handleSandboxLogin = async () => {
     setLoading(true);
     clearErrors();
     try {
-      await fetch('/api/seed-sandbox', { method: 'POST' });
+      await ensureSandboxSeeded();
       const userCredential = await signInWithEmailAndPassword(auth, 'sandbox.teacher@valley-science.demo', 'Sandbox123!');
       const profileDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-      if (profileDoc.exists()) {
-        onLogin('district', 'teacher', profileDoc.data());
+      if (!profileDoc.exists()) {
+        throw new Error('Sandbox teacher profile is missing. Please try again.');
       }
-    } catch (err: any) {
-      setFormError(err.message || 'Sandbox login failed.');
+      // onAuthStateChanged loads the full profile and teacher dashboard data.
+    } catch (err: unknown) {
+      setFormError(getSubmitErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -112,14 +185,15 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
     setLoading(true);
     clearErrors();
     try {
-      await fetch('/api/seed-sandbox', { method: 'POST' });
+      await ensureSandboxSeeded();
       const userCredential = await signInWithEmailAndPassword(auth, 'sandbox.student1@valley-science.demo', 'Sandbox123!');
       const profileDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-      if (profileDoc.exists()) {
-        onLogin('district', 'student', profileDoc.data());
+      if (!profileDoc.exists()) {
+        throw new Error('Sandbox student profile is missing. Please try again.');
       }
-    } catch (err: any) {
-      setFormError(err.message || 'Sandbox student login failed.');
+      // onAuthStateChanged loads the full profile and student dashboard data.
+    } catch (err: unknown) {
+      setFormError(getSubmitErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -146,7 +220,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
       const profileDoc = await getDoc(doc(db, 'users', user.uid));
       if (profileDoc.exists()) {
         const profileData = profileDoc.data() as UserProfile;
-        onLogin(profileData.path, profileData.role, profileData);
+        await handleAuthenticatedLogin(profileData, user);
       } else {
         // New user from Google - need to complete profile
         setGoogleUser(user);
@@ -231,11 +305,10 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
         const userCredential = await signInWithEmailAndPassword(auth, loginEmail, formData.password);
         const user = userCredential.user;
         
-        // Fetch profile from Firestore
         const profileDoc = await getDoc(doc(db, 'users', user.uid));
         if (profileDoc.exists()) {
           const profileData = profileDoc.data() as UserProfile;
-          onLogin(profileData.path, profileData.role, profileData);
+          await handleAuthenticatedLogin(profileData, user);
         } else {
           // Fallback if profile missing
           onLogin('individual', role || 'student', { email: user.email });
@@ -259,7 +332,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
       const verifyRes = await fetch('/api/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code: twoFACode })
+        body: JSON.stringify({ email: formData.email, code: twoFACode, purpose: 'signup' })
       });
       if (!verifyRes.ok) {
         const err = await verifyRes.json();
@@ -310,6 +383,43 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogin2FAVerify = async () => {
+    setLoading(true);
+    clearErrors();
+    try {
+      const body: Record<string, string> = { email: loginMfaEmail };
+      if (loginMfaMethod === 'email') {
+        body.emailCode = twoFACode;
+      } else {
+        body.totpCode = twoFACode;
+      }
+
+      const res = await fetch('/api/mfa/complete-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Invalid verification code.');
+      }
+
+      const { customToken, profile } = await res.json();
+      await signInWithCustomToken(auth, customToken);
+      clearMfaPending();
+      onLogin(profile.path, profile.role, profile);
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Verification failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendLoginCode = async () => {
+    clearErrors();
+    setMessage({ type: 'error', text: 'Sign in with your password again to receive a new login code.' });
   };
 
   const handleResendCode = async () => {
@@ -478,7 +588,12 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
                 Sandbox password for all demo accounts: <code className="text-slate-600 dark:text-slate-300">Sandbox123!</code>
               </p>
               <button 
-                onClick={() => onLogin('district', role || 'student')}
+                onClick={() =>
+                  onLogin('district', role || 'student', {
+                    isGuestEntry: true,
+                    name: role === 'teacher' ? 'District Guest Teacher' : 'District Guest Student',
+                  })
+                }
                 className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
               >
                 Enter as Guest
@@ -576,7 +691,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
                       className="mt-1 w-4 h-4 rounded border-slate-300 text-soft-pink focus:ring-soft-pink"
                     />
                     <label htmlFor="tos" className="text-xs text-slate-500 font-medium leading-relaxed">
-                      I agree to the <button type="button" className="text-slate-900 font-bold hover:underline">Terms of Service</button> and <button type="button" className="text-slate-900 font-bold hover:underline">Privacy Policy</button>.
+                      I agree to the <button type="button" className="text-sm text-slate-900 font-bold hover:underline">Terms of Service</button> and <button type="button" className="text-slate-900 font-bold hover:underline">Privacy Policy</button>.
                     </label>
                   </div>
                 )}
@@ -635,6 +750,58 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: Login
                 {loading ? 'Processing...' : 'Verify Parent Email'}
               </button>
             </form>
+          )}
+
+          {step === 'login-2fa' && (
+            <div className="space-y-8">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100">Two-Factor Authentication</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                {loginMfaMethod === 'email' ? (
+                  <>We've sent a login code to <span className="text-slate-900 dark:text-slate-100 font-bold">{loginMfaEmail}</span>. Codes expire in 10 minutes.</>
+                ) : (
+                  <>Enter the 6-digit code from your authenticator app for <span className="text-slate-900 dark:text-slate-100 font-bold">{loginMfaEmail}</span>.</>
+                )}
+              </p>
+
+              <FormError message={error} shake={errorShake} />
+
+              <div className="space-y-6">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={twoFACode}
+                  onChange={e => setTwoFACode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 dark:text-slate-100 outline-none transition-all"
+                />
+
+                <button 
+                  onClick={handleLogin2FAVerify}
+                  disabled={loading || twoFACode.length !== 6}
+                  className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black hover:opacity-90 disabled:opacity-50 transition-all"
+                >
+                  {loading ? 'Verifying...' : 'Verify & Log In'}
+                </button>
+
+                {loginMfaMethod === 'email' && (
+                  <p className="text-center text-xs text-slate-400 font-bold">
+                    Didn't receive a code? <button type="button" onClick={handleResendLoginCode} disabled={loading} className="text-soft-pink hover:underline disabled:opacity-50">Request help</button>
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMfaPending();
+                    setStep('form');
+                    setTwoFACode('');
+                  }}
+                  className="w-full text-sm font-bold text-slate-500 hover:text-slate-700"
+                >
+                  Back to login
+                </button>
+              </div>
+            </div>
           )}
 
           {step === '2fa' && (
