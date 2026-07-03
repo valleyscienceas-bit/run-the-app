@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { User, Lock, ShieldCheck, Save, AlertCircle, ShieldHalf, UserCircle } from 'lucide-react';
+import { User, Lock, ShieldCheck, Save, AlertCircle, ShieldHalf, UserCircle, Sun } from 'lucide-react';
 import { UserState, UserProfile } from '../types';
 import { auth, db, doc, updateDoc } from '../lib/firebase';
 import { updatePassword } from 'firebase/auth';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsProps {
   userState: UserState;
   onUpdateProfile: (updatedProfile: UserProfile) => void;
+  onReplayTour?: () => void;
 }
 
-export function Settings({ userState, onUpdateProfile }: SettingsProps) {
+export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsProps) {
   const profile = userState.profile;
   const isIndividual = userState.path === 'individual';
   const isParent = userState.role === 'parent';
@@ -167,6 +169,27 @@ export function Settings({ userState, onUpdateProfile }: SettingsProps) {
               Change Password
             </button>
           </div>
+        </div>
+
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 lg:col-span-2">
+          <div className="flex items-center gap-3 text-blue-500 font-black text-xs uppercase tracking-widest mb-6">
+            <Sun size={20} />
+            Appearance
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-4">Switch between light and dark mode.</p>
+          <ThemeToggle
+            showLabel
+            className="py-3 px-6 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
+          />
+          {onReplayTour && (
+            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-black text-slate-900 dark:text-slate-100 mb-2">Account Tour</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-4">Replay the guided walkthrough of your account features.</p>
+              <button onClick={onReplayTour} className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-2xl font-black hover:opacity-90 transition-all">
+                Replay Tour
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Account Management */}

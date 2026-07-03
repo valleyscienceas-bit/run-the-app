@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
 import { UserRole, AccessPath, GradeLevel, UserProfile } from '../types';
+import { FormError } from './FormError';
 import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
 import { getDoc } from 'firebase/firestore';
 import { clsx, type ClassValue } from 'clsx';
@@ -30,16 +31,27 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
   const [path, setPath] = useState<AccessPath | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile' | 'parent-signup'>('selection');
+  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile'>('selection');
   
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [twoFACode, setTwoFACode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
   const [googleUser, setGoogleUser] = useState<any>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorShake, setErrorShake] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const setFormError = (msg: string) => {
+    setError(msg);
+    setErrorShake(true);
+    setTimeout(() => setErrorShake(false), 400);
+  };
+
+  const clearErrors = () => {
+    setError(null);
+    setMessage(null);
+  };
 
   // Clear messages after 5 seconds
   useEffect(() => {
@@ -54,7 +66,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
-      setError("Please enter your email address first.");
+      setFormError("Please enter your email address first.");
       return;
     }
     setLoading(true);
@@ -81,55 +93,24 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
 
       setMessage({ type: 'success', text: "Verification link sent! Please check your inbox (and spam) for an email from Valley Science." });
     } catch (err: any) {
-      setError(err.message);
+      setFormError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleParentSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const handleSandboxLogin = async () => {
     setLoading(true);
+    clearErrors();
     try {
-      if (!formData.username.trim()) throw new Error("Please choose a username.");
-      if (formData.password !== formData.confirmPassword) throw new Error("Passwords do not match.");
-      if (formData.password.length < 8) throw new Error("Password must be at least 8 characters.");
-      if (!agreedToTerms) throw new Error("You must agree to the Terms of Service to continue.");
-
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-
-      const profile: UserProfile = {
-        uid: user.uid,
-        name: formData.name || `Parent`,
-        username: formData.username,
-        email: formData.email,
-        role: 'parent',
-        path: 'individual',
-        grade: '6',
-        xp: 0,
-        isFirstTime: false,
-        isPaid: true,
-        createdAt: new Date().toISOString()
-      };
-
-      const profileRes = await fetch('/api/create-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, profile })
-      });
-      if (!profileRes.ok) {
-        const err = await profileRes.json();
-        throw new Error(err.error || 'Failed to create profile');
+      await fetch('/api/seed-sandbox', { method: 'POST' });
+      const userCredential = await signInWithEmailAndPassword(auth, 'sandbox.teacher@valley-science.demo', 'Sandbox123!');
+      const profileDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      if (profileDoc.exists()) {
+        onLogin('district', 'teacher', profileDoc.data());
       }
-      onLogin('individual', 'parent', profile);
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError("An account with this email already exists. Try logging in.");
-      } else {
-        setError(err.message);
-      }
+      setFormError(err.message || 'Sandbox login failed.');
     } finally {
       setLoading(false);
     }
@@ -183,17 +164,17 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
     if (path === 'district') {
       setStep('guest');
     } else if (path === 'individual') {
-      if (mode === 'signup' && role === 'parent') {
-        setStep('parent-signup');
-      } else {
-        setStep('form');
+      // Parents can only log in — accounts are created when their child signs up
+      if (role === 'parent') {
+        setMode('login');
       }
+      setStep('form');
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearErrors();
     setLoading(true);
 
     try {
@@ -207,32 +188,15 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
         if (!agreedToTerms) {
           throw new Error("You must agree to the Terms of Service to continue.");
         }
-        // Verification code is sent to STUDENT email
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        setGeneratedCode(code);
-        
-        try {
-          await fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: formData.email,
-              subject: 'Your Valley Science Verification Code',
-              text: `Your verification code is: ${code}`,
-              html: `
-                <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                  <h2 style="color: #0f172a;">Welcome to Valley Science!</h2>
-                  <p>Please use the following code to verify your account:</p>
-                  <div style="font-size: 32px; font-weight: bold; color: #ec4899; margin: 20px 0;">${code}</div>
-                  <p style="color: #64748b; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
-                </div>
-              `
-            })
-          });
-          console.log(`[EMAIL] Verification Code sent to STUDENT (${formData.email})`);
-        } catch (emailErr) {
-          console.error("Failed to send email:", emailErr);
-          console.log(`[FALLBACK] Verification Code: ${code}`);
+        // Send verification code via backend (10-min expiry)
+        const codeRes = await fetch('/api/send-verification-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, purpose: 'signup' })
+        });
+        if (!codeRes.ok) {
+          const err = await codeRes.json();
+          throw new Error(err.error || 'Failed to send verification code.');
         }
         
         setTwoFACode('');
@@ -270,9 +234,9 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
       }
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
-        setError("An account with this email already exists. Please login instead.");
+        setFormError("An account with this email already exists. Please login instead.");
       } else {
-        setError(err.message);
+        setFormError(err.message);
       }
     } finally {
       setLoading(false);
@@ -280,11 +244,20 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
   };
 
   const handle2FAVerify = async () => {
-    if (twoFACode === generatedCode) {
-      setLoading(true);
-      setError(null);
-      try {
-        let user = googleUser || auth.currentUser;
+    setLoading(true);
+    clearErrors();
+    try {
+      const verifyRes = await fetch('/api/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: twoFACode })
+      });
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.error || 'Invalid verification code.');
+      }
+
+      let user = googleUser || auth.currentUser;
         
         if (!user) {
           // Create Firebase Auth User for email/pass signup
@@ -318,18 +291,37 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
           throw new Error(err.error || 'Failed to create profile');
         }
         onLogin('individual', profile.role, profile);
-      } catch (err: any) {
-        if (err.code === 'auth/email-already-in-use') {
-          setError("This email is already registered. Try logging in.");
-        } else {
-          setError(err.message);
-        }
-        setStep(googleUser ? 'complete-profile' : 'form');
-      } finally {
-        setLoading(false);
+    } catch (err: any) {
+      if (err.code === 'auth/email-already-in-use') {
+        setFormError("This email is already registered. Try logging in.");
+      } else {
+        setFormError(err.message);
       }
-    } else {
-      setError("Invalid code. Try again.");
+      setStep(googleUser ? 'complete-profile' : 'form');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    clearErrors();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/send-verification-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, purpose: 'signup' })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to resend code.');
+      }
+      setMessage({ type: 'success', text: 'A new code has been sent. It expires in 10 minutes.' });
+      setTwoFACode('');
+    } catch (err: any) {
+      setFormError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -387,13 +379,13 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                         </>
                       ) : (
                         <>
-                          <RoleButton active={role === 'parent'} onClick={() => setRole('parent')} icon={<UserCircle size={20} />} label="Parent" />
+                          <RoleButton active={role === 'parent'} onClick={() => { setRole('parent'); setMode('login'); }} icon={<UserCircle size={20} />} label="Parent" />
                           <RoleButton active={role === 'student'} onClick={() => setRole('student')} icon={<GraduationCap size={20} />} label="Student" />
                         </>
                       )}
                     </div>
 
-                    {path === 'individual' && (
+                    {path === 'individual' && role !== 'parent' && (
                       <div className="flex bg-slate-100 p-1 rounded-2xl">
                         <button 
                           onClick={() => setMode('login')}
@@ -410,20 +402,11 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                       </div>
                     )}
 
-                    {role === 'parent' && mode === 'signup' && (
-                      <div className="p-4 bg-soft-pink/5 border border-soft-pink/20 rounded-2xl">
-                        <p className="text-[10px] font-black text-soft-pink uppercase tracking-widest mb-1">Creating a Parent Account</p>
-                        <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                          If your student already signed up, you may have received an email with a "Set Your Password" button — use that instead of signing up here.
-                        </p>
-                      </div>
-                    )}
-
-                    {role === 'parent' && mode === 'login' && (
+                    {role === 'parent' && (
                       <div className="p-4 bg-sage-green/5 border border-sage-green/20 rounded-2xl">
-                        <p className="text-[10px] font-black text-sage-green uppercase tracking-widest mb-1">Parent Access</p>
+                        <p className="text-xs font-black text-sage-green uppercase tracking-widest mb-1">Parent Login Only</p>
                         <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                          Use your email and password, or your username if you set one up.
+                          Parent accounts are created when your child signs up. Use the email from your welcome message to log in.
                         </p>
                       </div>
                     )}
@@ -448,11 +431,20 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                 <Users size={40} className="text-sage-green" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-slate-900 mb-4">You are a Guest</h2>
+                <h2 className="text-3xl font-black text-slate-900 mb-4">District Access</h2>
                 <p className="text-slate-500 font-medium leading-relaxed">
-                  District SSO is currently being provisioned for your school. You can explore the platform as a guest for now.
+                  District SSO is being provisioned for your school. Teachers can try the sandbox with demo students, or enter as a guest.
                 </p>
               </div>
+              {role === 'teacher' && (
+                <button
+                  onClick={handleSandboxLogin}
+                  disabled={loading}
+                  className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {loading ? 'Loading...' : 'Try Sandbox (Demo Teacher)'}
+                </button>
+              )}
               <button 
                 onClick={() => onLogin('district', role || 'student')}
                 className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
@@ -468,80 +460,6 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
             </div>
           )}
 
-          {step === 'parent-signup' && (
-            <form onSubmit={handleParentSignup} className="space-y-6">
-              <button
-                type="button"
-                onClick={() => handleGoBack('selection')}
-                className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-2 hover:text-slate-600 transition-colors"
-              >
-                <ArrowLeft size={16} /> Back
-              </button>
-
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-soft-pink/10 rounded-2xl flex items-center justify-center">
-                  <UserCircle size={22} className="text-soft-pink" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black text-slate-900 leading-none">Parent Account</h2>
-                  <p className="text-slate-400 text-xs font-bold mt-1">Monitor your child's science progress</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-soft-pink/5 border border-soft-pink/20 rounded-2xl">
-                <p className="text-xs font-bold text-soft-pink leading-relaxed">
-                  Already have an account from your child's signup email? Just log in instead — your account was pre-created.
-                </p>
-              </div>
-
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold">{error}</div>
-              )}
-
-              <div className="space-y-4">
-                <Input label="Full Name" value={formData.name} onChange={v => setFormData({...formData, name: v})} placeholder="Jane Doe" icon={<UserIcon size={18} />} />
-                <Input label="Choose a Username" value={formData.username} onChange={v => setFormData({...formData, username: v})} placeholder="janedoe_parent" icon={<ShieldCheck size={18} />} />
-                <Input label="Email Address" type="email" value={formData.email} onChange={v => setFormData({...formData, email: v})} placeholder="you@example.com" icon={<Mail size={18} />} />
-                <Input label="Password" type="password" value={formData.password} onChange={v => setFormData({...formData, password: v})} placeholder="Min. 8 characters" icon={<Lock size={18} />} />
-                <Input label="Confirm Password" type="password" value={formData.confirmPassword} onChange={v => setFormData({...formData, confirmPassword: v})} placeholder="Re-enter password" icon={<ShieldCheck size={18} />} />
-
-                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <input
-                    type="checkbox"
-                    id="parent-tos"
-                    checked={agreedToTerms}
-                    onChange={e => setAgreedToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-slate-300 text-soft-pink focus:ring-soft-pink"
-                  />
-                  <label htmlFor="parent-tos" className="text-xs text-slate-500 font-medium leading-relaxed">
-                    I agree to the <button type="button" className="text-slate-900 font-bold hover:underline">Terms of Service</button> and <button type="button" className="text-slate-900 font-bold hover:underline">Privacy Policy</button>. I confirm I am 18 years of age or older.
-                  </label>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-soft-pink text-white py-4 rounded-2xl font-black hover:bg-soft-pink/90 disabled:opacity-50 transition-all mt-2 flex items-center justify-center gap-2"
-              >
-                {loading ? 'Creating Account...' : 'Create Parent Account'} {!loading && <ArrowRight size={20} />}
-              </button>
-
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400 font-black tracking-widest">Or log in</span></div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => { setMode('login'); handleGoBack('form'); }}
-                className="w-full bg-slate-100 text-slate-700 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all"
-              >
-                I Already Have an Account
-              </button>
-            </form>
-          )}
-
           {step === 'form' && (
             <form onSubmit={handleFormSubmit} className="space-y-6">
               <button 
@@ -552,15 +470,20 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                 <ArrowLeft size={16} /> Back
               </button>
 
-              <h2 className="text-4xl font-black text-slate-900 mb-8">
+              <h2 className="text-4xl font-black text-slate-900 mb-2">
                 {mode === 'login' ? 'Login' : 'Create Account'}
               </h2>
 
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold">
-                  {error}
+              {mode === 'signup' && (
+                <div className="mb-6 p-4 bg-soft-pink/10 border border-soft-pink/20 rounded-2xl">
+                  <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-1">Pricing</p>
+                  <p className="text-sm font-bold text-slate-700">
+                    Individual access is <span className="text-slate-900">$8/month</span> or <span className="text-slate-900">$90/year</span> — shown before payment after signup.
+                  </p>
                 </div>
               )}
+
+              <FormError message={error} shake={errorShake} />
 
               {message && (
                 <div className={`p-4 rounded-2xl text-sm font-bold ${message.type === 'success' ? 'bg-sage-green/10 text-sage-green' : 'bg-red-50 text-red-600'}`}>
@@ -571,9 +494,9 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
               <div className="space-y-4">
                 {mode === 'signup' && (
                   <>
-                    <Input label="Full Name" value={formData.name} onChange={v => setFormData({...formData, name: v})} placeholder="John Doe" icon={<UserIcon size={18} />} />
-                    <Input label="Username" value={formData.username} onChange={v => setFormData({...formData, username: v})} placeholder="johndoe123" icon={<ShieldCheck size={18} />} />
-                    <Input label="Parent/Guardian Email" type="email" value={formData.parentEmail} onChange={v => setFormData({...formData, parentEmail: v})} placeholder="parent@example.com" icon={<Users size={18} />} />
+                    <Input label="Full Name" value={formData.name} onChange={v => { clearErrors(); setFormData({...formData, name: v}); }} placeholder="John Doe" icon={<UserIcon size={18} />} />
+                    <Input label="Username" value={formData.username} onChange={v => { clearErrors(); setFormData({...formData, username: v}); }} placeholder="johndoe123" icon={<ShieldCheck size={18} />} />
+                    <Input label="Parent/Guardian Email" type="email" value={formData.parentEmail} onChange={v => { clearErrors(); setFormData({...formData, parentEmail: v}); }} placeholder="parent@example.com" icon={<Users size={18} />} />
                     <div>
                       <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Grade Level</label>
                       <select 
@@ -590,12 +513,12 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                   label={mode === 'login' ? "Email Address/Username" : "Email Address"} 
                   type={mode === 'login' ? "text" : "email"}
                   value={formData.email} 
-                  onChange={v => setFormData({...formData, email: v})} 
+                  onChange={v => { clearErrors(); setFormData({...formData, email: v}); }} 
                   placeholder={mode === 'login' ? "you@example.com or username" : "you@example.com"} 
                   icon={<Mail size={18} />} 
                 />
                 <div className="relative">
-                  <Input label="Password" type="password" value={formData.password} onChange={v => setFormData({...formData, password: v})} placeholder="••••••••" icon={<Lock size={18} />} />
+                  <Input label="Password" type="password" value={formData.password} onChange={v => { clearErrors(); setFormData({...formData, password: v}); }} placeholder="••••••••" icon={<Lock size={18} />} />
                   {mode === 'login' && (
                     <button 
                       type="button"
@@ -655,14 +578,10 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
               <h2 className="text-4xl font-black text-slate-900 mb-2">Almost there!</h2>
               <p className="text-slate-500 font-medium mb-8">Complete your profile to start learning.</p>
 
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold">
-                  {error}
-                </div>
-              )}
+              <FormError message={error} shake={errorShake} />
 
               <div className="space-y-4">
-                <Input label="Username" value={formData.username} onChange={v => setFormData({...formData, username: v})} placeholder="johndoe123" icon={<ShieldCheck size={18} />} />
+                <Input label="Username" value={formData.username} onChange={v => { clearErrors(); setFormData({...formData, username: v}); }} placeholder="johndoe123" icon={<ShieldCheck size={18} />} />
                 <Input label="Parent/Guardian Email" type="email" value={formData.parentEmail} onChange={v => setFormData({...formData, parentEmail: v})} placeholder="parent@example.com" icon={<Users size={18} />} />
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Grade Level</label>
@@ -690,16 +609,13 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
             <div className="space-y-8">
               <h2 className="text-4xl font-black text-slate-900">Verify Your Email</h2>
               <p className="text-slate-500 font-medium leading-relaxed">
-                We've sent a verification code to <span className="text-slate-900 font-bold">{formData.email}</span>.
+                We've sent a verification code to <span className="text-slate-900 font-bold">{formData.email}</span>. Codes expire in 10 minutes.
               </p>
 
+              <FormError message={error} shake={errorShake} />
+
               <div className="space-y-6">
-                {error && (
-                  <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold text-center">
-                    {error}
-                  </div>
-                )}
-                <input 
+                <input
                   type="text"
                   maxLength={6}
                   value={twoFACode}
@@ -708,22 +624,16 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                   className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 outline-none transition-all"
                 />
 
-                {/* Testing Helper: Display code in UI since console might be hard to find */}
-                <div className="p-4 bg-soft-pink/5 border border-soft-pink/20 rounded-2xl text-center">
-                  <p className="text-[10px] font-black text-soft-pink uppercase tracking-widest mb-1">Testing Mode</p>
-                  <p className="text-sm font-bold text-slate-600">Your simulated code is: <span className="text-slate-900 font-black">{generatedCode}</span></p>
-                </div>
-                
                 <button 
                   onClick={handle2FAVerify}
-                  disabled={loading}
+                  disabled={loading || twoFACode.length !== 6}
                   className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 disabled:opacity-50 transition-all"
                 >
                   {loading ? 'Creating Account...' : 'Verify & Create Account'}
                 </button>
 
                 <p className="text-center text-xs text-slate-400 font-bold">
-                  Didn't receive a code? <button type="button" className="text-soft-pink hover:underline">Resend</button>
+                  Didn't receive a code? <button type="button" onClick={handleResendCode} disabled={loading} className="text-soft-pink hover:underline disabled:opacity-50">Resend</button>
                 </p>
               </div>
             </div>

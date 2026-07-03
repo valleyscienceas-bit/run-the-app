@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ValerieMascot } from './ValerieMascot';
+import { ThemeToggle } from './ThemeToggle';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, CheckCircle2, Users, School, Zap, Brain } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Users, School, Zap, Brain, Beaker, BarChart3, MessageCircle, Layers, Sparkles } from 'lucide-react';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -17,7 +18,7 @@ const VALERIE_MESSAGES = [
 
 export function LandingPage({ onLoginClick }: LandingPageProps) {
   const [messageIndex, setMessageIndex] = useState(0);
-  const [activeForm, setActiveForm] = useState<'none' | 'district' | 'contact' | 'feedback'>('none');
+  const [activeForm, setActiveForm] = useState<'none' | 'district' | 'contact' | 'feedback' | 'demo'>('none');
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -35,6 +36,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
     file: null as File | null
   });
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [demoForm, setDemoForm] = useState({ name: '', email: '', reason: '' });
 
   // Reset form status when opening a new form or after delay
   useEffect(() => {
@@ -58,6 +60,27 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
     }
   }, [contactStatus]);
 
+  const handleDemoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactStatus('sending');
+    try {
+      const res = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(demoForm)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to submit demo request.');
+      }
+      setContactStatus('sent');
+      setDemoForm({ name: '', email: '', reason: '' });
+    } catch (err) {
+      console.error('Demo request error:', err);
+      setContactStatus('error');
+    }
+  };
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setContactStatus('sending');
@@ -69,12 +92,12 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
         body: JSON.stringify({
           to: 'valley.science.as@gmail.com',
           subject: `District Inquiry: ${contactForm.district}`,
-          text: `Name: ${contactForm.name}\nEmail: ${contactForm.email}\nPhone/WhatsApp: ${contactForm.phone || 'N/A'}\nDistrict: ${contactForm.district}\nRole: ${contactForm.role}\nMessage: ${contactForm.message}`,
+          text: `Name: ${contactForm.name}\nEmail: ${contactForm.email}\nPhone #: ${contactForm.phone || 'N/A'}\nDistrict: ${contactForm.district}\nRole: ${contactForm.role}\nMessage: ${contactForm.message}`,
           html: `
             <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
               <h2 style="color: #0f172a;">New District Inquiry</h2>
               <p><strong>From:</strong> ${contactForm.name} (${contactForm.email})</p>
-              ${contactForm.phone ? `<p><strong>Phone/WhatsApp:</strong> ${contactForm.phone}</p>` : ''}
+              ${contactForm.phone ? `<p><strong>Phone #:</strong> ${contactForm.phone}</p>` : ''}
               <p><strong>District:</strong> ${contactForm.district}</p>
               <p><strong>Role:</strong> ${contactForm.role}</p>
               <p><strong>Message:</strong></p>
@@ -119,9 +142,9 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-slate-950">
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto sticky top-0 bg-cream/80 backdrop-blur-md z-50">
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto sticky top-0 bg-cream/80 dark:bg-slate-950/90 backdrop-blur-md z-50 border-b border-transparent dark:border-slate-800">
         <button 
           onClick={() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -130,20 +153,24 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <ValerieMascot size={40} />
-          <span className="text-2xl font-black tracking-tighter text-slate-900">VALLEY SCIENCE</span>
+          <span className="text-2xl font-black tracking-tighter text-slate-900 dark:text-slate-100">VALLEY SCIENCE</span>
         </button>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
-          <a href="#about" className="hover:text-slate-900 transition-colors">About Us</a>
-          <a href="#plans" className="hover:text-slate-900 transition-colors">Plans & Pricing</a>
-          <button onClick={() => setActiveForm('contact')} className="hover:text-slate-900 transition-colors">Contact Us</button>
-          <button onClick={() => setActiveForm('feedback')} className="hover:text-slate-900 transition-colors">Feedback</button>
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-400">
+          <a href="#how-it-works" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">How It Works</a>
+          <a href="#about" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">About Us</a>
+          <a href="#plans" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Plans & Pricing</a>
+          <button onClick={() => setActiveForm('contact')} className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Contact Us</button>
+          <button onClick={() => setActiveForm('feedback')} className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Feedback</button>
         </div>
-        <button 
-          onClick={onLoginClick}
-          className="bg-soft-pink px-6 py-2 rounded-full font-bold text-slate-900 shadow-lg shadow-soft-pink/20 hover:scale-105 transition-transform"
-        >
-          Login/Sign Up
-        </button>
+        <div className="flex items-center gap-3">
+          <ThemeToggle className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700" />
+          <button 
+            onClick={onLoginClick}
+            className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
+          >
+            Login/Sign Up
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -160,23 +187,30 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
           <h1 className="text-6xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-8">
             Repairing <span className="text-sage-green block md:inline mt-2 md:mt-0">Conceptual Gaps</span> <br className="hidden md:block" /> in Science.
           </h1>
-          <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+          <p className="text-xl text-slate-700 mb-4 leading-relaxed">
             Valley Science supplements local curricula by identifying where students struggle to visualize dynamics, mapping every interaction to NGSS standards.
+          </p>
+          <p className="text-sm font-bold text-slate-500 mb-8">
+            Individual access: <span className="text-slate-900">$8/month</span> or <span className="text-slate-900">$90/year</span>
           </p>
           <div className="flex flex-wrap gap-4">
             <button 
               onClick={onLoginClick}
               className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-colors"
             >
-              Get Started <ArrowRight size={20} />
+              Create Account <ArrowRight size={20} />
+            </button>
+            <button 
+              onClick={() => setActiveForm('demo')}
+              className="bg-rose-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-rose-700 transition-colors shadow-lg shadow-rose-600/30"
+            >
+              Request a Demo
             </button>
             <a 
-              href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold hover:border-slate-300 transition-colors flex items-center gap-2"
+              href="#how-it-works"
+              className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 px-8 py-4 rounded-2xl font-bold hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex items-center gap-2 text-slate-900 dark:text-slate-100"
             >
-              Watch Demo
+              Learn More
             </a>
           </div>
         </motion.div>
@@ -211,6 +245,54 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
             </AnimatePresence>
           </div>
         </motion.div>
+      </section>
+
+      {/* How It Works — detailed product section */}
+      <section id="how-it-works" className="bg-cream/30 py-24 px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-slate-900 mb-4">What Your Child Actually Does</h2>
+            <p className="text-slate-700 max-w-3xl mx-auto leading-relaxed">
+              Valley Science is not another worksheet app. Students learn through Socratic AI conversations, interactive simulations, and NGSS-aligned modules — with a parent dashboard that shows real progress.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-10 mb-16">
+            <ProductBlock
+              icon={<MessageCircle className="text-soft-pink" size={28} />}
+              title="Socratic AI — Meet Valerie"
+              description="Valerie never gives direct answers. She asks guiding questions that help students build mental models and identify their own conceptual gaps. Powered by Google Gemini on a secure backend — your child's conversations stay private."
+              placeholder="Valerie chat demo — GIF coming soon"
+            />
+            <ProductBlock
+              icon={<Beaker className="text-sage-green" size={28} />}
+              title="Interactive Simulations"
+              description="Hands-on virtual labs let students manipulate variables, observe outcomes, and develop intuition for forces, matter, energy, and more — without a physical lab setup."
+              placeholder="Simulation demo — GIF coming soon"
+            />
+            <ProductBlock
+              icon={<Layers className="text-blue-500" size={28} />}
+              title="NGSS-Aligned Curriculum"
+              description="Structured modules for grades 3–8 mapped to California NGSS standards. Each unit includes lessons, a placement test, and a unit test to confirm understanding before moving on."
+            />
+            <ProductBlock
+              icon={<BarChart3 className="text-purple-500" size={28} />}
+              title="Progress You Can See"
+              description="Students get a stats dashboard showing test scores, time spent learning, and conceptual gaps. Parents get a linked dashboard with the same data — no guessing whether your child is actually learning."
+            />
+          </div>
+
+          <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl">
+            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+              <Sparkles className="text-soft-pink" /> What Makes Us Different
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <DiffItem title="Socratic, not spoon-fed" text="Most apps give answers. Valerie asks questions so students actually think." />
+              <DiffItem title="Simulations, not videos" text="Students interact with science — they don't just watch someone else do it." />
+              <DiffItem title="Gap-driven learning" text="Placement and unit tests identify exactly which concepts need work, then Valerie targets those gaps." />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Features */}
@@ -252,7 +334,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <div>
                     <h4 className="text-xl font-black text-slate-900">Sidak Soni</h4>
                     <p className="text-slate-500 font-bold text-sm mb-2 uppercase tracking-widest">Co-Founder</p>
-                    <p className="text-slate-600 leading-relaxed">A student-visionary architecting the future of pedagogical engagement, leveraging a peer-to-peer perspective to dismantle the 'definition trap' and foster authentic conceptual visualization.</p>
+                    <p className="text-slate-700 leading-relaxed">Sidak is a freshman in high school from the South Bay Area. He built Valley Science because he saw classmates memorize definitions without ever understanding how science actually works — and wanted to fix that from a student's perspective.</p>
                   </div>
                 </div>
                 <div className="flex gap-6">
@@ -260,7 +342,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                   <div>
                     <h4 className="text-xl font-black text-slate-900">Ankan Shah</h4>
                     <p className="text-slate-500 font-bold text-sm mb-2 uppercase tracking-widest">Co-Founder</p>
-                    <p className="text-slate-600 leading-relaxed">A student-technologist engineering AI-native cognitive scaffolding designed to empower the next generation of scientific explorers through heuristic discovery.</p>
+                    <p className="text-slate-700 leading-relaxed">Ankan is a freshman in high school from the South Bay Area. He handles the technical side — building the AI integration, backend infrastructure, and the platform that makes Valerie and the curriculum work seamlessly.</p>
                   </div>
                 </div>
               </div>
@@ -305,7 +387,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
           <PricingCard 
             title="Individual Access"
             price="$8/mo"
-            subPrice="or $94 billed annually"
+            subPrice="or $90 billed annually"
             features={[
               "Open 3-8 Curriculum",
               "Parental Oversight",
@@ -314,6 +396,8 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
             ]}
             buttonText="Start Learning"
             onClick={onLoginClick}
+            secondaryButtonText="Request a Demo"
+            onSecondaryClick={() => setActiveForm('demo')}
           />
         </div>
       </section>
@@ -359,7 +443,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone # (Optional)</label>
                         <input 
                           type="tel" value={contactForm.phone}
                           onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
@@ -445,7 +529,7 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone / WhatsApp (Optional)</label>
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone # (Optional)</label>
                         <input 
                           type="tel" value={contactForm.phone}
                           onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
@@ -465,6 +549,36 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
                       <button type="submit" disabled={contactStatus === 'sending'} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all mt-4 disabled:opacity-50">
                         {contactStatus === 'sending' ? 'Sending...' : 'Send Message'}
                       </button>
+                    </form>
+                  </>
+                )}
+
+                {activeForm === 'demo' && (
+                  <>
+                    <h2 className="text-3xl font-black text-slate-900 mb-2">Request a Demo</h2>
+                    <p className="text-slate-500 font-medium mb-8">Try Valley Science before you commit. We'll email you when your demo is approved.</p>
+                    <form className="space-y-4" onSubmit={handleDemoSubmit}>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <input type="text" required value={demoForm.name} onChange={e => setDemoForm({...demoForm, name: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold outline-none transition-all" placeholder="Jane Doe" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                        <input type="email" required value={demoForm.email} onChange={e => setDemoForm({...demoForm, email: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold outline-none transition-all" placeholder="you@example.com" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Why do you want a demo?</label>
+                        <textarea required value={demoForm.reason} onChange={e => setDemoForm({...demoForm, reason: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold outline-none transition-all h-28 resize-none" placeholder="Tell us about your student or school..." />
+                      </div>
+                      <button type="submit" disabled={contactStatus === 'sending'} className="w-full bg-rose-600 text-white py-4 rounded-2xl font-black hover:bg-rose-700 transition-all mt-4 disabled:opacity-50 shadow-md shadow-rose-600/20">
+                        {contactStatus === 'sending' ? 'Submitting...' : 'Submit Demo Request'}
+                      </button>
+                      {contactStatus === 'sent' && (
+                        <p className="text-sage-green text-center font-bold text-sm mt-4">Request submitted! We'll email you when approved.</p>
+                      )}
                     </form>
                   </>
                 )}
@@ -612,6 +726,30 @@ export function LandingPage({ onLoginClick }: LandingPageProps) {
   );
 }
 
+function ProductBlock({ icon, title, description, placeholder }: { icon: React.ReactNode, title: string, description: string, placeholder?: string }) {
+  return (
+    <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-lg">
+      <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-5">{icon}</div>
+      <h3 className="text-xl font-black text-slate-900 mb-3">{title}</h3>
+      <p className="text-slate-700 leading-relaxed mb-4">{description}</p>
+      {placeholder && (
+        <div className="aspect-video bg-slate-100 rounded-2xl flex items-center justify-center border border-dashed border-slate-200">
+          <p className="text-xs font-bold text-slate-400">{placeholder}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DiffItem({ title, text }: { title: string, text: string }) {
+  return (
+    <div>
+      <h4 className="font-black text-slate-900 mb-2">{title}</h4>
+      <p className="text-sm text-slate-700 leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
     <div className="p-8 bg-cream/30 rounded-3xl border border-slate-100 hover:shadow-xl transition-all">
@@ -624,7 +762,7 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
   );
 }
 
-function PricingCard({ title, price, subPrice, features, buttonText, highlight = false, onClick }: { title: string, price: string, subPrice?: string, features: string[], buttonText: string, highlight?: boolean, onClick?: () => void }) {
+function PricingCard({ title, price, subPrice, features, buttonText, highlight = false, onClick, secondaryButtonText, onSecondaryClick }: { title: string, price: string, subPrice?: string, features: string[], buttonText: string, highlight?: boolean, onClick?: () => void, secondaryButtonText?: string, onSecondaryClick?: () => void }) {
   return (
     <div className={`p-10 rounded-[40px] border-2 ${highlight ? 'border-sage-green bg-white shadow-2xl scale-105' : 'border-slate-200 bg-white/50'}`}>
       <h3 className="text-2xl font-black text-slate-900 mb-2">{title}</h3>
@@ -634,18 +772,25 @@ function PricingCard({ title, price, subPrice, features, buttonText, highlight =
       </div>
       <ul className="space-y-4 mb-10">
         {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-3 text-slate-600 font-medium">
+          <li key={i} className="flex items-center gap-3 text-slate-700 font-medium">
             <CheckCircle2 size={20} className="text-sage-green" />
             {f}
           </li>
         ))}
       </ul>
-      <button 
-        onClick={onClick}
-        className={`w-full py-4 rounded-2xl font-bold transition-all ${highlight ? 'bg-sage-green text-white hover:bg-sage-green/90' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
-      >
-        {buttonText}
-      </button>
+      <div className="space-y-3">
+        <button 
+          onClick={onClick}
+          className={`w-full py-4 rounded-2xl font-bold transition-all ${highlight ? 'bg-sage-green text-white hover:bg-sage-green/90' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+        >
+          {buttonText}
+        </button>
+        {secondaryButtonText && onSecondaryClick && (
+          <button onClick={onSecondaryClick} className="w-full py-4 rounded-2xl font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-md shadow-rose-600/20">
+            {secondaryButtonText}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

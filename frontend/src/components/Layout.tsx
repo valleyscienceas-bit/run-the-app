@@ -1,9 +1,10 @@
 import React from 'react';
-import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck, UserCircle, CreditCard } from 'lucide-react';
+import { Beaker, LayoutDashboard, BookOpen, Settings, LogOut, ShieldCheck, UserCircle, CreditCard, ClipboardList, BarChart2, HelpCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { UserState, AppTab } from '../types';
 import { ValerieMascot } from './ValerieMascot';
+import { ThemeToggle } from './ThemeToggle';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,85 +16,92 @@ interface LayoutProps {
   onTabChange: (tab: AppTab) => void;
   userState: UserState;
   onLogout?: () => void;
+  isDemo?: boolean;
+  demoViewRole?: 'student' | 'parent';
+  onDemoRoleSwitch?: (role: 'student' | 'parent') => void;
 }
 
-export function Layout({ children, activeTab, onTabChange, userState, onLogout }: LayoutProps) {
+export function Layout({ children, activeTab, onTabChange, userState, onLogout, isDemo, demoViewRole, onDemoRoleSwitch }: LayoutProps) {
+  const role = isDemo ? demoViewRole : userState.role;
+  const showStudentNav = role === 'student';
+  const showParentNav = role === 'parent';
+  const showTeacherNav = userState.role === 'teacher';
+  const showAdminNav = userState.role === 'admin';
+
   return (
-    <div className="min-h-screen bg-cream font-sans text-slate-900">
+    <div className="min-h-screen bg-cream dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
       {/* Sidebar / Navigation */}
-      <nav className="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-100 p-8 z-50 hidden md:block">
+      <nav className="fixed left-0 top-0 h-full w-72 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 p-8 z-50 hidden md:block">
         <button 
-          onClick={() => onTabChange('curriculum')}
-          className="flex items-center gap-3 mb-12 hover:opacity-80 transition-opacity"
+          onClick={() => onTabChange(showStudentNav ? 'curriculum' : 'dashboard')}
+          className="flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity"
         >
           <ValerieMascot size={48} />
           <div>
-            <span className="text-xl font-black tracking-tighter block leading-none">VALLEY</span>
+            <span className="text-xl font-black tracking-tighter block leading-none dark:text-slate-100">VALLEY</span>
             <span className="text-xl font-black tracking-tighter block leading-none text-sage-green">SCIENCE</span>
           </div>
         </button>
 
+        {isDemo && onDemoRoleSwitch && (
+          <div className="mb-6 p-3 bg-soft-pink/10 dark:bg-soft-pink/20 rounded-2xl border border-soft-pink/20 dark:border-soft-pink/30">
+            <p className="text-[10px] font-black text-soft-pink uppercase tracking-widest mb-2">Demo Mode</p>
+            <div className="flex gap-2">
+              <button onClick={() => onDemoRoleSwitch('student')} className={cn("flex-1 py-2 rounded-xl text-xs font-black", demoViewRole === 'student' ? 'bg-white dark:bg-slate-800 shadow text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500')}>Student</button>
+              <button onClick={() => onDemoRoleSwitch('parent')} className={cn("flex-1 py-2 rounded-xl text-xs font-black", demoViewRole === 'parent' ? 'bg-white dark:bg-slate-800 shadow text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500')}>Parent</button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-3">
-          {userState.role !== 'parent' && (
+          {showStudentNav && (
             <>
-              <NavItem 
-                icon={<BookOpen size={22} />} 
-                label="Curriculum" 
-                active={activeTab === 'curriculum'} 
-                onClick={() => onTabChange('curriculum')}
-              />
-              <NavItem 
-                icon={<Beaker size={22} />} 
-                label="Socratic Lab" 
-                active={activeTab === 'chat'} 
-                onClick={() => onTabChange('chat')}
-              />
+              <NavItem icon={<BookOpen size={22} />} label="Curriculum" active={activeTab === 'curriculum'} onClick={() => onTabChange('curriculum')} />
+              <NavItem icon={<Beaker size={22} />} label="Socratic Lab" active={activeTab === 'chat'} onClick={() => onTabChange('chat')} />
             </>
           )}
-          <NavItem 
-            icon={<LayoutDashboard size={22} />} 
-            label={userState.role === 'parent' ? "Student Progress" : "Stats Page"} 
-            active={activeTab === 'dashboard'} 
-            onClick={() => onTabChange('dashboard')}
-          />
-          {userState.role === 'parent' && (
+          {(showStudentNav || showParentNav || showTeacherNav) && (
+            <NavItem 
+              icon={<LayoutDashboard size={22} />} 
+              label={showParentNav ? "Student Progress" : showTeacherNav ? "My Class" : "Stats Page"} 
+              active={activeTab === 'dashboard'} 
+              onClick={() => onTabChange('dashboard')}
+            />
+          )}
+          {showAdminNav && (
+            <NavItem icon={<ShieldCheck size={22} />} label="All Classrooms" active={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
+          )}
+          {isDemo && (
+            <NavItem icon={<HelpCircle size={22} />} label="Demo Guide" active={activeTab === 'demo-guide'} onClick={() => onTabChange('demo-guide')} />
+          )}
+          {showParentNav && (
             <>
-              <NavItem 
-                icon={<UserCircle size={22} />} 
-                label="Student Account" 
-                active={activeTab === 'student-account'} 
-                onClick={() => onTabChange('student-account')}
-              />
-              <NavItem 
-                icon={<CreditCard size={22} />} 
-                label="Billing" 
-                active={activeTab === 'billing'} 
-                onClick={() => onTabChange('billing')}
-              />
+              <NavItem icon={<UserCircle size={22} />} label="Student Account" active={activeTab === 'student-account'} onClick={() => onTabChange('student-account')} />
+              <NavItem icon={<CreditCard size={22} />} label="Billing" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} />
+            </>
+          )}
+          {showTeacherNav && (
+            <>
+              <NavItem icon={<ClipboardList size={22} />} label="Assignments" active={activeTab === 'assignments'} onClick={() => onTabChange('assignments')} />
+              <NavItem icon={<BarChart2 size={22} />} label="Class Tests" active={activeTab === 'class-tests'} onClick={() => onTabChange('class-tests')} />
             </>
           )}
           {userState.role === 'founder' && (
-            <NavItem 
-              icon={<ShieldCheck size={22} />} 
-              label="Founder View" 
-              active={activeTab === 'founder' as any} 
-              onClick={() => onTabChange('founder')}
-            />
+            <NavItem icon={<ShieldCheck size={22} />} label="Founder View" active={activeTab === 'founder'} onClick={() => onTabChange('founder')} />
           )}
-          <NavItem 
-            icon={<Settings size={22} />} 
-            label="Settings" 
-            active={activeTab === 'settings' as any} 
-            onClick={() => onTabChange('settings' as any)}
-          />
+          <NavItem icon={<Settings size={22} />} label="Settings" active={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
         </div>
 
-        <div className="absolute bottom-10 left-8 right-8">
-          <div className="p-6 bg-cream rounded-[32px] border border-slate-100">
+        <div className="absolute bottom-10 left-8 right-8 space-y-3">
+          <ThemeToggle
+            showLabel
+            className="w-full justify-center py-3 px-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
+          />
+          <div className="p-6 bg-cream dark:bg-slate-800 rounded-[32px] border border-slate-100 dark:border-slate-700">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
               {userState.role === 'parent' ? 'Parent Account' : (userState.path === 'district' ? 'District Access' : 'Individual Access')}
             </p>
-            <p className="text-sm font-black text-slate-900 mb-4 truncate">
+            <p className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 truncate">
               {userState.profile?.username || userState.profile?.name || 'Guest User'}
             </p>
             <button 
@@ -107,8 +115,8 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout }
       </nav>
 
       {/* Mobile Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 flex justify-around z-50 rounded-t-[32px] shadow-2xl">
-        {userState.role !== 'parent' && (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-around z-50 rounded-t-[32px] shadow-2xl">
+        {showStudentNav && (
           <>
             <button onClick={() => onTabChange('curriculum')} className={cn("p-2", activeTab === 'curriculum' ? "text-soft-pink" : "text-slate-300")}>
               <BookOpen size={28} />
@@ -118,10 +126,12 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout }
             </button>
           </>
         )}
-        <button onClick={() => onTabChange('dashboard')} className={cn("p-2", activeTab === 'dashboard' ? "text-soft-pink" : "text-slate-300")}>
-          <LayoutDashboard size={28} />
-        </button>
-        {userState.role === 'parent' && (
+        {(showStudentNav || showParentNav || showTeacherNav || showAdminNav) && (
+          <button onClick={() => onTabChange('dashboard')} className={cn("p-2", activeTab === 'dashboard' ? "text-soft-pink" : "text-slate-300")}>
+            <LayoutDashboard size={28} />
+          </button>
+        )}
+        {showParentNav && (
           <>
             <button onClick={() => onTabChange('student-account')} className={cn("p-2", activeTab === 'student-account' ? "text-soft-pink" : "text-slate-300")}>
               <UserCircle size={28} />
@@ -131,7 +141,22 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout }
             </button>
           </>
         )}
-        <button onClick={() => onTabChange('settings' as any)} className={cn("p-2", activeTab === 'settings' ? "text-soft-pink" : "text-slate-300")}>
+        {showTeacherNav && (
+          <>
+            <button onClick={() => onTabChange('assignments')} className={cn("p-2", activeTab === 'assignments' ? "text-soft-pink" : "text-slate-300")}>
+              <ClipboardList size={28} />
+            </button>
+            <button onClick={() => onTabChange('class-tests')} className={cn("p-2", activeTab === 'class-tests' ? "text-soft-pink" : "text-slate-300")}>
+              <BarChart2 size={28} />
+            </button>
+          </>
+        )}
+        {isDemo && (
+          <button onClick={() => onTabChange('demo-guide')} className={cn("p-2", activeTab === 'demo-guide' ? "text-soft-pink" : "text-slate-300")}>
+            <HelpCircle size={28} />
+          </button>
+        )}
+        <button onClick={() => onTabChange('settings')} className={cn("p-2", activeTab === 'settings' ? "text-soft-pink" : "text-slate-300")}>
           <Settings size={28} />
         </button>
         <button onClick={onLogout} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
@@ -156,11 +181,11 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
       className={cn(
         "w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group",
         active 
-          ? "bg-white text-slate-900 font-black shadow-xl shadow-slate-200/50 border border-slate-50" 
-          : "text-slate-400 font-bold hover:text-slate-900 hover:bg-white/50"
+          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-black shadow-xl shadow-slate-200/50 dark:shadow-black/30 border border-slate-50 dark:border-slate-700" 
+          : "text-slate-400 dark:text-slate-500 font-bold hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-slate-800/60"
       )}
     >
-      <div className={cn("transition-transform duration-300 group-hover:scale-110", active ? "text-soft-pink" : "text-slate-300 group-hover:text-slate-900")}>
+      <div className={cn("transition-transform duration-300 group-hover:scale-110", active ? "text-soft-pink" : "text-slate-300 dark:text-slate-600 group-hover:text-slate-900 dark:group-hover:text-slate-100")}>
         {icon}
       </div>
       <span>{label}</span>
