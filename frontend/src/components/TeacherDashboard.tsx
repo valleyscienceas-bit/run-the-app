@@ -1,78 +1,211 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Brain, TrendingUp } from 'lucide-react';
+import { ChevronLeft, Eye, EyeOff, KeyRound, RefreshCw, ChevronRight } from 'lucide-react';
 import { StudentOverview } from '../types';
+import { ParentDashboard } from './ParentDashboard';
+import { BACK_LINK_CLASS, GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface TeacherDashboardProps {
   students: StudentOverview[];
+  teacherUid?: string;
   onSelectStudent: (uid: string) => void;
   selectedOverview: StudentOverview | null;
+  onRefresh: () => void;
 }
 
-export function TeacherDashboard({ students, onSelectStudent, selectedOverview }: TeacherDashboardProps) {
-  const [scrollIndex, setScrollIndex] = useState(0);
+export function TeacherDashboard({
+  students, teacherUid, onSelectStudent, selectedOverview, onRefresh
+}: TeacherDashboardProps) {
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [passwordDraft, setPasswordDraft] = useState<Record<string, string>>({});
+  const [resetting, setResetting] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  if (selectedOverview) {
-    const { studentProfile, results, stats } = selectedOverview;
-    const avg = results.length ? Math.round(results.reduce((s, r) => s + r.score, 0) / results.length) : 0;
+  const togglePassword = (uid: string) => {
+    setShowPasswords(prev => ({ ...prev, [uid]: !prev[uid] }));
+  };
+
+  const handleResetPassword = async (studentUid: string) => {
+    if (!teacherUid) return;
+    setResetting(studentUid);
+    setMessage(null);
+    try {
+      const newPwd = passwordDraft[studentUid]?.trim() || undefined;
+      const res = await fetch('/api/teacher-reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherUid, studentUid, newPassword: newPwd })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+      setMessage(`Password updated for student.`);
+      onRefresh();
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setResetting(null);
+    }
+  };
+
+  if (selectedOverview?.studentProfile) {
+    const uid = selectedOverview.studentProfile.uid;
+    const pwd = selectedOverview.studentProfile.demoPassword || 'Sandbox123!';
+
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
-        <button onClick={() => onSelectStudent('')} className="text-slate-400 font-bold text-sm hover:text-slate-600 flex items-center gap-2">
-          <ChevronLeft size={16} /> Back to class list
+        <button
+          onClick={() => onSelectStudent('')}
+          className={BACK_LINK_CLASS}
+        >
+          <ChevronLeft size={16} /> Back to class table
         </button>
-        <header>
-          <h1 className="text-4xl font-black text-slate-900">{studentProfile?.name}'s Progress</h1>
-        </header>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MiniStat icon={<Clock className="text-blue-500" />} label="Time Learning" value={formatTime(stats?.totalSeconds || 0)} />
-          <MiniStat icon={<TrendingUp className="text-sage-green" />} label="Avg Score" value={results.length ? `${avg}%` : 'N/A'} />
-          <MiniStat icon={<Brain className="text-purple-500" />} label="Gaps Open" value={results.length ? String(new Set(results[results.length - 1]?.gaps || []).size) : '0'} />
+
+        <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-xl">
+          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <KeyRound size={20} className="text-soft-pink" /> Account Access
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Username</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100">{selectedOverview.studentProfile.username}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">{selectedOverview.studentProfile.email}</p>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Current Password</p>
+              <div className="flex items-center gap-2">
+                <code className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  {showPasswords[uid] ? pwd : '••••••••••'}
+                </code>
+                <button type="button" onClick={() => togglePassword(uid)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                  {showPasswords[uid] ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="New password (optional — defaults to Sandbox123!)"
+              value={passwordDraft[uid] || ''}
+              onChange={e => setPasswordDraft(prev => ({ ...prev, [uid]: e.target.value }))}
+              className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-soft-pink rounded-2xl px-4 py-3 font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400/60 outline-none"
+            />
+            <button
+              onClick={() => handleResetPassword(uid)}
+              disabled={resetting === uid}
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-2xl font-black disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={resetting === uid ? 'animate-spin' : ''} />
+              {resetting === uid ? 'Resetting...' : 'Reset Password'}
+            </button>
+          </div>
+          {message && <p className="mt-3 text-sm font-bold text-sage-green">{message}</p>}
         </div>
+
+        <ParentDashboard
+          overview={selectedOverview}
+          loading={false}
+          onRefresh={onRefresh}
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <header>
-        <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">My Class</h1>
-        <p className="text-xl text-slate-700 font-medium">Scroll through your students and click a name for full details.</p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">My Class</h1>
+          <p className="text-xl text-slate-700 dark:text-slate-400 font-medium">
+            {students.length} student{students.length !== 1 ? 's' : ''} — click a row for full progress & password controls.
+          </p>
+        </div>
+        <button
+          onClick={onRefresh}
+          className={`${GHOST_BUTTON_CLASS} self-start`}
+        >
+          <RefreshCw size={16} /> Refresh
+        </button>
       </header>
 
-      <div className="flex items-center gap-4">
-        <button onClick={() => setScrollIndex(i => Math.max(0, i - 1))} disabled={scrollIndex === 0} className="p-2 rounded-xl bg-white border border-slate-100 disabled:opacity-30">
-          <ChevronLeft size={20} />
-        </button>
-        <div className="flex gap-4 overflow-x-auto flex-1 pb-2">
-          {students.slice(scrollIndex, scrollIndex + 4).map(s => {
-            const avg = s.results.length ? Math.round(s.results.reduce((sum, r) => sum + r.score, 0) / s.results.length) : 0;
-            return (
-              <button
-                key={s.studentProfile?.uid}
-                onClick={() => onSelectStudent(s.studentProfile?.uid || '')}
-                className="min-w-[200px] bg-white p-6 rounded-[32px] border border-slate-100 shadow-lg hover:border-soft-pink transition-all text-left"
-              >
-                <p className="font-black text-slate-900 mb-1">{s.studentProfile?.name || 'Student'}</p>
-                <p className="text-xs text-slate-400 font-bold mb-3">Grade {s.studentProfile?.grade}</p>
-                <p className="text-2xl font-black text-sage-green">{avg}%</p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Score</p>
-              </button>
-            );
-          })}
-        </div>
-        <button onClick={() => setScrollIndex(i => Math.min(students.length - 1, i + 1))} disabled={scrollIndex + 4 >= students.length} className="p-2 rounded-xl bg-white border border-slate-100 disabled:opacity-30">
-          <ChevronRight size={20} />
-        </button>
-      </div>
-    </div>
-  );
-}
+      {message && !selectedOverview && (
+        <div className="p-4 bg-sage-green/10 border border-sage-green/20 rounded-2xl text-sage-green text-sm font-bold">{message}</div>
+      )}
 
-function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-lg">
-      <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mb-3">{icon}</div>
-      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-2xl font-black text-slate-900">{value}</p>
+      {students.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 p-12 rounded-[40px] border border-slate-100 dark:border-slate-800 text-center">
+          <p className="font-black text-slate-500 dark:text-slate-400">No students in this class yet. Use the district sandbox to preview a full roster.</p>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden" data-tour="teacher-class-table">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[900px]">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700">
+                  {['Student', 'Grade', 'Username', 'Password', 'Avg Score', 'Tests', 'Time', 'Open Gaps', 'Last Active', ''].map(h => (
+                    <th key={h} className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {students.map(s => {
+                  const profile = s.studentProfile;
+                  if (!profile) return null;
+                  const uid = profile.uid;
+                  const avg = s.results.length
+                    ? Math.round(s.results.reduce((sum, r) => sum + r.score, 0) / s.results.length)
+                    : null;
+                  const gaps = s.results.length
+                    ? new Set(s.results[s.results.length - 1]?.gaps || []).size
+                    : 0;
+                  const lastTs = s.results.length
+                    ? s.results[s.results.length - 1].timestamp
+                    : s.stats?.lastUpdated;
+                  const pwd = profile.demoPassword || 'Sandbox123!';
+
+                  return (
+                    <tr
+                      key={uid}
+                      className="border-b border-slate-50 dark:border-slate-800 hover:bg-soft-pink/5 dark:hover:bg-soft-pink/10 transition-colors cursor-pointer group"
+                      onClick={() => onSelectStudent(uid)}
+                    >
+                      <td className="px-5 py-4">
+                        <p className="font-black text-slate-900 dark:text-slate-100">{profile.name}</p>
+                        <p className="text-xs text-slate-400 font-medium truncate max-w-[140px]">{profile.email}</p>
+                      </td>
+                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">G{profile.grade}</td>
+                      <td className="px-5 py-4 font-bold text-slate-600 dark:text-slate-400 text-sm">{profile.username}</td>
+                      <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <code className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                            {showPasswords[uid] ? pwd : '••••••••'}
+                          </code>
+                          <button type="button" onClick={() => togglePassword(uid)} className="p-1 text-slate-400 hover:text-slate-600">
+                            {showPasswords[uid] ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`font-black ${avg !== null && avg >= 70 ? 'text-sage-green' : avg !== null ? 'text-orange-500' : 'text-slate-400'}`}>
+                          {avg !== null ? `${avg}%` : '—'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">{s.results.length}</td>
+                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300 text-sm">{formatTime(s.stats?.totalSeconds || 0)}</td>
+                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">{gaps}</td>
+                      <td className="px-5 py-4 text-xs font-bold text-slate-400">
+                        {lastTs ? new Date(lastTs).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-5 py-4">
+                        <ChevronRight size={18} className="text-slate-300 group-hover:text-soft-pink transition-colors" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

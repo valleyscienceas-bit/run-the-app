@@ -80,4 +80,21 @@
 .dark .text-slate-400 { color: rgb(100 116 139); }
 .dark .text-slate-300 { color: rgb(148 163 184); }
 .dark .shadow-slate-200\/50 { --tw-shadow-color: rgb(0 0 0 / 0.3); }
-.dark .shadow-xl { --tw-shadow-color: rgb(0 0 0 / 0.4); }
+.dark .bg-blue-50 { background-color: rgb(30 58 138 / 0.25); }
+.dark .bg-orange-50 { background-color: rgb(124 45 18 / 0.25); }
+.dark .bg-red-50 { background-color: rgb(127 29 29 / 0.25); }
+.dark .bg-yellow-50 { background-color: rgb(113 63 18 / 0.25); }
+.dark .bg-purple-50 { background-color: rgb(88 28 135 / 0.2); }
+.dark .border-orange-100 { border-color: rgb(124 45 18 / 0.4); }
+.dark .border-blue-100 { border-color: rgb(30 58 138 / 0.4); }
+.dark .hover\:bg-slate-100:hover { background-color: rgb(51 65 85); }
+
+input::placeholder,
+textarea::placeholder {
+  color: rgb(148 163 184 / 0.55);
+  font-weight: 500;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgb(100 116 139 / 0.55);
+}

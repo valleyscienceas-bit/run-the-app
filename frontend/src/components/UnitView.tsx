@@ -3,6 +3,7 @@ import { Unit, NGSSModule } from '../types';
 import { motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, ClipboardCheck } from 'lucide-react';
 import { ModuleGrid } from './ModuleGrid';
+import { BACK_LINK_CLASS } from '../lib/buttonStyles';
 
 interface UnitViewProps {
   unit: Unit;
@@ -18,7 +19,7 @@ export function UnitView({ unit, onBack, onSelectModule, onTakeUnitTest }: UnitV
         <div>
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-4 hover:text-slate-600 transition-colors"
+            className={`${BACK_LINK_CLASS} mb-4`}
           >
             <ArrowLeft size={16} /> Back to Units
           </button>

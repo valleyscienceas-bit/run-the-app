@@ -12,6 +12,8 @@ export type AppTab =
   | 'demo-guide'
   | 'assignments'
   | 'class-tests'
+  | 'my-class'
+  | 'my-assignments'
   | 'sandbox';
 
 export type ThemeMode = 'light' | 'dark';
@@ -41,9 +43,54 @@ export interface UserProfile {
   demoStudentUid?: string;
   hasCompletedParentTour?: boolean;
   hasCompletedStudentTour?: boolean;
+  hasCompletedTeacherTour?: boolean;
   districtId?: string;
   classroomIds?: string[];
   teacherUid?: string;
+  demoPassword?: string; // Sandbox/demo accounts — visible to teachers
+  progressByGrade?: Record<string, GradeProgressArchive>;
+  gradeOverrides?: { grade: string; at: string; by: string }[];
+}
+
+export interface GradeProgressArchive {
+  results: TestResult[];
+  stats: LearningStats;
+  archivedAt: string;
+}
+
+export type AssignmentStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface AssignmentSubmission {
+  status: AssignmentStatus;
+  progress: number;
+  submittedAt?: string;
+  score?: number;
+}
+
+export interface ClassroomAssignment {
+  id: string;
+  classroomId: string;
+  teacherUid: string;
+  title: string;
+  dueAt: string;
+  grade: string;
+  minScore?: number | null;
+  moduleIds: string[];
+  moduleCount?: number;
+  submissions?: Record<string, AssignmentSubmission>;
+  createdAt: string;
+}
+
+export interface AssignmentStudentRow {
+  uid: string;
+  name: string;
+  username?: string;
+  grade?: string;
+  status: AssignmentStatus;
+  progress: number;
+  submittedAt?: string;
+  score?: number;
+  isLate?: boolean;
 }
 
 export interface UserState {
@@ -139,7 +186,7 @@ export interface StudentOverview {
   studentProfile: UserProfile | null;
   results: TestResult[];
   stats: LearningStats;
-  linkedStudents?: Pick<UserProfile, 'uid' | 'name' | 'grade' | 'username'>[];
+  linkedStudents?: Pick<UserProfile, 'uid' | 'name' | 'grade' | 'username' | 'isPaid'>[];
   activeStudentUid?: string;
 }
 

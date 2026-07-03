@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { TOUR_BACK_BUTTON_CLASS } from '../lib/buttonStyles';
 
 export interface TourStep {
   title: string;
@@ -26,7 +27,7 @@ export function TourOverlay({ steps, onComplete, onDismiss }: TourOverlayProps) 
         <p className="text-slate-700 leading-relaxed mb-8">{step.body}</p>
         <div className="flex gap-3">
           {index > 0 && (
-            <button onClick={() => setIndex(i => i - 1)} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-2xl font-black flex items-center justify-center gap-1">
+            <button onClick={() => setIndex(i => i - 1)} className={TOUR_BACK_BUTTON_CLASS}>
               <ChevronLeft size={18} /> Back
             </button>
           )}

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { BACK_LINK_CLASS, TEXT_LINK_CLASS } from '../lib/buttonStyles';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
 import { UserRole, AccessPath, GradeLevel, UserProfile } from '../types';
 import { FormError } from './FormError';
+import { INPUT_CLASS, INPUT_CLASS_WITH_ICON } from '../lib/formStyles';
 import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
 import { getDoc } from 'firebase/firestore';
 import { clsx, type ClassValue } from 'clsx';
@@ -15,6 +17,7 @@ function cn(...inputs: ClassValue[]) {
 interface LoginSelectionProps {
   onBack: () => void;
   onLogin: (path: AccessPath, role: UserRole, details?: any) => void;
+  initialMode?: 'login' | 'signup';
 }
 
 const EMPTY_FORM = {
@@ -27,10 +30,10 @@ const EMPTY_FORM = {
   grade: '6' as GradeLevel
 };
 
-export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
+export function LoginSelection({ onBack, onLogin, initialMode = 'login' }: LoginSelectionProps) {
   const [path, setPath] = useState<AccessPath | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'guest' | 'complete-profile'>('selection');
   
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
@@ -52,17 +55,6 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
     setError(null);
     setMessage(null);
   };
-
-  // Clear messages after 5 seconds
-  useEffect(() => {
-    if (message || error) {
-      const timer = setTimeout(() => {
-        setMessage(null);
-        setError(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [message, error]);
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
@@ -111,6 +103,23 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
       }
     } catch (err: any) {
       setFormError(err.message || 'Sandbox login failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSandboxStudentLogin = async () => {
+    setLoading(true);
+    clearErrors();
+    try {
+      await fetch('/api/seed-sandbox', { method: 'POST' });
+      const userCredential = await signInWithEmailAndPassword(auth, 'sandbox.student1@valley-science.demo', 'Sandbox123!');
+      const profileDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      if (profileDoc.exists()) {
+        onLogin('district', 'student', profileDoc.data());
+      }
+    } catch (err: any) {
+      setFormError(err.message || 'Sandbox student login failed.');
     } finally {
       setLoading(false);
     }
@@ -326,30 +335,30 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-8">
+    <div className="min-h-screen bg-cream dark:bg-slate-950 flex items-center justify-center p-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden"
+        className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-[40px] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden"
       >
         <div className="p-12">
           {step === 'selection' && (
             <>
               <button 
                 onClick={onBack}
-                className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-8 hover:text-slate-600 transition-colors"
+                className={`${BACK_LINK_CLASS} mb-8`}
               >
                 <ArrowLeft size={16} /> Back to Home
               </button>
 
-              <h2 className="text-4xl font-black text-slate-900 mb-2">Welcome.</h2>
-              <p className="text-slate-500 font-medium mb-12">Select your access path to continue.</p>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">Welcome.</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium mb-12">Select your access path to continue.</p>
 
               <div className="space-y-4">
                 <SelectionButton 
                   active={path === 'district'} 
                   onClick={() => { setPath('district'); setRole(null); }}
-                  icon={<School className={path === 'district' ? 'text-white' : 'text-slate-400'} />}
+                  icon={<School className={path === 'district' ? 'text-soft-pink' : 'text-slate-400 dark:text-slate-500'} />}
                   title="District Partnership"
                   description="LASD, PAUSD, MVWSD students & teachers"
                 />
@@ -357,7 +366,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                 <SelectionButton 
                   active={path === 'individual'} 
                   onClick={() => { setPath('individual'); setRole(null); }}
-                  icon={<Users className={path === 'individual' ? 'text-white' : 'text-slate-400'} />}
+                  icon={<Users className={path === 'individual' ? 'text-soft-pink' : 'text-slate-400 dark:text-slate-500'} />}
                   title="Individual Access"
                   description="Parents & independent learners"
                 />
@@ -386,16 +395,26 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                     </div>
 
                     {path === 'individual' && role !== 'parent' && (
-                      <div className="flex bg-slate-100 p-1 rounded-2xl">
+                      <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-700">
                         <button 
-                          onClick={() => setMode('login')}
-                          className={cn("flex-1 py-2 rounded-xl text-sm font-bold transition-all", mode === 'login' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}
+                          onClick={() => { setMode('login'); clearErrors(); }}
+                          className={cn(
+                            "flex-1 py-2.5 rounded-xl text-sm font-black transition-all",
+                            mode === 'login'
+                              ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-slate-200/80 dark:ring-slate-600"
+                              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                          )}
                         >
-                          Login
+                          Log In
                         </button>
                         <button 
-                          onClick={() => setMode('signup')}
-                          className={cn("flex-1 py-2 rounded-xl text-sm font-bold transition-all", mode === 'signup' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}
+                          onClick={() => { setMode('signup'); clearErrors(); }}
+                          className={cn(
+                            "flex-1 py-2.5 rounded-xl text-sm font-black transition-all",
+                            mode === 'signup'
+                              ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-slate-200/80 dark:ring-slate-600"
+                              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                          )}
                         >
                           Sign Up
                         </button>
@@ -431,11 +450,12 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                 <Users size={40} className="text-sage-green" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-slate-900 mb-4">District Access</h2>
-                <p className="text-slate-500 font-medium leading-relaxed">
-                  District SSO is being provisioned for your school. Teachers can try the sandbox with demo students, or enter as a guest.
+                <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-4">District Access</h2>
+                <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                  District SSO is being provisioned for your school. Try the sandbox to explore teacher and student district accounts with a live class roster.
                 </p>
               </div>
+              {error && <p className="text-sm font-bold text-red-500">{error}</p>}
               {role === 'teacher' && (
                 <button
                   onClick={handleSandboxLogin}
@@ -445,6 +465,18 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
                   {loading ? 'Loading...' : 'Try Sandbox (Demo Teacher)'}
                 </button>
               )}
+              {role === 'student' && (
+                <button
+                  onClick={handleSandboxStudentLogin}
+                  disabled={loading}
+                  className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {loading ? 'Loading...' : 'Try Sandbox (Demo Student)'}
+                </button>
+              )}
+              <p className="text-xs text-slate-400 font-bold">
+                Sandbox password for all demo accounts: <code className="text-slate-600 dark:text-slate-300">Sandbox123!</code>
+              </p>
               <button 
                 onClick={() => onLogin('district', role || 'student')}
                 className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
@@ -453,7 +485,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
               </button>
               <button 
                 onClick={() => handleGoBack('selection')}
-                className="text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+                className={TEXT_LINK_CLASS}
               >
                 Change Access Path
               </button>
@@ -465,7 +497,7 @@ export function LoginSelection({ onBack, onLogin }: LoginSelectionProps) {
               <button 
                 type="button"
                 onClick={() => handleGoBack('selection')}
-                className="flex items-center gap-2 text-slate-400 font-bold text-sm mb-8 hover:text-slate-600 transition-colors"
+                className={`${BACK_LINK_CLASS} mb-8`}
               >
                 <ArrowLeft size={16} /> Back
               </button>
@@ -672,15 +704,20 @@ function SelectionButton({ active, onClick, icon, title, description }: { active
       onClick={onClick}
       className={cn(
         "w-full p-6 rounded-3xl border-2 text-left transition-all flex items-center gap-6",
-        active ? "border-slate-900 bg-slate-900 text-white shadow-xl" : "border-slate-100 bg-white hover:border-slate-200"
+        active
+          ? "border-soft-pink bg-soft-pink/10 dark:bg-soft-pink/15 ring-2 ring-soft-pink/40 shadow-lg scale-[1.01]"
+          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600"
       )}
     >
-      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", active ? "bg-white/20" : "bg-slate-50")}>
+      <div className={cn(
+        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+        active ? "bg-soft-pink/20 text-soft-pink" : "bg-slate-50 dark:bg-slate-700 text-slate-400"
+      )}>
         {icon}
       </div>
       <div>
-        <h3 className={cn("font-black text-lg", active ? "text-white" : "text-slate-900")}>{title}</h3>
-        <p className={cn("text-xs font-medium", active ? "text-slate-300" : "text-slate-500")}>{description}</p>
+        <h3 className={cn("font-black text-lg", active ? "text-slate-900 dark:text-slate-100" : "text-slate-900 dark:text-slate-100")}>{title}</h3>
+        <p className={cn("text-xs font-medium", active ? "text-slate-600 dark:text-slate-400" : "text-slate-500 dark:text-slate-400")}>{description}</p>
       </div>
     </button>
   );
@@ -692,7 +729,7 @@ function RoleButton({ active, onClick, icon, label }: { active: boolean, onClick
       onClick={onClick}
       className={cn(
         "flex-1 p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all",
-        active ? "border-soft-pink bg-soft-pink/5 text-slate-900" : "border-slate-100 text-slate-400 hover:border-slate-200"
+        active ? "border-soft-pink bg-soft-pink/10 dark:bg-soft-pink/15 text-slate-900 dark:text-slate-100 ring-1 ring-soft-pink/30" : "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600"
       )}
     >
       {icon}
@@ -712,10 +749,7 @@ function Input({ label, value, onChange, type = 'text', placeholder, icon }: { l
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl py-4 font-bold text-slate-900 placeholder:text-slate-300 outline-none transition-all",
-            icon ? "pl-14 pr-6" : "px-6"
-          )}
+          className={cn(icon ? INPUT_CLASS_WITH_ICON : INPUT_CLASS)}
         />
       </div>
     </div>

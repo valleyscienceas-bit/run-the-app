@@ -7,11 +7,14 @@ import {
 } from 'lucide-react';
 import { StudentOverview, TestResult } from '../types';
 import { ValerieMascot } from './ValerieMascot';
+import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
+import { GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface ParentDashboardProps {
   overview: StudentOverview | null;
   loading: boolean;
   onRefresh: () => void;
+  onSwitchStudent?: (studentUid: string) => void;
 }
 
 type StatDetail = 'time' | 'tests' | 'average' | 'gaps' | null;
@@ -26,9 +29,11 @@ function formatTime(seconds: number): string {
   return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
 }
 
-export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboardProps) {
+export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent }: ParentDashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
   const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
+  const isDark = useIsDarkMode();
+  const tooltipProps = chartTooltipStyle(isDark);
 
   if (loading && !overview) {
     return (
@@ -56,7 +61,7 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
           </p>
           <button
             onClick={onRefresh}
-            className="inline-flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+            className={GHOST_BUTTON_CLASS}
           >
             <RefreshCw size={18} /> Refresh
           </button>
@@ -112,24 +117,40 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
     <div className="space-y-12 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <div className="bg-gradient-to-br from-soft-pink/30 to-sage-green/30 rounded-3xl p-3 shadow-inner">
+          <div className="bg-gradient-to-br from-soft-pink/30 to-sage-green/30 dark:from-soft-pink/20 dark:to-sage-green/20 rounded-3xl p-3 shadow-inner">
             <ValerieMascot size={56} expression="happy" />
           </div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-1">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-1">
               {firstName}'s Progress
             </h1>
-            <p className="text-lg text-slate-700 font-medium">
+            <p className="text-lg text-slate-700 dark:text-slate-400 font-medium">
               A clear look at how your student is learning with Valley Science.
             </p>
           </div>
         </div>
-        <button
-          onClick={onRefresh}
-          className="inline-flex items-center gap-2 self-start bg-white border-2 border-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black hover:border-soft-pink hover:text-soft-pink transition-all"
-        >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 self-start">
+          {(overview.linkedStudents?.length || 0) > 1 && onSwitchStudent && (
+            <div data-tour="parent-student-switcher" className="min-w-[200px]">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Viewing</label>
+              <select
+                value={overview.activeStudentUid || studentProfile.uid}
+                onChange={e => onSwitchStudent(e.target.value)}
+                className="w-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-4 py-3 font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-soft-pink"
+              >
+                {overview.linkedStudents!.map(s => (
+                  <option key={s.uid} value={s.uid}>{s.name} (Grade {s.grade})</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <button
+            onClick={onRefresh}
+            className={`${GHOST_BUTTON_CLASS} self-end`}
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+        </div>
       </header>
 
       <section className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
@@ -170,7 +191,7 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="parent-stat-cards">
         <PlainStatCard onClick={() => setStatDetail('time')} icon={<Clock className="text-blue-500" />} accent="blue" value={formatTime(totalSeconds)} label="Time spent learning" explanation="Total time talking with Valerie and working through science." />
         <PlainStatCard onClick={() => setStatDetail('tests')} icon={<CheckCircle2 className="text-sage-green" />} accent="green" value={testsCompleted.toString()} label="Tests completed" explanation={testsCompleted === 0 ? "No tests taken yet." : "Placement, unit, and grade-level checks."} />
         <PlainStatCard onClick={() => setStatDetail('average')} icon={trendUp ? <TrendingUp className="text-sage-green" /> : <TrendingDown className="text-orange-500" />} accent={trendUp ? 'green' : 'orange'} value={results.length > 0 ? `${avgScore}%` : 'N/A'} label="Average score" explanation={results.length >= 2 ? (trendUp ? "Scores are trending upward — nice work!" : "Scores dipped recently — may need a little support.") : "Average across all tests taken so far."} />
@@ -189,10 +210,10 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
         />
       )}
 
-      <div className="bg-white p-8 md:p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20" data-tour="parent-performance-chart">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-xl font-black text-slate-900">Test Performance Over Time</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Test Performance Over Time</h3>
             <p className="text-sm font-bold text-slate-400">Each bar is one test. Higher is better (green = strong).</p>
           </div>
         </div>
@@ -200,13 +221,19 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
           {results.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 700 }} />
-                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 700 }} />
-                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 700 }} formatter={(v: any) => [`${v}%`, 'Score']} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor(isDark)} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartAxisColors(isDark), fontWeight: 700 }} />
+                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartAxisColors(isDark), fontWeight: 700 }} />
+                <Tooltip
+                  cursor={tooltipProps.cursor}
+                  contentStyle={tooltipProps.contentStyle}
+                  labelStyle={tooltipProps.labelStyle}
+                  itemStyle={tooltipProps.itemStyle}
+                  formatter={(v: number) => [`${v}%`, 'Score']}
+                />
                 <Bar dataKey="score" radius={[10, 10, 0, 0]}>
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.score >= 80 ? '#87A96B' : entry.score >= 60 ? '#FADADD' : '#fca5a5'} />
+                    <Cell key={`cell-${index}`} fill={chartBarFill(entry.score, isDark)} />
                   ))}
                 </Bar>
               </BarChart>
@@ -221,8 +248,8 @@ export function ParentDashboard({ overview, loading, onRefresh }: ParentDashboar
       </div>
 
       {/* Question-level test details */}
-      <div className="bg-white p-8 md:p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-        <h3 className="text-xl font-black text-slate-900 mb-2">Test Details</h3>
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20" data-tour="parent-test-details">
+        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">Test Details</h3>
         <p className="text-sm font-bold text-slate-400 mb-6">Expand a test to see wrong answers and topics.</p>
         {results.length === 0 ? (
           <p className="text-slate-500 font-medium">No test data yet.</p>
@@ -261,10 +288,10 @@ function TestDetailRow({ result, expanded, onToggle }: { result: TestResult; exp
   const wrongAnswers = (result.answers || []).filter(a => !a.correct);
   const label = result.type === 'unit' ? `Unit Test — ${result.targetId}` : `${result.type.charAt(0).toUpperCase() + result.type.slice(1)} Test`;
   return (
-    <div className="border border-slate-100 rounded-2xl overflow-hidden">
-      <button onClick={onToggle} className="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
+    <div className="border border-slate-100 dark:border-slate-700 rounded-2xl overflow-hidden">
+      <button onClick={onToggle} className="w-full flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left">
         <div>
-          <p className="font-black text-slate-900">{label}</p>
+          <p className="font-black text-slate-900 dark:text-slate-100">{label}</p>
           <p className="text-xs font-bold text-slate-400">{new Date(result.timestamp).toLocaleDateString()} · {Math.round(result.score)}%</p>
         </div>
         <div className="flex items-center gap-3">
@@ -275,14 +302,14 @@ function TestDetailRow({ result, expanded, onToggle }: { result: TestResult; exp
         </div>
       </button>
       {expanded && (
-        <div className="p-5 space-y-3 border-t border-slate-100">
+        <div className="p-5 space-y-3 border-t border-slate-100 dark:border-slate-700">
           {(result.answers || []).length === 0 ? (
             <p className="text-sm text-slate-500 font-medium">Question-level detail not available for this test.</p>
           ) : (
             result.answers!.map((a, i) => (
-              <div key={i} className={`p-4 rounded-xl border ${a.correct ? 'bg-sage-green/5 border-sage-green/20' : 'bg-orange-50 border-orange-100'}`}>
-                <p className="text-sm font-bold text-slate-800 mb-1">{a.questionText}</p>
-                {a.selectedAnswer && <p className="text-xs text-slate-500 font-medium">Answer: {a.selectedAnswer}</p>}
+              <div key={i} className={`p-4 rounded-xl border ${a.correct ? 'bg-sage-green/5 border-sage-green/20' : 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/50'}`}>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{a.questionText}</p>
+                {a.selectedAnswer && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Answer: {a.selectedAnswer}</p>}
                 {a.concept && <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">{a.concept}</p>}
               </div>
             ))
@@ -303,9 +330,9 @@ function StatDetailModal({ type, results, totalSeconds, avgScore, gaps, firstNam
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white max-w-lg w-full rounded-[32px] p-8 shadow-2xl relative max-h-[80vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500"><X size={22} /></button>
-        <h3 className="text-2xl font-black text-slate-900 mb-6">{titles[type!]}</h3>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-[32px] p-8 shadow-2xl relative max-h-[80vh] overflow-y-auto border border-slate-100 dark:border-slate-700">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 dark:text-slate-500"><X size={22} /></button>
+        <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-6">{titles[type!]}</h3>
 
         {type === 'time' && (
           <div className="space-y-3">
@@ -342,11 +369,30 @@ function StatDetailModal({ type, results, totalSeconds, avgScore, gaps, firstNam
           </ul>
         )}
         {type === 'gaps' && (
-          <ul className="space-y-2">
-            {gaps.length === 0 ? <p className="text-slate-500">No gaps identified yet.</p> : [...new Set(gaps)].map((g, i) => (
-              <li key={i} className="p-3 bg-orange-50 border border-orange-100 rounded-xl text-sm font-bold text-slate-700">{g}</li>
-            ))}
-          </ul>
+          <div className="space-y-4">
+            {results.length === 0 ? (
+              <p className="text-slate-500 dark:text-slate-400">No gaps identified yet.</p>
+            ) : (
+              results.slice().reverse().map(r => {
+                const wrong = (r.answers || []).filter(a => !a.correct);
+                if (wrong.length === 0 && r.gaps.length === 0) return null;
+                return (
+                  <div key={r.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <p className="font-black text-slate-900 dark:text-slate-100 mb-2 capitalize">{r.type} test · {Math.round(r.score)}% · {new Date(r.timestamp).toLocaleDateString()}</p>
+                    {wrong.length > 0 ? wrong.map((a, i) => (
+                      <div key={i} className="mt-2 p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-xl">
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.questionText}</p>
+                        {a.selectedAnswer && <p className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">Your child answered: {a.selectedAnswer}</p>}
+                        {a.concept && <p className="text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest mt-1">Topic: {a.concept}</p>}
+                      </div>
+                    )) : r.gaps.map((g, i) => (
+                      <p key={i} className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1">{g}</p>
+                    ))}
+                  </div>
+                );
+              })
+            )}
+          </div>
         )}
       </motion.div>
     </div>
@@ -361,7 +407,7 @@ function PlainStatCard({ icon, value, label, explanation, accent, onClick }: {
   };
   const bg = accent ? accentMap[accent] || 'bg-slate-50' : 'bg-slate-50';
   return (
-    <button onClick={onClick} className="bg-white p-7 rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/40 hover:shadow-xl hover:border-soft-pink/30 transition-all flex flex-col text-left cursor-pointer">
+    <button onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:shadow-xl hover:border-soft-pink/30 transition-all flex flex-col text-left cursor-pointer w-full">
       <div className={`w-11 h-11 ${bg} rounded-2xl flex items-center justify-center mb-5`}>{icon}</div>
       <h4 className="text-3xl font-black text-slate-900 mb-1">{value}</h4>
       <p className="text-sm font-black text-slate-700 mb-2">{label}</p>

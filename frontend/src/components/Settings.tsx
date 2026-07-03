@@ -84,12 +84,11 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Profile Settings */}
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800" data-tour="settings-profile">
           <div className="flex items-center gap-3 text-soft-pink font-black text-xs uppercase tracking-widest mb-8">
             <User size={20} />
             Profile Information
           </div>
-          
           <div className="space-y-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
@@ -129,12 +128,11 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
         </div>
 
         {/* Security Settings */}
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800" data-tour="settings-password">
           <div className="flex items-center gap-3 text-sage-green font-black text-xs uppercase tracking-widest mb-8">
             <Lock size={20} />
             Security & Password
           </div>
-
           <div className="space-y-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
@@ -171,7 +169,7 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
           </div>
         </div>
 
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 lg:col-span-2">
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800 lg:col-span-2" data-tour="settings-appearance">
           <div className="flex items-center gap-3 text-blue-500 font-black text-xs uppercase tracking-widest mb-6">
             <Sun size={20} />
             Appearance
