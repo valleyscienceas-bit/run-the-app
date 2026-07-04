@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowRight, BookOpen, MessageCircle, Target } from 'lucide-react';
 import { NGSSModule } from '../types';
 

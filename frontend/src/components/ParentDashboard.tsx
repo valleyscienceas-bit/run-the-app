@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'motion/react';
 import {
   Clock, CheckCircle2, TrendingUp, Brain, RefreshCw, AlertTriangle,
-  BellRing, CalendarClock, BookOpen, Layers, Info, TrendingDown, X, ChevronDown, ChevronUp
+  BellRing, CalendarClock, BookOpen, Layers, TrendingDown, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { StudentOverview, TestResult } from '../types';
 import { ValerieMascot } from './ValerieMascot';
@@ -85,7 +85,6 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
 
   const latestResult = results.length > 0 ? results[results.length - 1] : null;
   const gapsRemaining = latestResult ? new Set(latestResult.gaps).size : 0;
-  const allGaps = results.flatMap(r => r.gaps);
 
   const chartData = results.map((r) => ({
     name: r.type === 'unit' ? `Unit ${r.targetId}` : r.type.charAt(0).toUpperCase() + r.type.slice(1),
@@ -204,7 +203,6 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
           results={results}
           totalSeconds={totalSeconds}
           avgScore={avgScore}
-          gaps={allGaps}
           firstName={firstName}
           onClose={() => setStatDetail(null)}
         />
@@ -229,7 +227,7 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
                   contentStyle={tooltipProps.contentStyle}
                   labelStyle={tooltipProps.labelStyle}
                   itemStyle={tooltipProps.itemStyle}
-                  formatter={(v: number) => [`${v}%`, 'Score']}
+                  formatter={(v) => [`${Number(v ?? 0)}%`, 'Score']}
                 />
                 <Bar dataKey="score" radius={[10, 10, 0, 0]}>
                   {chartData.map((entry, index) => (
@@ -320,9 +318,9 @@ function TestDetailRow({ result, expanded, onToggle }: { result: TestResult; exp
   );
 }
 
-function StatDetailModal({ type, results, totalSeconds, avgScore, gaps, firstName, onClose }: {
+function StatDetailModal({ type, results, totalSeconds, avgScore, firstName, onClose }: {
   type: StatDetail; results: TestResult[]; totalSeconds: number; avgScore: number;
-  gaps: string[]; firstName: string; onClose: () => void;
+  firstName: string; onClose: () => void;
 }) {
   const titles: Record<string, string> = {
     time: 'Time Learning', tests: 'Tests Completed', average: 'Score Breakdown', gaps: 'Concepts to Revisit'

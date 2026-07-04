@@ -149,7 +149,7 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
                     contentStyle={tooltipProps.contentStyle}
                     labelStyle={tooltipProps.labelStyle}
                     itemStyle={tooltipProps.itemStyle}
-                    formatter={(v: number) => [`${v}%`, 'Score']}
+                    formatter={(v) => [`${Number(v ?? 0)}%`, 'Score']}
                   />
                   <Bar dataKey="score" radius={[10, 10, 0, 0]}>
                     {chartData.map((entry, index) => (
