@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NGSSModule, Question, TestAnswer } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 import { scoreTest } from '../lib/scoreTest';

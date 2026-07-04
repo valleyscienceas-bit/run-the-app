@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ClipboardList, Calendar, CheckCircle2, Clock, AlertCircle, ArrowRight, Play } from 'lucide-react';
 import { ClassroomAssignment, AssignmentSubmission, NGSSModule } from '../types';
 import { resolveAssignmentModules } from '../lib/learningContext';

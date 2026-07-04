@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Brain, ClipboardCheck, ArrowRight } from 'lucide-react';
 import { auth, onAuthStateChanged, signOut, User, db, doc, setDoc, getDoc, updateDoc } from './lib/firebase';
 import { getMfaPending } from './lib/mfaSession';
 import { Layout } from './components/Layout';
-import { ModuleGrid } from './components/ModuleGrid';
 import { SocraticChat } from './components/SocraticChat';
 import { Dashboard } from './components/Dashboard';
 import { Settings } from './components/Settings';
@@ -237,23 +236,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleDismissPlacement = async () => {
-    setShowPlacementPopup(false);
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), { isFirstTime: false });
-        if (appState.profile) {
-          setAppState(prev => ({
-            ...prev,
-            profile: prev.profile ? { ...prev.profile, isFirstTime: false } : undefined
-          }));
-        }
-      } catch (err) {
-        console.error("Error dismissing placement test:", err);
-      }
-    }
-  };
-
   const handleLogin = (path: AccessPath, role: UserRole, details?: any) => {
     setResumeMfaLogin(false);
     const isDistrictGuestEntry = path === 'district' && details?.isGuestEntry === true;
@@ -264,8 +246,8 @@ export default function App() {
       name: details?.name || 'Guest User',
       username: details?.username || 'guest',
       email: details?.email || '',
-      parentEmail: details?.parentEmail || null,
-      linkedStudentUid: details?.linkedStudentUid || null,
+      parentEmail: details?.parentEmail || undefined,
+      linkedStudentUid: details?.linkedStudentUid || undefined,
       role: effectiveRole,
       path,
       grade: details?.grade || (path === 'district' ? '6' : '3'),
