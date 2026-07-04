@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'motion/react';
 import { TrendingUp, CheckCircle2, Clock, Brain, Flame, Star, Target, BookOpen, Layers, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { TestResult, UserState } from '../types';
+import { NGSSModule, TestResult, UserState } from '../types';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
+import { ContinueLearningCard } from './ContinueLearningCard';
+import { getModuleById, recommendNextModule } from '../lib/learningContext';
 
 interface DashboardProps {
   results: TestResult[];
   userState: UserState;
   totalLearningSeconds?: number;
+  onContinueModule?: (module: NGSSModule) => void;
+  onResumeChat?: () => void;
 }
 
 type StatDetail = 'tests' | 'time' | 'average' | 'streak' | 'best' | 'gaps' | 'closure' | 'active' | null;
@@ -22,11 +26,16 @@ function formatTime(seconds: number): string {
   return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
 }
 
-export function Dashboard({ results, userState, totalLearningSeconds = 0 }: DashboardProps) {
+export function Dashboard({ results, userState, totalLearningSeconds = 0, onContinueModule, onResumeChat }: DashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
   const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
   const isDark = useIsDarkMode();
   const tooltipProps = chartTooltipStyle(isDark);
+
+  const profile = userState.profile;
+  const lastModule = profile?.lastModuleId ? getModuleById(profile.lastModuleId) || null : null;
+  const recommendation = recommendNextModule(results, profile?.grade || userState.grade, profile?.lastModuleId);
+  const showContinue = !!(onContinueModule && onResumeChat);
 
   const latestResult = results.length > 0 ? results[results.length - 1] : null;
 
@@ -78,6 +87,18 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0 }: Dash
           Tap any card for details — test history, gaps, and what you got wrong.
         </p>
       </header>
+
+      {showContinue && (
+        <ContinueLearningCard
+          lastModule={lastModule}
+          lastChatTopic={profile?.lastChatTopic}
+          recommendedGap={recommendation.gap}
+          recommendedModule={recommendation.module}
+          onContinueModule={onContinueModule!}
+          onResumeChat={onResumeChat!}
+          onRepairGap={onContinueModule!}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="student-stat-cards">
         <StatCard onClick={() => setStatDetail('tests')} icon={<CheckCircle2 className="text-sage-green" />} label="Tests Taken" value={results.length.toString()} subtext="Placement, Unit, & Grade" accent="green" />

@@ -433,7 +433,9 @@ async function startServer() {
 
       if (profile.mfaMethod === "email") {
         if (!emailCode) return res.status(400).json({ error: "emailCode is required" });
-        const codeResult = await verifyStoredCode(email, emailCode, "login");
+        const accountEmail = email || profile.email;
+        if (!accountEmail) return res.status(400).json({ error: "Account email not found." });
+        const codeResult = await verifyStoredCode(accountEmail, emailCode, "login");
         if (codeResult.ok === false) return res.status(400).json({ error: codeResult.error });
         if (codeResult.uid && codeResult.uid !== userDoc.id) {
           return res.status(400).json({ error: "Invalid verification code." });
@@ -529,7 +531,7 @@ async function startServer() {
   // SOCRATIC AI ROUTE
   // ==========================================
   app.post("/api/chat", async (req, res) => {
-    const { history, message, moduleContext } = req.body;
+    const { history, message, moduleContext, studentContext } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
@@ -540,7 +542,7 @@ async function startServer() {
         ? [...history, { role: "user", text: message }]
         : [{ role: "user", text: message }];
 
-      const response = await getSocraticResponse(messages, moduleContext);
+      const response = await getSocraticResponse(messages, moduleContext, studentContext);
       res.json({ response });
     } catch (error: any) {
       console.error("Gemini Chat Error:", error);
@@ -1648,6 +1650,85 @@ async function startServer() {
     }
   });
 
+  /** Mark assignment started / module completed for a student (district path). */
+  app.post("/api/update-assignment-progress", async (req, res) => {
+    const { studentUid, assignmentId, moduleId, completedModuleId, score } = req.body;
+    if (!studentUid) return res.status(400).json({ error: "studentUid required" });
+
+    try {
+      const studentSnap = await adminDb.collection("users").doc(studentUid).get();
+      if (!studentSnap.exists) return res.status(404).json({ error: "Student not found" });
+      const classroomIds: string[] = studentSnap.data()?.classroomIds || [];
+      const classroomId = classroomIds[0];
+      if (!classroomId) return res.json({ updated: [] });
+
+      const targets: DocumentSnapshot[] = [];
+      if (assignmentId) {
+        const one = await adminDb.collection("assignments").doc(assignmentId).get();
+        if (one.exists && one.data()?.classroomId === classroomId) targets.push(one);
+      } else {
+        const snap = await adminDb.collection("assignments").where("classroomId", "==", classroomId).get();
+        for (const d of snap.docs) {
+          const ids: string[] = d.data().moduleIds || [];
+          const target = completedModuleId || moduleId;
+          if (!target || ids.includes(target)) targets.push(d);
+        }
+      }
+
+      const updated: { id: string; status: string; progress: number }[] = [];
+      for (const d of targets) {
+        const data = d.data()!;
+        const moduleIds: string[] = data.moduleIds || [];
+        if (moduleIds.length === 0) continue;
+
+        const prev = data.submissions?.[studentUid] || { status: "not_started", progress: 0, completedModuleIds: [] };
+        if (prev.status === "completed") {
+          updated.push({ id: d.id, status: prev.status, progress: prev.progress || 100 });
+          continue;
+        }
+
+        const completedSet = new Set<string>(prev.completedModuleIds || []);
+        if (completedModuleId && moduleIds.includes(completedModuleId)) {
+          completedSet.add(completedModuleId);
+        }
+
+        const total = moduleIds.length;
+        const done = moduleIds.filter((id: string) => completedSet.has(id)).length;
+        let progress = total > 0 ? Math.round((done / total) * 100) : 0;
+        if (progress === 0 && (moduleId || assignmentId)) progress = Math.max(prev.progress || 0, 10);
+
+        let status = prev.status || "not_started";
+        if (done >= total && total > 0) status = "completed";
+        else if (progress > 0 || moduleId || completedModuleId) status = "in_progress";
+
+        const minScore = data.minScore != null ? Number(data.minScore) : null;
+        const nextScore = score != null ? Number(score) : prev.score;
+        if (status === "completed" && minScore != null && nextScore != null && nextScore < minScore) {
+          status = "in_progress";
+          progress = Math.min(progress, 90);
+        }
+
+        const next = {
+          ...prev,
+          status,
+          progress,
+          completedModuleIds: [...completedSet],
+          ...(nextScore != null ? { score: nextScore } : {}),
+          ...(status === "completed" ? { submittedAt: prev.submittedAt || new Date().toISOString() } : {}),
+        };
+        // Dot-notation updates only this student's entry, avoiding lost writes when
+        // classmates update the same assignment document concurrently.
+        await d.ref.update({ [`submissions.${studentUid}`]: next });
+        updated.push({ id: d.id, status: next.status, progress: next.progress });
+      }
+
+      res.json({ updated });
+    } catch (error: any) {
+      console.error("Update assignment progress error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ==========================================
   // STUDENT ↔ TEACHER QUESTIONS
   // ==========================================
@@ -2098,13 +2179,13 @@ async function startServer() {
       adminDb.collection("assignments").doc("sandbox-assign-current").set({
         id: "sandbox-assign-current", classroomId: "sandbox-class-1", teacherUid,
         title: "Cell Structure Module", dueAt: futureDue.toISOString(), grade: "7",
-        minScore: 70, moduleIds: ["module-placeholder-1"], submissions: buildSubmissions(0),
+        minScore: 70, moduleIds: ["8-1-1", "8-1-2"], submissions: buildSubmissions(0),
         createdAt: new Date().toISOString()
       }, { merge: true }),
       adminDb.collection("assignments").doc("sandbox-assign-past").set({
         id: "sandbox-assign-past", classroomId: "sandbox-class-1", teacherUid,
         title: "Ecosystems Unit Review", dueAt: pastDue.toISOString(), grade: "7",
-        minScore: 65, moduleIds: ["module-placeholder-2"], submissions: buildSubmissions(1),
+        minScore: 65, moduleIds: ["5-1-1"], submissions: buildSubmissions(1),
         createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
       }, { merge: true }),
     ]);

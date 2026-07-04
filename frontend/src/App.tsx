@@ -27,8 +27,16 @@ import { StudentAssignmentsTab } from './components/StudentAssignmentsTab';
 import { AssignmentsTab } from './components/AssignmentsTab';
 import { ClassTestsTab } from './components/ClassTestsTab';
 import { FULL_CURRICULUM, UNITS } from './curriculum';
-import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview, TestAnswer } from './types';
+import { NGSSModule, UserState, UserRole, AccessPath, UserProfile, GradeLevel, Unit, TestResult, AppTab, StudentOverview, TestAnswer, ClassroomAssignment } from './types';
 import { loadThemePreference, applyTheme, saveThemePreference } from './lib/theme';
+import {
+  buildStudentChatContext,
+  computeOpenAndClosedGaps,
+  getModuleById,
+  getUnitById,
+} from './lib/learningContext';
+import { decideFirstLoginTourOffer, shouldOfferTourAfterPlacementComplete } from './lib/firstLoginTour';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -69,6 +77,7 @@ export default function App() {
   // Session-scoped: offer tour after placement on this first login only
   const pendingTourAfterPlacementRef = useRef(false);
   const firstLoginTourHandledRef = useRef(false);
+  const [activeAssignmentTitle, setActiveAssignmentTitle] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -82,64 +91,29 @@ export default function App() {
 
   /** Offer optional tour once on first login; defer until after placement when needed. */
   const applyFirstLoginTourOffer = (profileData: UserProfile, resultsCount: number, uid: string): UserProfile => {
-    if (profileData.isDemo || firstLoginTourHandledRef.current) return profileData;
+    const decision = decideFirstLoginTourOffer(profileData, resultsCount, firstLoginTourHandledRef.current);
+    if (!decision) return profileData;
     firstLoginTourHandledRef.current = true;
 
-    if (profileData.hasLoggedInBefore === false) {
-      const tourField =
-        profileData.role === 'parent' ? 'hasCompletedParentTour'
-        : profileData.role === 'teacher' ? 'hasCompletedTeacherTour'
-        : profileData.role === 'student' ? 'hasCompletedStudentTour'
-        : null;
-      const needsPlacement =
-        profileData.role === 'student' && profileData.isFirstTime && resultsCount === 0;
-      const shouldOfferTour = !!(tourField && !profileData[tourField] && !needsPlacement);
-      const deferTourAfterPlacement = !!(needsPlacement && tourField && !profileData[tourField]);
-
-      if (deferTourAfterPlacement) {
-        pendingTourAfterPlacementRef.current = true;
-      }
-
-      const updates: Partial<UserProfile> = {
-        hasLoggedInBefore: true,
-        ...(deferTourAfterPlacement ? { offerTourAfterPlacement: true } : {}),
-      };
-
-      updateDoc(doc(db, 'users', uid), updates).catch(err => {
-        console.error('Failed to mark first login:', err);
-      });
-
-      if (shouldOfferTour) {
-        setTourRole(profileData.role as 'parent' | 'teacher' | 'student');
-        setShowTour(true);
-      }
-
-      return { ...profileData, ...updates };
+    if (decision.deferTourAfterPlacement) {
+      pendingTourAfterPlacementRef.current = true;
     }
-
-    if (
-      profileData.offerTourAfterPlacement &&
-      profileData.role === 'student' &&
-      !profileData.hasCompletedStudentTour &&
-      resultsCount > 0
-    ) {
-      // Placement finished in a prior session before the tour could be offered
+    if (decision.clearDeferredTour) {
       pendingTourAfterPlacementRef.current = false;
-      setTourRole('student');
-      setShowTour(true);
-      updateDoc(doc(db, 'users', uid), { offerTourAfterPlacement: false }).catch(err => {
-        console.error('Failed to clear deferred tour flag:', err);
+    }
+
+    if (Object.keys(decision.profileUpdates).length > 0) {
+      updateDoc(doc(db, 'users', uid), decision.profileUpdates).catch(err => {
+        console.error('Failed to update first-login tour state:', err);
       });
-      return { ...profileData, offerTourAfterPlacement: false };
     }
 
-    if (profileData.hasLoggedInBefore !== true) {
-      // Legacy accounts without the flag — skip tour, mark as seen
-      updateDoc(doc(db, 'users', uid), { hasLoggedInBefore: true }).catch(() => {});
-      return { ...profileData, hasLoggedInBefore: true };
+    if (decision.shouldShowTour && decision.tourRole) {
+      setTourRole(decision.tourRole);
+      setShowTour(true);
     }
 
-    return profileData;
+    return { ...profileData, ...decision.profileUpdates };
   };
 
   useEffect(() => {
@@ -402,11 +376,12 @@ export default function App() {
 
   const handleTestComplete = async (score: number, gaps: string[], answers: TestAnswer[] = []) => {
     const testType = isTakingTest?.type || 'placement';
+    const testTarget = isTakingTest?.target;
     const result: TestResult = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user?.uid || 'guest',
       type: testType,
-      targetId: isTakingTest?.type === 'unit' ? isTakingTest.target.id : appState.grade,
+      targetId: testType === 'unit' ? testTarget?.id : appState.grade,
       score,
       gaps,
       timestamp: new Date().toISOString(),
@@ -421,16 +396,18 @@ export default function App() {
     setActiveTab('dashboard');
 
     // First-login tour: offer once right after placement (session ref or persisted flag)
-    const shouldOfferTourAfterPlacement =
-      testType === 'placement' &&
-      appState.profile?.role === 'student' &&
-      !appState.profile.isDemo &&
-      !appState.profile.hasCompletedStudentTour &&
-      (pendingTourAfterPlacementRef.current || appState.profile.offerTourAfterPlacement === true);
+    const offerTourNow = shouldOfferTourAfterPlacementComplete({
+      testType,
+      role: appState.profile?.role,
+      isDemo: appState.profile?.isDemo,
+      hasCompletedStudentTour: appState.profile?.hasCompletedStudentTour,
+      pendingTourAfterPlacement: pendingTourAfterPlacementRef.current,
+      offerTourAfterPlacement: appState.profile?.offerTourAfterPlacement,
+    });
 
     pendingTourAfterPlacementRef.current = false;
 
-    if (shouldOfferTourAfterPlacement) {
+    if (offerTourNow) {
       setTourRole('student');
       setShowTour(true);
     }
@@ -445,19 +422,71 @@ export default function App() {
         });
         await updateDoc(doc(db, 'users', user.uid), {
           isFirstTime: false,
-          ...(shouldOfferTourAfterPlacement ? { offerTourAfterPlacement: false } : {}),
+          ...(offerTourNow ? { offerTourAfterPlacement: false } : {}),
         });
         
         if (appState.profile) {
           handleUpdateProfile({
             ...appState.profile,
             isFirstTime: false,
-            ...(shouldOfferTourAfterPlacement ? { offerTourAfterPlacement: false } : {}),
+            ...(offerTourNow ? { offerTourAfterPlacement: false } : {}),
           });
+        }
+
+        // District assignments: mark modules complete when unit/grade tests finish
+        if (appState.path === 'district' && (testType === 'unit' || testType === 'grade')) {
+          const moduleIdsToComplete: string[] = [];
+          if (testType === 'unit' && testTarget?.id) {
+            const unit = getUnitById(testTarget.id);
+            unit?.modules.forEach(m => moduleIdsToComplete.push(m.id));
+          } else if (testType === 'grade') {
+            FULL_CURRICULUM.filter(m => m.gradeLevel === appState.grade).forEach(m => moduleIdsToComplete.push(m.id));
+          } else if (selectedModule) {
+            moduleIdsToComplete.push(selectedModule.id);
+          }
+          for (const moduleId of moduleIdsToComplete) {
+            await updateAssignmentProgress({
+              studentUid: user.uid,
+              completedModuleId: moduleId,
+              score,
+              assignmentId: appState.profile?.activeAssignmentId,
+            });
+          }
         }
       } catch (err) {
         console.error("Error saving test results or updating profile:", err);
       }
+    }
+  };
+
+  const updateAssignmentProgress = async (payload: {
+    studentUid: string;
+    assignmentId?: string;
+    moduleId?: string;
+    completedModuleId?: string;
+    score?: number;
+  }) => {
+    try {
+      await fetch('/api/update-assignment-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error('Failed to update assignment progress:', err);
+    }
+  };
+
+  const persistLearningResume = async (updates: Partial<UserProfile>) => {
+    if (!user) return;
+    setAppState(prev => {
+      if (!prev.profile) return prev;
+      return { ...prev, profile: { ...prev.profile, ...updates } };
+    });
+    try {
+      await updateDoc(doc(db, 'users', user.uid), updates);
+    } catch (err) {
+      console.error('Failed to save learning resume state:', err);
     }
   };
 
@@ -582,13 +611,50 @@ export default function App() {
     if (user) loadStudentOverview(user.uid, studentUid);
   };
 
-  const handleModuleSelect = (module: NGSSModule) => {
+  const handleModuleSelect = (module: NGSSModule, options?: { assignmentId?: string; assignmentTitle?: string }) => {
     setSelectedModule(module);
     setActiveTab('chat');
     const tourKey = `vs-module-tour:${module.id}`;
     if (!localStorage.getItem(tourKey)) {
       setTimeout(() => setShowModuleTour(true), 400);
     }
+
+    const resumeUpdates: Partial<UserProfile> = {
+      lastModuleId: module.id,
+      lastModuleTitle: module.title,
+    };
+    if (options?.assignmentId) {
+      resumeUpdates.activeAssignmentId = options.assignmentId;
+      setActiveAssignmentTitle(options.assignmentTitle || null);
+    }
+    void persistLearningResume(resumeUpdates);
+
+    if (user && appState.path === 'district') {
+      void updateAssignmentProgress({
+        studentUid: user.uid,
+        moduleId: module.id,
+        assignmentId: options?.assignmentId || appState.profile?.activeAssignmentId,
+      });
+    }
+  };
+
+  const handleStartAssignment = (assignment: ClassroomAssignment, module: NGSSModule) => {
+    handleModuleSelect(module, { assignmentId: assignment.id, assignmentTitle: assignment.title });
+  };
+
+  const handleResumeChat = () => {
+    if (appState.profile?.lastModuleId) {
+      const mod = getModuleById(appState.profile.lastModuleId);
+      if (mod) {
+        handleModuleSelect(mod);
+        return;
+      }
+    }
+    setActiveTab('chat');
+  };
+
+  const handleChatTopic = (topic: string) => {
+    void persistLearningResume({ lastChatTopic: topic });
   };
 
   useEffect(() => {
@@ -699,6 +765,20 @@ export default function App() {
     : appState.role;
   const layoutUserState: UserState = { ...appState, role: effectiveRole };
   const effectiveParentUid = isDemo && demoViewRole === 'parent' && demoParentUid ? demoParentUid : user?.uid;
+
+  const { openGaps, closedGaps } = computeOpenAndClosedGaps(testResults);
+  const latestPlacement = [...testResults].reverse().find(r => r.type === 'placement');
+  const studentChatContext = buildStudentChatContext({
+    grade: appState.grade || appState.profile?.grade,
+    moduleTitle: selectedModule?.title,
+    moduleCode: selectedModule?.code,
+    moduleGap: selectedModule?.gap,
+    openGaps,
+    closedGaps,
+    placementScore: latestPlacement?.score ?? null,
+    assignmentTitle: activeAssignmentTitle || undefined,
+    lastChatTopic: appState.profile?.lastChatTopic,
+  });
 
   const handleDeleteStudent = async () => {
     if (!user) return;
@@ -823,6 +903,7 @@ export default function App() {
         </div>
       )}
 
+      <ErrorBoundary key={activeTab} label="This screen">
       {activeTab === 'curriculum' && effectiveRole === 'student' && (
         <div className="space-y-8 animate-in fade-in duration-500">
           {isTakingTest ? (
@@ -930,7 +1011,9 @@ export default function App() {
 
       {activeTab === 'chat' && effectiveRole === 'student' && (
         <SocraticChat 
-          selectedModule={selectedModule} 
+          selectedModule={selectedModule}
+          studentContext={studentChatContext}
+          onChatTopic={handleChatTopic}
           onBack={() => {
             setSelectedModule(null);
             setActiveTab('curriculum');
@@ -965,7 +1048,13 @@ export default function App() {
             onSelectClassroom={(id) => setActiveClassroomId(id)}
           />
         ) : (
-          <Dashboard results={testResults} userState={appState} totalLearningSeconds={totalLearningSeconds} />
+          <Dashboard
+            results={testResults}
+            userState={appState}
+            totalLearningSeconds={totalLearningSeconds}
+            onContinueModule={handleModuleSelect}
+            onResumeChat={handleResumeChat}
+          />
         )
       )}
 
@@ -1005,7 +1094,7 @@ export default function App() {
       )}
 
       {activeTab === 'my-assignments' && effectiveRole === 'student' && appState.path === 'district' && (
-        <StudentAssignmentsTab studentUid={user?.uid} />
+        <StudentAssignmentsTab studentUid={user?.uid} onStartAssignment={handleStartAssignment} />
       )}
 
       {activeTab === 'student-account' && effectiveRole === 'parent' && user && (
@@ -1041,6 +1130,7 @@ export default function App() {
       {activeTab === 'founder' && user && (
         <FounderDashboard founderUid={user.uid} />
       )}
+      </ErrorBoundary>
     </Layout>
   );
 }

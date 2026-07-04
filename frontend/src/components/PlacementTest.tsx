@@ -3,6 +3,7 @@ import { NGSSModule, Question, TestAnswer } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { scoreTest } from '../lib/scoreTest';
 
 interface PlacementTestProps {
   module: NGSSModule | null;
@@ -104,44 +105,12 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
   };
 
   const calculateResults = () => {
-    let score = 0;
-    const gaps: string[] = [];
-    const testAnswers: TestAnswer[] = [];
-
-    answers.forEach((answer, index) => {
-      const q = questions[index];
-      let correct = false;
-      let selectedAnswer: string | undefined;
-
-      if (q.type === 'multiple-choice') {
-        correct = answer === q.correctAnswer;
-        selectedAnswer = q.options?.[answer];
-        if (correct) score++;
-        else gaps.push(q.concept || `Concept related to: ${q.text}`);
-      } else {
-        correct = answer.length > 15;
-        selectedAnswer = answer;
-        if (correct) score++;
-        else gaps.push(q.concept || `Concept related to: ${q.text}`);
-      }
-
-      testAnswers.push({
-        questionId: q.id,
-        questionText: q.text,
-        selectedAnswer,
-        correct,
-        concept: q.concept
-      });
-    });
-
-    onComplete((score / questions.length) * 100, gaps, testAnswers);
+    const { scorePercent, gaps, answers: testAnswers } = scoreTest(questions, answers);
+    onComplete(scorePercent, gaps, testAnswers);
   };
 
   if (isFinished) {
-    const score = Math.round((answers.filter((a, i) => {
-      const q = questions[i];
-      return q.type === 'multiple-choice' ? a === q.correctAnswer : a.length > 10;
-    }).length / questions.length) * 100);
+    const score = Math.round(scoreTest(questions, answers).scorePercent);
 
     return (
       <motion.div 

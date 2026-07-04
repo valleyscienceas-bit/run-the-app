@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ClipboardList, Calendar, Plus, ChevronLeft, Trash2, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { GradeLevel, ClassroomAssignment, AssignmentStudentRow, AssignmentSubmission } from '../types';
+import { modulesForGrade, resolveAssignmentModules } from '../lib/learningContext';
 
 type AssignmentSummary = { completed: number; inProgress: number; notStarted: number; late: number; total: number };
 
@@ -36,7 +37,7 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
   const [detailStudents, setDetailStudents] = useState<AssignmentStudentRow[]>([]);
   const [detailSummary, setDetailSummary] = useState<AssignmentSummary | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [form, setForm] = useState({ title: '', dueAt: '', grade: '7' as GradeLevel, minScore: '' });
+  const [form, setForm] = useState({ title: '', dueAt: '', grade: '7' as GradeLevel, minScore: '', moduleIds: [] as string[] });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageIsError, setMessageIsError] = useState(false);
@@ -132,6 +133,10 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
       showMessage('Please set a due date and time.', true);
       return;
     }
+    if (form.moduleIds.length === 0) {
+      showMessage('Select at least one module for students to complete.', true);
+      return;
+    }
     setLoading(true);
     setMessage(null);
     setMessageIsError(false);
@@ -147,14 +152,14 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
           dueAt: dueAtIso,
           grade: form.grade,
           minScore: form.minScore ? Number(form.minScore) : undefined,
-          moduleIds: ['module-placeholder-1']
+          moduleIds: form.moduleIds
         })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Failed to create assignment');
       setAssignments(prev => [...prev, data.assignment]);
       setShowForm(false);
-      setForm({ title: '', dueAt: '', grade: '7', minScore: '' });
+      setForm({ title: '', dueAt: '', grade: '7', minScore: '', moduleIds: [] });
       showMessage('Assignment created successfully.');
     } catch (err: any) {
       const isNetwork = !err?.message || /failed to fetch|load failed|networkerror/i.test(err.message);
@@ -303,7 +308,11 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Grade</label>
-              <select value={form.grade} onChange={e => setForm({ ...form, grade: e.target.value as GradeLevel })} className={INPUT_CLASS_PX}>
+              <select
+                value={form.grade}
+                onChange={e => setForm({ ...form, grade: e.target.value as GradeLevel, moduleIds: [] })}
+                className={INPUT_CLASS_PX}
+              >
                 {['3','4','5','6','7','8'].map(g => <option key={g} value={g}>Grade {g}</option>)}
               </select>
             </div>
@@ -311,6 +320,40 @@ export function AssignmentsTab({ classroomId, teacherUid, fallbackClassroomId }:
               <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Min Score (optional)</label>
               <input type="number" min={0} max={100} value={form.minScore} onChange={e => setForm({ ...form, minScore: e.target.value })} className={INPUT_CLASS_PX} />
             </div>
+          </div>
+          <div>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Modules</label>
+            <div className="space-y-2 max-h-48 overflow-y-auto rounded-2xl border border-slate-100 dark:border-slate-700 p-3">
+              {modulesForGrade(form.grade).length === 0 ? (
+                <p className="text-sm font-bold text-slate-400 p-2">No curriculum modules for this grade yet.</p>
+              ) : (
+                modulesForGrade(form.grade).map(m => {
+                  const checked = form.moduleIds.includes(m.id);
+                  return (
+                    <label key={m.id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setForm(prev => ({
+                            ...prev,
+                            moduleIds: checked
+                              ? prev.moduleIds.filter(id => id !== m.id)
+                              : [...prev.moduleIds, m.id],
+                          }));
+                        }}
+                        className="mt-1"
+                      />
+                      <span>
+                        <span className="block font-black text-sm text-slate-900 dark:text-slate-100">{m.title}</span>
+                        <span className="block text-xs font-bold text-slate-400">{m.code} · {m.gap}</span>
+                      </span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-2 font-medium">Students start these modules from My Assignments.</p>
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setShowForm(false)} className={CANCEL_BUTTON_CLASS}>Cancel</button>
@@ -367,6 +410,11 @@ function AssignmentSection({ title, empty, items, onOpen, onDelete, isPast }: {
                   <Calendar size={14} /> Due {new Date(a.dueAt).toLocaleString()}
                   {isPast && <span className="text-orange-500">· Past due</span>}
                 </p>
+                {resolveAssignmentModules(a.moduleIds || []).length > 0 && (
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 normal-case tracking-normal">
+                    {resolveAssignmentModules(a.moduleIds || []).map(m => m.title).join(' · ')}
+                  </p>
+                )}
                 <AssignmentCardStats assignment={a} />
               </div>
               <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ClipboardList, Calendar, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
-import { ClassroomAssignment, AssignmentSubmission } from '../types';
+import { ClipboardList, Calendar, CheckCircle2, Clock, AlertCircle, ArrowRight, Play } from 'lucide-react';
+import { ClassroomAssignment, AssignmentSubmission, NGSSModule } from '../types';
+import { resolveAssignmentModules } from '../lib/learningContext';
 
 interface StudentAssignmentRow extends ClassroomAssignment {
   mySubmission?: AssignmentSubmission;
@@ -9,9 +10,10 @@ interface StudentAssignmentRow extends ClassroomAssignment {
 
 interface StudentAssignmentsTabProps {
   studentUid?: string;
+  onStartAssignment: (assignment: ClassroomAssignment, module: NGSSModule) => void;
 }
 
-export function StudentAssignmentsTab({ studentUid }: StudentAssignmentsTabProps) {
+export function StudentAssignmentsTab({ studentUid, onStartAssignment }: StudentAssignmentsTabProps) {
   const [assignments, setAssignments] = useState<StudentAssignmentRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,6 +35,14 @@ export function StudentAssignmentsTab({ studentUid }: StudentAssignmentsTabProps
   const current = assignments.filter(a => new Date(a.dueAt) >= now);
   const past = assignments.filter(a => new Date(a.dueAt) < now);
 
+  const handleStart = (assignment: StudentAssignmentRow) => {
+    const modules = resolveAssignmentModules(assignment.moduleIds || []);
+    const completed = new Set(assignment.mySubmission?.completedModuleIds || []);
+    const next = modules.find(m => !completed.has(m.id)) || modules[0];
+    if (!next) return;
+    onStartAssignment(assignment, next);
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <header>
@@ -46,15 +56,27 @@ export function StudentAssignmentsTab({ studentUid }: StudentAssignmentsTabProps
         <p className="text-slate-400 font-bold text-center py-12">Loading assignments...</p>
       ) : (
         <>
-          <AssignmentSection title="Due Soon" empty="No current assignments from your teacher." items={current} />
-          <AssignmentSection title="Past Assignments" empty="No past assignments yet." items={past} isPast />
+          <AssignmentSection title="Due Soon" empty="No current assignments from your teacher." items={current} onStart={handleStart} />
+          <AssignmentSection title="Past Assignments" empty="No past assignments yet." items={past} onStart={handleStart} isPast />
         </>
       )}
     </div>
   );
 }
 
-function AssignmentSection({ title, empty, items, isPast }: { title: string; empty: string; items: StudentAssignmentRow[]; isPast?: boolean }) {
+function AssignmentSection({
+  title,
+  empty,
+  items,
+  onStart,
+  isPast,
+}: {
+  title: string;
+  empty: string;
+  items: StudentAssignmentRow[];
+  onStart: (a: StudentAssignmentRow) => void;
+  isPast?: boolean;
+}) {
   return (
     <section data-tour="student-assigned-list">
       <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-4">{title}</h2>
@@ -68,6 +90,10 @@ function AssignmentSection({ title, empty, items, isPast }: { title: string; emp
           {items.map(a => {
             const sub = a.mySubmission || { status: 'not_started' as const, progress: 0 };
             const isLate = a.isLate || (sub.status !== 'completed' && isPast);
+            const modules = resolveAssignmentModules(a.moduleIds || []);
+            const canStart = modules.length > 0 && sub.status !== 'completed';
+            const label = sub.status === 'in_progress' ? 'Continue' : 'Start assignment';
+
             return (
               <div key={a.id} className="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -77,8 +103,28 @@ function AssignmentSection({ title, empty, items, isPast }: { title: string; emp
                       <Calendar size={14} /> Due {new Date(a.dueAt).toLocaleString()}
                       {isLate && <span className="text-orange-500">· Late</span>}
                     </p>
+                    {modules.length > 0 && (
+                      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-2">
+                        {modules.map(m => m.title).join(' · ')}
+                      </p>
+                    )}
                   </div>
-                  <StatusBadge status={sub.status} isLate={isLate} />
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={sub.status} isLate={isLate} />
+                    {canStart && (
+                      <button
+                        type="button"
+                        onClick={() => onStart(a)}
+                        className="inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 rounded-2xl font-black text-sm hover:opacity-90 transition-all"
+                      >
+                        {sub.status === 'in_progress' ? <ArrowRight size={16} /> : <Play size={16} />}
+                        {label}
+                      </button>
+                    )}
+                    {modules.length === 0 && sub.status !== 'completed' && (
+                      <p className="text-xs font-bold text-orange-500">No linked modules yet</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">

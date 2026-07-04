@@ -25,13 +25,24 @@ REFERENCE CURRICULUM (NGSS):
 - Grade 8: Newton's Laws (MS-PS2-2), Energy Conservation (MS-PS3-1), Gravity & Orbits (MS-ESS1-2).
 
 CURRENT CONTEXT:
-You can "see" the student's current module and their placement test results if provided.
+You receive a STUDENT LEARNING CONTEXT block when available. Use it to personalize questions:
+prioritize open conceptual gaps, the current module, active teacher assignments, and grade level.
+Do not recite the context back verbatim — weave it into your Socratic questions naturally.
 `;
+
+function buildSystemPrompt(moduleContext?: string, studentContext?: string): string {
+  let prompt = SYSTEM_INSTRUCTION;
+  if (studentContext) prompt += `\n\nSTUDENT LEARNING CONTEXT:\n${studentContext}`;
+  if (moduleContext) prompt += `\n\nCURRENT MODULE CONTEXT: ${moduleContext}`;
+  return prompt;
+}
 
 export async function getSocraticResponse(
   messages: { role: "user" | "model"; text: string }[],
-  moduleContext?: string
+  moduleContext?: string,
+  studentContext?: string
 ) {
+  const systemPrompt = buildSystemPrompt(moduleContext, studentContext);
   const openRouterKey = process.env.OPENROUTER_API_KEY;
 
   if (openRouterKey && openRouterKey !== "sk-or-v1-...") {
@@ -47,7 +58,7 @@ export async function getSocraticResponse(
           messages: [
             {
               role: "system",
-              content: SYSTEM_INSTRUCTION + (moduleContext ? `\n\nCURRENT MODULE CONTEXT: ${moduleContext}` : "")
+              content: systemPrompt
             },
             ...messages.map((m) => ({
               role: m.role === "model" ? "assistant" : "user",
@@ -58,8 +69,8 @@ export async function getSocraticResponse(
         })
       });
 
-      const data = await response.json();
-      return data.choices[0].message.content || "I'm having trouble connecting to my scientific database.";
+      const data = await response.json() as { choices?: { message?: { content?: string } }[] };
+      return data.choices?.[0]?.message?.content || "I'm having trouble connecting to my scientific database.";
     } catch (err) {
       console.error("OpenRouter Error:", err);
     }
@@ -79,8 +90,7 @@ export async function getSocraticResponse(
       model,
       contents,
       config: {
-        systemInstruction:
-          SYSTEM_INSTRUCTION + (moduleContext ? `\n\nCURRENT MODULE CONTEXT: ${moduleContext}` : ""),
+        systemInstruction: systemPrompt,
         temperature: 0.7
       }
     });
