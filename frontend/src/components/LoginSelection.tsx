@@ -360,6 +360,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
           xp: 0,
           isFirstTime: true,
           isPaid: false,
+          hasLoggedInBefore: false,
           createdAt: new Date().toISOString()
         };
 
@@ -389,7 +390,9 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
     setLoading(true);
     clearErrors();
     try {
+      const pending = getMfaPending();
       const body: Record<string, string> = { email: loginMfaEmail };
+      if (pending?.uid) body.uid = pending.uid;
       if (loginMfaMethod === 'email') {
         body.emailCode = twoFACode;
       } else {
@@ -407,8 +410,8 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
       }
 
       const { customToken, profile } = await res.json();
-      await signInWithCustomToken(auth, customToken);
       clearMfaPending();
+      await signInWithCustomToken(auth, customToken);
       onLogin(profile.path, profile.role, profile);
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Verification failed.');

@@ -70,9 +70,6 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
     init: RequestInit,
     fallbackError: string
   ): Promise<any> => {
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H2',location:'MfaSettings.tsx:authedJsonRequest:start',message:'Starting authenticated request',data:{input,method:init.method || 'GET'},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const doRequest = async (forceRefresh: boolean) => {
       const idToken = await getIdToken(forceRefresh);
       const headers = new Headers(init.headers || {});
@@ -82,15 +79,9 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
     };
 
     let res = await doRequest(false);
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H2',location:'MfaSettings.tsx:authedJsonRequest:firstResponse',message:'Authenticated request first response',data:{input,status:res.status},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (res.status === 401) {
       // Retry once with a freshly minted token to handle stale auth sessions.
       res = await doRequest(true);
-      // #region agent log
-      fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H2',location:'MfaSettings.tsx:authedJsonRequest:retryResponse',message:'Authenticated request retry response',data:{input,status:res.status},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
     }
 
     if (!res.ok) {
@@ -122,9 +113,6 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
   const reauthenticate = async () => {
     const user = auth.currentUser;
     if (!user) throw new Error('You must be signed in.');
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H1',location:'MfaSettings.tsx:reauthenticate:start',message:'Starting reauthentication',data:{isGoogleAccount,hasCurrentUser:!!user,hasUserEmail:!!user.email},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
 
     if (isGoogleAccount) {
       await reauthenticateWithPopup(user, new GoogleAuthProvider());
@@ -169,9 +157,6 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
         setStep('choose-method');
       }
     } catch (err: unknown) {
-      // #region agent log
-      fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H1',location:'MfaSettings.tsx:handleReauthSubmit:catch',message:'Reauthentication failed',data:{errorMessage:err instanceof Error ? err.message : 'unknown',errorCode:err && typeof err === 'object' && 'code' in err ? String((err as { code: string }).code) : 'none',disablingFlow},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setMessage({ type: 'error', text: formatAuthError(err) });
     } finally {
       setLoading(false);
@@ -196,9 +181,6 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
   const handleChooseTotp = async () => {
     setLoading(true);
     setMessage(null);
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H3',location:'MfaSettings.tsx:handleChooseTotp:start',message:'User selected authenticator setup',data:{step,loadingBefore:false,hasAccountEmail:!!accountEmail},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     try {
       const data = await authedJsonRequest('/api/mfa/totp/enroll-start', {
         method: 'POST',
@@ -208,9 +190,6 @@ export function MfaSettings({ profile, onUpdateProfile }: MfaSettingsProps) {
       setCode('');
       setStep('totp-setup');
     } catch (err: unknown) {
-      // #region agent log
-      fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',runId:'initial',hypothesisId:'H4',location:'MfaSettings.tsx:handleChooseTotp:catch',message:'Authenticator setup start failed',data:{errorMessage:err instanceof Error ? err.message : 'unknown'},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setMessage({ type: 'error', text: getSubmitErrorMessage(err) });
     } finally {
       setLoading(false);

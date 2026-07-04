@@ -66,6 +66,9 @@ export default function App() {
   const [studentUnreadCount, setStudentUnreadCount] = useState(0);
 
   const [demoApprovalNotice, setDemoApprovalNotice] = useState<'approved' | 'already' | null>(null);
+  // Session-scoped: offer tour after placement on this first login only
+  const pendingTourAfterPlacementRef = useRef(false);
+  const firstLoginTourHandledRef = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -76,6 +79,68 @@ export default function App() {
     }
     applyTheme(loadThemePreference());
   }, []);
+
+  /** Offer optional tour once on first login; defer until after placement when needed. */
+  const applyFirstLoginTourOffer = (profileData: UserProfile, resultsCount: number, uid: string): UserProfile => {
+    if (profileData.isDemo || firstLoginTourHandledRef.current) return profileData;
+    firstLoginTourHandledRef.current = true;
+
+    if (profileData.hasLoggedInBefore === false) {
+      const tourField =
+        profileData.role === 'parent' ? 'hasCompletedParentTour'
+        : profileData.role === 'teacher' ? 'hasCompletedTeacherTour'
+        : profileData.role === 'student' ? 'hasCompletedStudentTour'
+        : null;
+      const needsPlacement =
+        profileData.role === 'student' && profileData.isFirstTime && resultsCount === 0;
+      const shouldOfferTour = !!(tourField && !profileData[tourField] && !needsPlacement);
+      const deferTourAfterPlacement = !!(needsPlacement && tourField && !profileData[tourField]);
+
+      if (deferTourAfterPlacement) {
+        pendingTourAfterPlacementRef.current = true;
+      }
+
+      const updates: Partial<UserProfile> = {
+        hasLoggedInBefore: true,
+        ...(deferTourAfterPlacement ? { offerTourAfterPlacement: true } : {}),
+      };
+
+      updateDoc(doc(db, 'users', uid), updates).catch(err => {
+        console.error('Failed to mark first login:', err);
+      });
+
+      if (shouldOfferTour) {
+        setTourRole(profileData.role as 'parent' | 'teacher' | 'student');
+        setShowTour(true);
+      }
+
+      return { ...profileData, ...updates };
+    }
+
+    if (
+      profileData.offerTourAfterPlacement &&
+      profileData.role === 'student' &&
+      !profileData.hasCompletedStudentTour &&
+      resultsCount > 0
+    ) {
+      // Placement finished in a prior session before the tour could be offered
+      pendingTourAfterPlacementRef.current = false;
+      setTourRole('student');
+      setShowTour(true);
+      updateDoc(doc(db, 'users', uid), { offerTourAfterPlacement: false }).catch(err => {
+        console.error('Failed to clear deferred tour flag:', err);
+      });
+      return { ...profileData, offerTourAfterPlacement: false };
+    }
+
+    if (profileData.hasLoggedInBefore !== true) {
+      // Legacy accounts without the flag — skip tour, mark as seen
+      updateDoc(doc(db, 'users', uid), { hasLoggedInBefore: true }).catch(() => {});
+      return { ...profileData, hasLoggedInBefore: true };
+    }
+
+    return profileData;
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -128,72 +193,46 @@ export default function App() {
               }
             } catch { /* stats are non-critical */ }
 
+            const finalProfile = applyFirstLoginTourOffer(profileData, results.length, user.uid);
+
             setAppState({
-              path: profileData.path,
-              role: profileData.role,
+              path: finalProfile.path,
+              role: finalProfile.role,
               isLoggedIn: true,
-              grade: profileData.grade,
-              profile: profileData
+              grade: finalProfile.grade,
+              profile: finalProfile
             });
             
             setView('dashboard');
 
-            if (profileData.isDemo) {
+            if (finalProfile.isDemo) {
               setShowPlacementPopup(false);
               setDemoViewRole('student');
-              if (!profileData.hasSeenDemoStudentGuide) {
-                setActiveTab('demo-guide');
-              } else {
-                setActiveTab('curriculum');
-              }
-            } else if (profileData.role === 'parent') {
+              setActiveTab(finalProfile.hasSeenDemoStudentGuide ? 'curriculum' : 'demo-guide');
+            } else if (finalProfile.role === 'parent') {
               setActiveTab('dashboard');
               loadStudentOverview(user.uid);
-            }
-
-            // Teacher: load classroom students
-            if (profileData.role === 'teacher') {
+            } else if (finalProfile.role === 'teacher') {
               setActiveTab('dashboard');
-              loadTeacherData(user.uid, profileData.classroomIds?.[0]);
-            }
-
-            // Admin: load district classrooms
-            if (profileData.role === 'admin' && profileData.districtId) {
+              loadTeacherData(user.uid, finalProfile.classroomIds?.[0]);
+            } else if (finalProfile.role === 'admin' && finalProfile.districtId) {
               setActiveTab('dashboard');
-              loadAdminClassrooms(profileData.districtId);
+              loadAdminClassrooms(finalProfile.districtId);
             }
 
-            if (profileData.isDemo) {
-              setDemoViewRole('student');
-              setActiveTab(profileData.hasSeenDemoStudentGuide ? 'curriculum' : 'demo-guide');
-              setShowPlacementPopup(false);
-            } else {
-            // Onboarding tours (demo users start tours from Demo Guide instead)
-            if (!profileData.isDemo) {
-              if (profileData.role === 'parent' && !profileData.hasCompletedParentTour) {
-                setTourRole('parent');
-                setShowTour(true);
-              } else if (profileData.role === 'teacher' && !profileData.hasCompletedTeacherTour) {
-                setTourRole('teacher');
-                setShowTour(true);
-              } else if (profileData.role === 'student' && !profileData.hasCompletedStudentTour && results.length > 0) {
-                setTourRole('student');
-                setShowTour(true);
-              }
-            }
-
+            if (!finalProfile.isDemo) {
               // Only show placement popup if student, first time, and has no results at all
               const hasExistingResults = results.length > 0;
               if (hasExistingResults) {
                 setShowPlacementPopup(false);
                 // Self-heal profile isFirstTime state if database had the stale flag
-                if (profileData.isFirstTime) {
-                  profileData.isFirstTime = false;
+                if (finalProfile.isFirstTime) {
+                  finalProfile.isFirstTime = false;
                   updateDoc(doc(db, 'users', user.uid), { isFirstTime: false }).catch(err => {
                     console.error("Failed to auto-cleanse isFirstTime state:", err);
                   });
                 }
-              } else if (profileData.role === 'student' && profileData.isFirstTime) {
+              } else if (finalProfile.role === 'student' && finalProfile.isFirstTime) {
                 setShowPlacementPopup(true);
               }
             }
@@ -203,6 +242,9 @@ export default function App() {
         }
       } else {
         setUser(null);
+        pendingTourAfterPlacementRef.current = false;
+        firstLoginTourHandledRef.current = false;
+        setShowTour(false);
         const pending = getMfaPending();
         if (pending) {
           setResumeMfaLogin(true);
@@ -242,8 +284,9 @@ export default function App() {
     setResumeMfaLogin(false);
     const isDistrictGuestEntry = path === 'district' && details?.isGuestEntry === true;
     const effectiveRole: UserRole = isDistrictGuestEntry ? 'student' : role;
+    const uid = user?.uid || details?.uid || 'guest';
     const profile: UserProfile = {
-      uid: user?.uid || details?.uid || 'guest',
+      uid,
       name: details?.name || 'Guest User',
       username: details?.username || 'guest',
       email: details?.email || '',
@@ -255,20 +298,37 @@ export default function App() {
       xp: details?.xp || 0,
       isFirstTime: details?.isFirstTime ?? true,
       isPaid: details?.isPaid ?? (path === 'district'),
+      hasLoggedInBefore: details?.hasLoggedInBefore,
+      hasCompletedParentTour: details?.hasCompletedParentTour,
+      hasCompletedStudentTour: details?.hasCompletedStudentTour,
+      hasCompletedTeacherTour: details?.hasCompletedTeacherTour,
+      offerTourAfterPlacement: details?.offerTourAfterPlacement,
       createdAt: details?.createdAt || new Date().toISOString()
     };
+
+    // Signup can race ahead of onAuthStateChanged (profile not ready yet) — apply tour offer here too
+    const finalProfile = uid !== 'guest'
+      ? applyFirstLoginTourOffer(profile, testResults.length, uid)
+      : profile;
 
     setAppState({
       path,
       role: effectiveRole,
       isLoggedIn: true,
-      grade: profile.grade,
-      profile
+      grade: finalProfile.grade,
+      profile: finalProfile
     });
     
     setView('dashboard');
     if (effectiveRole === 'founder') {
       setActiveTab('founder');
+    } else if (
+      !finalProfile.isDemo &&
+      finalProfile.role === 'student' &&
+      finalProfile.isFirstTime &&
+      testResults.length === 0
+    ) {
+      setShowPlacementPopup(true);
     }
   };
 
@@ -278,6 +338,9 @@ export default function App() {
     try {
       await auth.signOut();
       setUser(null);
+      pendingTourAfterPlacementRef.current = false;
+      firstLoginTourHandledRef.current = false;
+      setShowTour(false);
       setAppState({
         role: 'student',
         path: 'individual',
@@ -338,10 +401,11 @@ export default function App() {
   };
 
   const handleTestComplete = async (score: number, gaps: string[], answers: TestAnswer[] = []) => {
+    const testType = isTakingTest?.type || 'placement';
     const result: TestResult = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user?.uid || 'guest',
-      type: isTakingTest?.type || 'placement',
+      type: testType,
       targetId: isTakingTest?.type === 'unit' ? isTakingTest.target.id : appState.grade,
       score,
       gaps,
@@ -355,6 +419,21 @@ export default function App() {
     setIsTakingTest(null);
     setShowPlacementPopup(false);
     setActiveTab('dashboard');
+
+    // First-login tour: offer once right after placement (session ref or persisted flag)
+    const shouldOfferTourAfterPlacement =
+      testType === 'placement' &&
+      appState.profile?.role === 'student' &&
+      !appState.profile.isDemo &&
+      !appState.profile.hasCompletedStudentTour &&
+      (pendingTourAfterPlacementRef.current || appState.profile.offerTourAfterPlacement === true);
+
+    pendingTourAfterPlacementRef.current = false;
+
+    if (shouldOfferTourAfterPlacement) {
+      setTourRole('student');
+      setShowTour(true);
+    }
     
     // Save results via backend (Admin SDK bypasses rules)
     if (user) {
@@ -364,16 +443,17 @@ export default function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: user.uid, results: newResults })
         });
-        await updateDoc(doc(db, 'users', user.uid), { isFirstTime: false });
+        await updateDoc(doc(db, 'users', user.uid), {
+          isFirstTime: false,
+          ...(shouldOfferTourAfterPlacement ? { offerTourAfterPlacement: false } : {}),
+        });
         
         if (appState.profile) {
-          handleUpdateProfile({ ...appState.profile, isFirstTime: false });
-        }
-
-        // Trigger student tour after first placement test (not for demo accounts)
-        if (appState.profile && !appState.profile.hasCompletedStudentTour && !appState.profile.isDemo) {
-          setTourRole('student');
-          setShowTour(true);
+          handleUpdateProfile({
+            ...appState.profile,
+            isFirstTime: false,
+            ...(shouldOfferTourAfterPlacement ? { offerTourAfterPlacement: false } : {}),
+          });
         }
       } catch (err) {
         console.error("Error saving test results or updating profile:", err);
@@ -512,13 +592,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (activeTab !== 'chat') return;
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'App.tsx:chat-tab',message:'chat tab activated',data:{activeTab,role:appState.role,hasModule:!!selectedModule},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }, [activeTab, appState.role, selectedModule]);
-
-  useEffect(() => {
     if (appState.role !== 'teacher' || !user?.uid) return;
     loadTeacherNotifications(user.uid);
     const interval = setInterval(() => loadTeacherNotifications(user.uid), 30000);
@@ -567,7 +640,7 @@ export default function App() {
     await loadStudentOverview(user.uid, studentUid);
   };
 
-  const handleTourComplete = async () => {
+  const handleTourSeen = async () => {
     setShowTour(false);
     if (!user || !appState.profile) return;
     const field = tourRole === 'parent'
@@ -575,11 +648,12 @@ export default function App() {
       : tourRole === 'teacher'
       ? 'hasCompletedTeacherTour'
       : 'hasCompletedStudentTour';
+    if (appState.profile[field]) return;
     try {
       await updateDoc(doc(db, 'users', user.uid), { [field]: true });
       handleUpdateProfile({ ...appState.profile, [field]: true });
     } catch (err) {
-      console.error("Tour completion save error:", err);
+      console.error("Tour seen save error:", err);
     }
   };
 
@@ -711,8 +785,8 @@ export default function App() {
                   ...(appState.path === 'district' ? DISTRICT_STUDENT_SPOTLIGHT_STEPS : []),
                 ]
           }
-          onComplete={handleTourComplete}
-          onDismiss={() => setShowTour(false)}
+          onComplete={handleTourSeen}
+          onDismiss={handleTourSeen}
           onNavigateTab={(tab) => { if (!showPlacementPopup || tourActive) setActiveTab(tab); }}
         />
       )}

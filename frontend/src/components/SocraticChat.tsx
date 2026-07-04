@@ -24,12 +24,6 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'SocraticChat.tsx:mount',message:'SocraticChat mounted',data:{hasModule:!!selectedModule,moduleTitle:selectedModule?.title??null},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }, [selectedModule]);
-
   // Save time spent when leaving the chat
   useEffect(() => {
     sessionStartRef.current = Date.now();
