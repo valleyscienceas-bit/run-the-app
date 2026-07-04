@@ -3,6 +3,7 @@ import {
   buildStudentChatContext,
   computeOpenAndClosedGaps,
   getModuleById,
+  modulesForGrade,
   recommendNextModule,
   resolveAssignmentModules,
 } from './learningContext';
@@ -82,5 +83,22 @@ describe('buildStudentChatContext', () => {
     expect(ctx).toContain('72%');
     expect(ctx).toContain('Week 1 Forces');
     expect(ctx).toContain('What is inertia?');
+  });
+
+  it('still returns guidance with minimal input', () => {
+    const ctx = buildStudentChatContext({});
+    expect(ctx).toContain('Use this context to personalize questions');
+  });
+});
+
+describe('modulesForGrade / getModuleById', () => {
+  it('filters modules by grade', () => {
+    const grade8 = modulesForGrade('8');
+    expect(grade8.every(m => m.gradeLevel === '8')).toBe(true);
+    expect(grade8.length).toBeGreaterThan(0);
+  });
+
+  it('returns undefined for unknown module ids', () => {
+    expect(getModuleById('does-not-exist')).toBeUndefined();
   });
 });
