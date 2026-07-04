@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { NGSSModule, ChatMessage } from '../types';
-import { Send, ArrowLeft } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { auth, db, doc, setDoc, onSnapshot } from '../lib/firebase';
 import { ValerieMascot } from './ValerieMascot';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { getSubmitErrorMessage, parseApiError } from '../utils/formSubmit';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,12 +16,17 @@ function cn(...inputs: ClassValue[]) {
 interface SocraticChatProps {
   selectedModule: NGSSModule | null;
   onBack: () => void;
+  /** Rich learning context for Valerie (grade, gaps, assignment, etc.) */
+  studentContext?: string;
+  onChatTopic?: (topic: string) => void;
 }
 
-export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
+export function SocraticChat({ selectedModule, onBack, studentContext, onChatTopic }: SocraticChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [failedMessage, setFailedMessage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
@@ -72,22 +78,17 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
+  const sendMessage = async (messageText: string, historyMessages: ChatMessage[]) => {
     const userId = auth.currentUser?.uid;
-    if (!userId) return;
+    if (!userId) {
+      setSendError('You need to be signed in to chat with Valerie.');
+      return;
+    }
 
-    const userMessage: ChatMessage = { 
-      role: 'user', 
-      text: input,
-      timestamp: new Date().toISOString()
-    };
-    
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput('');
     setIsLoading(true);
+    setSendError(null);
+    setFailedMessage(null);
+    onChatTopic?.(messageText.slice(0, 120));
 
     try {
       const moduleContext = selectedModule
@@ -98,40 +99,85 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          history: newMessages.slice(0, -1).map(m => ({ role: m.role, text: m.text })),
-          message: input,
-          moduleContext
+          history: historyMessages.map(m => ({ role: m.role, text: m.text })),
+          message: messageText,
+          moduleContext,
+          studentContext,
         })
       });
 
+      if (!res.ok) {
+        throw new Error(await parseApiError(res, 'Valerie is temporarily unavailable. Please try again.'));
+      }
+
       const data = await res.json();
       const responseText = data.response || "Oops! My circuits are a bit tangled. Can you try saying that again?";
-      
-      const modelMessage: ChatMessage = { 
-        role: 'model', 
+
+      const modelMessage: ChatMessage = {
+        role: 'model',
         text: responseText,
         timestamp: new Date().toISOString()
       };
 
-      const finalMessages = [...newMessages, modelMessage];
-      
-      // Save to Firestore for memory
+      const finalMessages = [
+        ...historyMessages,
+        { role: 'user' as const, text: messageText, timestamp: new Date().toISOString() },
+        modelMessage,
+      ];
+
+      setMessages(finalMessages);
+
       await setDoc(doc(db, 'chat_history', userId), {
         userId,
         messages: finalMessages,
         lastUpdated: new Date().toISOString()
       });
-
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: "Oops! My circuits are a bit tangled. Can you try saying that again?",
-        timestamp: new Date().toISOString()
-      }]);
+      setFailedMessage(messageText);
+      setSendError(
+        getSubmitErrorMessage(error).includes('backend is running')
+          ? 'Valerie is temporarily unavailable. Check your connection and try again.'
+          : getSubmitErrorMessage(error)
+      );
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const messageText = input.trim();
+    const userMessage: ChatMessage = {
+      role: 'user',
+      text: messageText,
+      timestamp: new Date().toISOString()
+    };
+
+    const historyBeforeSend = messages;
+    setMessages([...messages, userMessage]);
+    setInput('');
+    await sendMessage(messageText, historyBeforeSend);
+  };
+
+  const handleRetry = async () => {
+    if (!failedMessage || isLoading) return;
+    // Keep the user bubble; only retry the API call
+    const historyBeforeSend = messages.filter(
+      (m, i) => !(i === messages.length - 1 && m.role === 'user' && m.text === failedMessage)
+    );
+    // Ensure user message is visible
+    const lastIsFailedUser =
+      messages[messages.length - 1]?.role === 'user' &&
+      messages[messages.length - 1]?.text === failedMessage;
+    if (!lastIsFailedUser) {
+      setMessages([
+        ...historyBeforeSend,
+        { role: 'user', text: failedMessage, timestamp: new Date().toISOString() },
+      ]);
+    }
+    await sendMessage(failedMessage, historyBeforeSend);
   };
 
   return (
@@ -189,12 +235,28 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-white border border-slate-100 p-6 rounded-[32px] rounded-tl-none">
+            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-[32px] rounded-tl-none">
               <div className="flex gap-1">
                 <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-2 bg-soft-pink rounded-full" />
                 <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 bg-soft-pink rounded-full" />
                 <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 bg-soft-pink rounded-full" />
               </div>
+            </div>
+          </div>
+        )}
+        {sendError && !isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[90%] bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 text-orange-800 dark:text-orange-200 p-5 rounded-[28px] rounded-tl-none">
+              <p className="font-bold text-sm mb-3">{sendError}</p>
+              {failedMessage && (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-colors"
+                >
+                  <RefreshCw size={14} /> Retry message
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -207,12 +269,12 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => { if (e.key === 'Enter') void handleSend(); }}
             placeholder="Ask Valerie a question..."
             className="w-full pl-6 pr-16 py-5 bg-cream dark:bg-slate-800 rounded-3xl border-2 border-transparent focus:border-soft-pink outline-none font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400/60 transition-all"
           />
           <button
-            onClick={handleSend}
+            onClick={() => void handleSend()}
             disabled={!input.trim() || isLoading}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 disabled:opacity-50 transition-all"
           >

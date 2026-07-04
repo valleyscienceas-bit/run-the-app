@@ -56,6 +56,11 @@ export interface UserProfile {
   gradeOverrides?: { grade: string; at: string; by: string }[];
   mfaEnabled?: boolean;
   mfaMethod?: 'email' | 'totp' | null;
+  /** Resume learning — last module the student opened */
+  lastModuleId?: string;
+  lastModuleTitle?: string;
+  lastChatTopic?: string;
+  activeAssignmentId?: string;
 }
 
 export interface GradeProgressArchive {
@@ -71,6 +76,7 @@ export interface AssignmentSubmission {
   progress: number;
   submittedAt?: string;
   score?: number;
+  completedModuleIds?: string[];
 }
 
 export interface ClassroomAssignment {
