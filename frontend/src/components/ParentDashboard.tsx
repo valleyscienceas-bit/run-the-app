@@ -8,6 +8,7 @@ import {
 import { StudentOverview, TestResult } from '../types';
 import { ValerieMascot } from './ValerieMascot';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
+import { formatLearningTime } from '../lib/learningStats';
 import { GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface ParentDashboardProps {
@@ -19,15 +20,6 @@ interface ParentDashboardProps {
 
 type StatDetail = 'time' | 'tests' | 'average' | 'gaps' | null;
 
-function formatTime(seconds: number): string {
-  if (!seconds || seconds <= 0) return '0m';
-  if (seconds < 60) return `${seconds}s`;
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const remainMins = mins % 60;
-  return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
-}
 
 export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent }: ParentDashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
@@ -191,7 +183,7 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="parent-stat-cards">
-        <PlainStatCard onClick={() => setStatDetail('time')} icon={<Clock className="text-blue-500" />} accent="blue" value={formatTime(totalSeconds)} label="Time spent learning" explanation="Total time talking with Valerie and working through science." />
+        <PlainStatCard onClick={() => setStatDetail('time')} icon={<Clock className="text-blue-500" />} accent="blue" value={formatLearningTime(totalSeconds)} label="Time spent learning" explanation="Total time talking with Valerie and working through science." />
         <PlainStatCard onClick={() => setStatDetail('tests')} icon={<CheckCircle2 className="text-sage-green" />} accent="green" value={testsCompleted.toString()} label="Tests completed" explanation={testsCompleted === 0 ? "No tests taken yet." : "Placement, unit, and grade-level checks."} />
         <PlainStatCard onClick={() => setStatDetail('average')} icon={trendUp ? <TrendingUp className="text-sage-green" /> : <TrendingDown className="text-orange-500" />} accent={trendUp ? 'green' : 'orange'} value={results.length > 0 ? `${avgScore}%` : 'N/A'} label="Average score" explanation={results.length >= 2 ? (trendUp ? "Scores are trending upward — nice work!" : "Scores dipped recently — may need a little support.") : "Average across all tests taken so far."} />
         <PlainStatCard onClick={() => setStatDetail('gaps')} icon={<Brain className="text-purple-500" />} accent="purple" value={results.length > 0 ? gapsRemaining.toString() : 'N/A'} label="Concepts to revisit" explanation={results.length === 0 ? "Shows up after the first test." : gapsRemaining === 0 ? "No open gaps — all caught up!" : "Topics Valerie is still helping your student master."} />
@@ -334,7 +326,7 @@ function StatDetailModal({ type, results, totalSeconds, avgScore, firstName, onC
 
         {type === 'time' && (
           <div className="space-y-3">
-            <p className="text-4xl font-black text-slate-900">{formatTime(totalSeconds)}</p>
+            <p className="text-4xl font-black text-slate-900">{formatLearningTime(totalSeconds)}</p>
             <p className="text-slate-600 font-medium">Total learning time for {firstName}. Valerie chat and module time will appear here as modules roll out.</p>
           </div>
         )}

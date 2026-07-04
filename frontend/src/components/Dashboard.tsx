@@ -6,6 +6,15 @@ import { NGSSModule, TestResult, UserState } from '../types';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
 import { ContinueLearningCard } from './ContinueLearningCard';
 import { getModuleById, recommendNextModule } from '../lib/learningContext';
+import {
+  computeActivityStreak,
+  computeAverageScore,
+  computeBestScore,
+  computeGapClosureRate,
+  formatLearningTime,
+  isScoreTrendUp,
+  mostTestedType,
+} from '../lib/learningStats';
 
 interface DashboardProps {
   results: TestResult[];
@@ -16,15 +25,6 @@ interface DashboardProps {
 }
 
 type StatDetail = 'tests' | 'time' | 'average' | 'streak' | 'best' | 'gaps' | 'closure' | 'active' | null;
-
-function formatTime(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const remainMins = mins % 60;
-  return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
-}
 
 export function Dashboard({ results, userState, totalLearningSeconds = 0, onContinueModule, onResumeChat }: DashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
@@ -37,47 +37,20 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
   const recommendation = recommendNextModule(results, profile?.grade || userState.grade, profile?.lastModuleId);
   const showContinue = !!(onContinueModule && onResumeChat);
 
-  const latestResult = results.length > 0 ? results[results.length - 1] : null;
-
   const chartData = results.map((r, i) => ({
     name: r.type === 'unit' ? `Unit ${r.targetId}` : r.type,
     score: Math.round(r.score),
     index: i
   }));
 
-  const allGaps = Array.from(new Set(results.flatMap(r => r.gaps)));
-  const avgScore = results.length > 0
-    ? Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length)
-    : 0;
-  const bestScore = results.length > 0
-    ? Math.round(Math.max(...results.map(r => r.score)))
-    : 0;
-
-  const recentAvg = results.slice(-3).reduce((s, r) => s + r.score, 0) / Math.max(results.slice(-3).length, 1);
-  const prevAvg = results.slice(-6, -3).reduce((s, r) => s + r.score, 0) / Math.max(results.slice(-6, -3).length, 1);
-  const trendUp = recentAvg >= prevAvg;
-
+  const avgScore = computeAverageScore(results);
+  const bestScore = computeBestScore(results);
+  const trendUp = isScoreTrendUp(results);
+  const topType = mostTestedType(results);
+  const { allGaps, openGaps, closedGaps, gapClosureRate } = computeGapClosureRate(results);
+  const streak = computeActivityStreak(results);
   const typeCounts: Record<string, number> = {};
   results.forEach(r => { typeCounts[r.type] = (typeCounts[r.type] || 0) + 1; });
-  const mostTestedType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
-
-  const allGapSet = new Set(results.flatMap(r => r.gaps));
-  const latestGapSet = new Set(latestResult?.gaps || []);
-  const closedGaps = [...allGapSet].filter(g => !latestGapSet.has(g));
-  const gapClosureRate = allGapSet.size > 0
-    ? Math.round((closedGaps.length / allGapSet.size) * 100)
-    : 0;
-
-  const dayStrings = results.map(r => new Date(r.timestamp).toDateString());
-  const uniqueDays = Array.from(new Set(dayStrings)).sort();
-  let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    if (uniqueDays.includes(d.toDateString())) streak++;
-    else if (i > 0) break;
-  }
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
@@ -102,7 +75,7 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="student-stat-cards">
         <StatCard onClick={() => setStatDetail('tests')} icon={<CheckCircle2 className="text-sage-green" />} label="Tests Taken" value={results.length.toString()} subtext="Placement, Unit, & Grade" accent="green" />
-        <StatCard onClick={() => setStatDetail('time')} icon={<Clock className="text-blue-500" />} label="Time Learning" value={formatTime(totalLearningSeconds)} subtext="Total with Valerie" accent="blue" />
+        <StatCard onClick={() => setStatDetail('time')} icon={<Clock className="text-blue-500" />} label="Time Learning" value={formatLearningTime(totalLearningSeconds)} subtext="Total with Valerie" accent="blue" />
         <StatCard onClick={() => setStatDetail('average')} icon={<TrendingUp className={trendUp ? "text-sage-green" : "text-orange-500"} />} label="Avg Score" value={results.length > 0 ? `${avgScore}%` : 'N/A'} subtext={results.length >= 2 ? (trendUp ? "Trending up" : "Needs focus") : "Keep testing"} accent={trendUp ? "green" : "orange"} />
         <StatCard onClick={() => setStatDetail('streak')} icon={<Flame className="text-soft-pink" />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} subtext="Consecutive days active" accent="pink" />
       </div>
@@ -110,8 +83,8 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard onClick={() => setStatDetail('best')} icon={<Star className="text-yellow-500" />} label="Best Score" value={results.length > 0 ? `${bestScore}%` : 'N/A'} subtext="Personal record" accent="yellow" />
         <StatCard onClick={() => setStatDetail('gaps')} icon={<Brain className="text-purple-500" />} label="Gaps Identified" value={allGaps.length.toString()} subtext="Conceptual areas to repair" accent="purple" />
-        <StatCard onClick={() => setStatDetail('closure')} icon={<Target className="text-sage-green" />} label="Gap Closure" value={allGaps.length > 0 ? `${gapClosureRate}%` : 'N/A'} subtext={`${closedGaps.length} of ${allGapSet.size} gaps closed`} accent="green" />
-        <StatCard onClick={() => setStatDetail('active')} icon={<BookOpen className="text-blue-500" />} label="Most Active" value={mostTestedType !== 'N/A' ? mostTestedType.charAt(0).toUpperCase() + mostTestedType.slice(1) : 'N/A'} subtext={`${typeCounts[mostTestedType] || 0} test${typeCounts[mostTestedType] !== 1 ? 's' : ''} taken`} accent="blue" />
+        <StatCard onClick={() => setStatDetail('closure')} icon={<Target className="text-sage-green" />} label="Gap Closure" value={allGaps.length > 0 ? `${gapClosureRate}%` : 'N/A'} subtext={`${closedGaps.length} of ${allGaps.length} gaps closed`} accent="green" />
+        <StatCard onClick={() => setStatDetail('active')} icon={<BookOpen className="text-blue-500" />} label="Most Active" value={topType !== 'N/A' ? topType.charAt(0).toUpperCase() + topType.slice(1) : 'N/A'} subtext={`${typeCounts[topType] || 0} test${typeCounts[topType] !== 1 ? 's' : ''} taken`} accent="blue" />
       </div>
 
       {statDetail && (
@@ -126,7 +99,7 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
           closedGaps={closedGaps}
           gapClosureRate={gapClosureRate}
           typeCounts={typeCounts}
-          mostTestedType={mostTestedType}
+          mostTestedType={topType}
           expandedTestId={expandedTestId}
           onToggleTest={(id) => setExpandedTestId(expandedTestId === id ? null : id)}
           onClose={() => setStatDetail(null)}
@@ -172,7 +145,7 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
           <div className="flex gap-4 mb-6">
             <div className="flex-1 text-center p-3 bg-red-50 dark:bg-red-950/30 rounded-2xl">
               <p className="text-xs font-black text-red-400 uppercase tracking-widest mb-1">Open</p>
-              <p className="text-2xl font-black text-red-500">{latestGapSet.size}</p>
+              <p className="text-2xl font-black text-red-500">{openGaps.length}</p>
             </div>
             <div className="flex-1 text-center p-3 bg-sage-green/10 rounded-2xl">
               <p className="text-xs font-black text-sage-green uppercase tracking-widest mb-1">Closed</p>
@@ -182,7 +155,7 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
             {allGaps.length > 0 ? (
               allGaps.map((gap, i) => {
-                const isClosed = !latestGapSet.has(gap);
+                const isClosed = closedGaps.includes(gap);
                 return (
                   <div key={i} className={`flex items-start gap-3 p-3 rounded-2xl border ${isClosed ? 'bg-sage-green/5 border-sage-green/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
                     <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isClosed ? 'bg-sage-green' : 'bg-soft-pink'}`} />
@@ -248,7 +221,7 @@ function StudentStatModal({ type, results, totalSeconds, avgScore, bestScore, st
         )}
         {type === 'time' && (
           <div>
-            <p className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">{formatTime(totalSeconds)}</p>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">{formatLearningTime(totalSeconds)}</p>
             <p className="text-slate-600 dark:text-slate-400 font-medium">Time in the Socratic Lab and modules counts here.</p>
           </div>
         )}

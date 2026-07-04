@@ -67,4 +67,25 @@ describe('computeNextAssignmentSubmission', () => {
     expect(next.status).toBe('completed');
     expect(next.progress).toBe(100);
   });
+
+  it('ignores completedModuleId that is not on the assignment', () => {
+    const next = computeNextAssignmentSubmission({
+      prev: empty,
+      moduleIds: ['8-1-1'],
+      completedModuleId: '5-1-1',
+      moduleId: '8-1-1',
+    });
+    expect(next.completedModuleIds).toEqual([]);
+    expect(next.status).toBe('in_progress');
+    expect(next.progress).toBe(10);
+  });
+
+  it('leaves empty module lists unchanged', () => {
+    const next = computeNextAssignmentSubmission({
+      prev: empty,
+      moduleIds: [],
+      moduleId: '8-1-1',
+    });
+    expect(next).toEqual(empty);
+  });
 });
