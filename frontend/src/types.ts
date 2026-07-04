@@ -44,6 +44,8 @@ export interface UserProfile {
   hasCompletedParentTour?: boolean;
   hasCompletedStudentTour?: boolean;
   hasCompletedTeacherTour?: boolean;
+  hasLoggedInBefore?: boolean;
+  offerTourAfterPlacement?: boolean;
   hasSeenDemoStudentGuide?: boolean;
   hasSeenDemoParentGuide?: boolean;
   districtId?: string;

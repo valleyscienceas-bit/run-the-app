@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, type DocumentSnapshot } from "firebase-admin/firestore";
 import fs from "fs";
 import crypto from "crypto";
 import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
@@ -386,24 +386,47 @@ async function startServer() {
   });
 
   app.post("/api/mfa/complete-login", async (req, res) => {
-    const { email, emailCode, totpCode } = req.body;
-    if (!email) return res.status(400).json({ error: "email is required" });
+    const { email, uid, emailCode, totpCode } = req.body;
+    if (!email && !uid) return res.status(400).json({ error: "email or uid is required" });
     if (!emailCode && !totpCode) {
       return res.status(400).json({ error: "emailCode or totpCode is required" });
     }
 
     try {
-      const usersSnap = await adminDb.collection("users")
-        .where("email", "==", email.toLowerCase().trim())
-        .limit(1)
-        .get();
+      let userDoc: DocumentSnapshot | null = null;
 
-      if (usersSnap.empty) {
+      if (uid) {
+        const snap = await adminDb.collection("users").doc(uid).get();
+        if (snap.exists) {
+          userDoc = snap;
+        }
+      }
+
+      if (!userDoc && email) {
+        const normalizedEmail = email.toLowerCase().trim();
+        const usersSnap = await adminDb.collection("users")
+          .where("email", "==", normalizedEmail)
+          .limit(1)
+          .get();
+
+        if (!usersSnap.empty) {
+          userDoc = usersSnap.docs[0];
+        } else {
+          const exactSnap = await adminDb.collection("users")
+            .where("email", "==", email.trim())
+            .limit(1)
+            .get();
+          if (!exactSnap.empty) {
+            userDoc = exactSnap.docs[0];
+          }
+        }
+      }
+
+      if (!userDoc) {
         return res.status(400).json({ error: "Account not found." });
       }
 
-      const userDoc = usersSnap.docs[0];
-      const profile = userDoc.data();
+      const profile = userDoc.data()!;
       if (!profile.mfaEnabled) {
         return res.status(400).json({ error: "Two-factor authentication is not enabled for this account." });
       }
@@ -594,6 +617,7 @@ async function startServer() {
         xp: 0,
         isFirstTime: true,
         isPaid: true,
+        hasLoggedInBefore: false,
         createdAt: new Date().toISOString()
       };
 
@@ -1401,7 +1425,7 @@ async function startServer() {
       await adminDb.collection("users").doc(studentUid).set({
         uid: studentUid, name, username: username || `student_${studentUid.slice(-6)}`, email,
         parentUid, parentEmail: parentData.email, role: "student", path: "individual",
-        grade: grade || "6", xp: 0, isFirstTime: true, isPaid: false, createdAt: new Date().toISOString()
+        grade: grade || "6", xp: 0, isFirstTime: true, isPaid: false, hasLoggedInBefore: false, createdAt: new Date().toISOString()
       });
 
       const existing = parentData.linkedStudentUids || (parentData.linkedStudentUid ? [parentData.linkedStudentUid] : []);
@@ -2149,14 +2173,7 @@ async function startServer() {
     });
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'server.ts:listen-attempt',message:'attempting port bind',data:{port:PORT,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-
   const server = app.listen(PORT, "0.0.0.0", () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'server.ts:listen-success',message:'port bind succeeded',data:{port:PORT,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     console.log(`Valley Science backend running on http://localhost:${PORT}`);
     for (const iface of Object.values(os.networkInterfaces())) {
       for (const net of iface ?? []) {
@@ -2168,9 +2185,6 @@ async function startServer() {
   });
 
   server.on("error", (err: NodeJS.ErrnoException) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'server.ts:listen-error',message:'port bind failed',data:{port:PORT,code:err.code,errno:err.errno,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (err.code === "EADDRINUSE") {
       console.error(`\nPort ${PORT} is already in use. Another backend is likely already running.`);
       console.error(`  • Check other terminals for "Valley Science backend running"`);
