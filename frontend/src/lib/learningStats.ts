@@ -1,3 +1,4 @@
+import { computeOpenAndClosedGaps } from './learningContext';
 import { TestResult } from '../types';
 
 export function formatLearningTime(seconds: number): string {
@@ -27,10 +28,7 @@ export function computeGapClosureRate(results: TestResult[]): {
   gapClosureRate: number;
 } {
   const allGapSet = new Set(results.flatMap(r => r.gaps));
-  const latest = results.length > 0 ? results[results.length - 1] : null;
-  const latestGapSet = new Set(latest?.gaps || []);
-  const closedGaps = [...allGapSet].filter(g => !latestGapSet.has(g));
-  const openGaps = [...latestGapSet];
+  const { openGaps, closedGaps } = computeOpenAndClosedGaps(results);
   const allGaps = [...allGapSet];
   const gapClosureRate = allGaps.length > 0
     ? Math.round((closedGaps.length / allGaps.length) * 100)

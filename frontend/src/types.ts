@@ -59,8 +59,46 @@ export interface UserProfile {
   /** Resume learning — last module the student opened */
   lastModuleId?: string;
   lastModuleTitle?: string;
+  lastLessonId?: string;
+  lastTopicId?: string;
   lastChatTopic?: string;
+  /** Sequential lesson/topic progress across modules */
+  learningProgress?: StudentLearningProgress;
   activeAssignmentId?: string;
+  /** Last time a positive weekly progress email was sent to this parent */
+  lastParentDigestAt?: string;
+  /** Last time a weekly class snapshot email was sent to this teacher */
+  lastTeacherDigestAt?: string;
+  /** Assignment IDs for which a due-date reminder email was already sent (student-only) */
+  dueReminderSentFor?: Record<string, string>;
+  /** Last time an inactivity re-engagement email was sent to this student */
+  lastInactivityNudgeAt?: string;
+  /** Rare achievement points — server-awarded only */
+  totalPoints?: number;
+  /** Achievements already earned (idempotent awards) */
+  earnedAchievements?: EarnedAchievement[];
+}
+
+/** A single server-verified achievement award */
+export interface EarnedAchievement {
+  id: string;
+  label: string;
+  points: number;
+  earnedAt: string;
+  /** module | unit | grade — where the award came from */
+  source?: AchievementSource;
+  sourceId?: string;
+}
+
+export type AchievementSource = 'module' | 'unit' | 'grade';
+
+/** Data-driven achievement config — attach to modules/units when points are enabled */
+export interface AchievementConfig {
+  achievementId?: string;
+  pointsAwarded?: number;
+  /** Minimum test score (0–100) required to earn points. Default applied in points.ts */
+  minScoreForPoints?: number;
+  achievementLabel?: string;
 }
 
 export interface GradeProgressArchive {
@@ -116,15 +154,44 @@ export interface UserState {
 
 export type GradeLevel = '3' | '4' | '5' | '6' | '7' | '8';
 
-export interface NGSSModule {
+export interface Topic {
+  id: string;
+  title: string;
+  order: number;
+  description?: string;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  order: number;
+  topics: Topic[];
+}
+
+export interface ModuleLearningProgress {
+  completedLessonIds: string[];
+  completedTopicIds: string[];
+  currentLessonId?: string;
+  currentTopicId?: string;
+}
+
+export interface StudentLearningProgress {
+  byModule: Record<string, ModuleLearningProgress>;
+  completedModuleIds: string[];
+}
+
+export interface NGSSModule extends AchievementConfig {
   id: string;
   gradeLevel: GradeLevel;
   unitId: string;
+  /** Order within the parent unit (1-based) */
+  order: number;
   code: string;
   title: string;
   gap: string;
   description: string;
   placementTest?: Question[];
+  lessons: Lesson[];
 }
 
 export type QuestionType = 'multiple-choice' | 'free-response';
@@ -139,13 +206,17 @@ export interface Question {
   concept?: string; // The underlying scientific concept
 }
 
-export interface Unit {
+export interface Unit extends AchievementConfig {
   id: string;
   gradeLevel: GradeLevel;
+  /** Order within the grade (1-based) */
+  order: number;
   title: string;
   description: string;
   modules: NGSSModule[];
   unitTest: Question[];
+  /** Optional grade-level test achievement (separate from unit test) */
+  gradeTestAchievement?: AchievementConfig;
 }
 
 export interface UserProgress {
@@ -163,6 +234,8 @@ export interface TestResult {
   userId: string;
   type: 'placement' | 'unit' | 'grade';
   targetId?: string; // unitId or gradeLevel
+  /** Module id when type is placement (for gap closure + points) */
+  moduleId?: string;
   score: number;
   gaps: string[];
   timestamp: string;

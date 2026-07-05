@@ -1,21 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { NGSSModule, Question, TestAnswer } from '../types';
 import { motion } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 import { scoreTest } from '../lib/scoreTest';
+import { auth } from '../lib/firebase';
+import {
+  buildTestDraftKey,
+  clearTestDraft,
+  loadTestDraft,
+  resolveTestDraftTargetId,
+  saveTestDraft,
+  type TestDraftType,
+} from '../lib/testDrafts';
 
 interface PlacementTestProps {
   module: NGSSModule | null;
+  testType?: TestDraftType;
+  testTarget?: { id?: string; unitTest?: Question[] } | null;
+  grade?: string;
+  userId?: string;
   onComplete: (score: number, identifiedGaps: string[], answers: TestAnswer[]) => void;
   onCancel: () => void;
 }
 
-export function PlacementTest({ module, onComplete, onCancel }: PlacementTestProps) {
+export function PlacementTest({
+  module,
+  testType: testTypeProp,
+  testTarget: testTargetProp,
+  grade: gradeProp,
+  userId: userIdProp,
+  onComplete,
+  onCancel,
+}: PlacementTestProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<(number | string)[]>([]);
   const [freeResponseText, setFreeResponseText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
+  const draftRestoredRef = useRef(false);
 
   // Default questions for initial placement if no specific module is provided
   const defaultQuestions: Record<string, Record<string, Question[]>> = {
@@ -70,28 +92,71 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
     }
   };
 
-  const grade = (window as any).userGrade || '6';
-  const testTarget = (window as any).currentTestTarget;
-  const testType = testTarget?.type || 'benchmark';
-  
-  // Logic to select questions based on test type
-  let questions: Question[] = [];
-  
-  if (module) {
-    questions = module.placementTest || defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
-  } else if (testTarget) {
-    if (testTarget.unitTest) {
-      questions = testTarget.unitTest;
-    } else if (testType === 'grade') {
-      questions = defaultQuestions[grade]?.grade || defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
-    } else {
-      questions = defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
-    }
-  } else {
-    questions = defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
-  }
+  const grade = gradeProp || (window as any).userGrade || '6';
+  const testTarget = testTargetProp ?? (window as any).currentTestTarget;
+  const testType: TestDraftType = testTypeProp || testTarget?.type || 'placement';
+  const userId = userIdProp || auth.currentUser?.uid;
 
-  const handleNext = (answer?: any) => {
+  const questions: Question[] = useMemo(() => {
+    if (module) {
+      return module.placementTest || defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
+    }
+    if (testTarget) {
+      if (testTarget.unitTest) {
+        return testTarget.unitTest;
+      }
+      if (testType === 'grade') {
+        return defaultQuestions[grade]?.grade || defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
+      }
+      return defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
+    }
+    return defaultQuestions[grade]?.benchmark || defaultQuestions['6'].benchmark;
+  }, [module, testTarget, testType, grade]);
+
+  const questionIds = useMemo(() => questions.map(q => q.id), [questions]);
+
+  const draftKey = useMemo(() => {
+    if (!userId) return null;
+    const targetId = resolveTestDraftTargetId(testType, {
+      moduleId: module?.id,
+      unitId: testTarget?.id,
+      grade,
+    });
+    return buildTestDraftKey(userId, testType, targetId);
+  }, [userId, testType, module?.id, testTarget?.id, grade]);
+
+  useEffect(() => {
+    if (!draftKey || draftRestoredRef.current || questionIds.length === 0) return;
+    draftRestoredRef.current = true;
+
+    const draft = loadTestDraft(draftKey, questionIds);
+    if (!draft) return;
+
+    setCurrentQuestionIndex(Math.min(draft.currentQuestionIndex, questions.length - 1));
+    setAnswers(draft.answers);
+    setFreeResponseText(draft.freeResponseText);
+    setIsFinished(!!draft.isFinished);
+  }, [draftKey, questionIds, questions.length]);
+
+  useEffect(() => {
+    if (!draftKey || questionIds.length === 0) return;
+    if (isFinished && answers.length < questions.length) return;
+
+    const timeoutId = window.setTimeout(() => {
+      saveTestDraft(draftKey, {
+        currentQuestionIndex,
+        answers,
+        freeResponseText,
+        questionIds,
+        isFinished,
+        savedAt: new Date().toISOString(),
+      });
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [draftKey, currentQuestionIndex, answers, freeResponseText, questionIds, isFinished, questions.length]);
+
+  const handleNext = (answer?: number | string) => {
     const finalAnswer = answer !== undefined ? answer : freeResponseText;
     const newAnswers = [...answers, finalAnswer];
     setAnswers(newAnswers);
@@ -105,6 +170,7 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
   };
 
   const calculateResults = () => {
+    if (draftKey) clearTestDraft(draftKey);
     const { scorePercent, gaps, answers: testAnswers } = scoreTest(questions, answers);
     onComplete(scorePercent, gaps, testAnswers);
   };

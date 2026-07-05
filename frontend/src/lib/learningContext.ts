@@ -20,13 +20,36 @@ export function modulesForGrade(grade?: GradeLevel | string): NGSSModule[] {
   return FULL_CURRICULUM.filter(m => m.gradeLevel === grade);
 }
 
+/** Minimum placement score to auto-close a module's conceptual gap */
+export const PASSING_MODULE_SCORE = 70;
+
 export function computeOpenAndClosedGaps(results: TestResult[]): { openGaps: string[]; closedGaps: string[] } {
-  const allGapSet = new Set(results.flatMap(r => r.gaps));
-  const latest = results.length > 0 ? results[results.length - 1] : null;
-  const latestGapSet = new Set(latest?.gaps || []);
-  const closedGaps = [...allGapSet].filter(g => !latestGapSet.has(g));
-  const openGaps = [...latestGapSet];
-  return { openGaps, closedGaps };
+  const passedModuleIds = new Set(
+    results
+      .filter(r => r.type === 'placement' && r.moduleId && r.score >= PASSING_MODULE_SCORE)
+      .map(r => r.moduleId as string)
+  );
+
+  const closedGapSet = new Set<string>();
+  for (const mod of FULL_CURRICULUM) {
+    if (passedModuleIds.has(mod.id)) closedGapSet.add(mod.gap);
+  }
+
+  const allGaps = results.flatMap(r => r.gaps || []);
+  const latestGaps = results.length > 0 ? (results[results.length - 1].gaps || []) : [];
+
+  // Non-module gaps close when absent from the latest test
+  for (const g of allGaps) {
+    if (!latestGaps.includes(g)) closedGapSet.add(g);
+  }
+
+  // Module gaps stay closed after a passing module test even if they reappear in latest
+  for (const mod of FULL_CURRICULUM) {
+    if (passedModuleIds.has(mod.id)) closedGapSet.add(mod.gap);
+  }
+
+  const openGaps = latestGaps.filter(g => !closedGapSet.has(g));
+  return { openGaps, closedGaps: [...closedGapSet] };
 }
 
 /** Prefer modules whose gap text overlaps an open conceptual gap. */

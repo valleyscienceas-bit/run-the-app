@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { useProgressRefresh } from '../lib/useProgressRefresh';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'motion/react';
 import { TrendingUp, CheckCircle2, Clock, Brain, Flame, Star, Target, BookOpen, Layers, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { NGSSModule, TestResult, UserState } from '../types';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
 import { ContinueLearningCard } from './ContinueLearningCard';
+import { WhatsNextCard } from './WhatsNextCard';
+import { AchievementPointsDisplay } from './AchievementPointsDisplay';
 import { getModuleById, recommendNextModule } from '../lib/learningContext';
+import { findNextLearningItem, NextLearningItem } from '../lib/learningProgression';
 import {
   computeActivityStreak,
   computeAverageScore,
@@ -22,19 +26,25 @@ interface DashboardProps {
   totalLearningSeconds?: number;
   onContinueModule?: (module: NGSSModule) => void;
   onResumeChat?: () => void;
+  onRepairGap?: (gap: string) => void;
+  onRefresh?: () => void;
+  onWhatsNext?: (item: NextLearningItem) => void;
 }
 
 type StatDetail = 'tests' | 'time' | 'average' | 'streak' | 'best' | 'gaps' | 'closure' | 'active' | null;
 
-export function Dashboard({ results, userState, totalLearningSeconds = 0, onContinueModule, onResumeChat }: DashboardProps) {
+export function Dashboard({ results, userState, totalLearningSeconds = 0, onContinueModule, onResumeChat, onRepairGap, onRefresh, onWhatsNext }: DashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
   const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
   const isDark = useIsDarkMode();
   const tooltipProps = chartTooltipStyle(isDark);
 
+  useProgressRefresh(onRefresh ?? (() => {}));
+
   const profile = userState.profile;
   const lastModule = profile?.lastModuleId ? getModuleById(profile.lastModuleId) || null : null;
   const recommendation = recommendNextModule(results, profile?.grade || userState.grade, profile?.lastModuleId);
+  const whatsNext = findNextLearningItem(profile?.grade || userState.grade, profile?.learningProgress);
   const showContinue = !!(onContinueModule && onResumeChat);
 
   const chartData = results.map((r, i) => ({
@@ -55,11 +65,29 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
       <header>
-        <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">My Stats</h1>
+        <div className="flex flex-wrap items-center gap-4 mb-2">
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100">My Stats</h1>
+          <AchievementPointsDisplay
+            totalPoints={profile?.totalPoints}
+            earnedAchievements={profile?.earnedAchievements}
+          />
+        </div>
         <p className="text-xl text-slate-600 dark:text-slate-400 font-medium">
           Tap any card for details — test history, gaps, and what you got wrong.
         </p>
       </header>
+
+      {(profile?.totalPoints ?? 0) > 0 || (profile?.earnedAchievements?.length ?? 0) > 0 ? (
+        <AchievementPointsDisplay
+          variant="full"
+          totalPoints={profile?.totalPoints}
+          earnedAchievements={profile?.earnedAchievements}
+        />
+      ) : null}
+
+      {onWhatsNext && (
+        <WhatsNextCard next={whatsNext} onStart={onWhatsNext} />
+      )}
 
       {showContinue && (
         <ContinueLearningCard
@@ -159,7 +187,19 @@ export function Dashboard({ results, userState, totalLearningSeconds = 0, onCont
                 return (
                   <div key={i} className={`flex items-start gap-3 p-3 rounded-2xl border ${isClosed ? 'bg-sage-green/5 border-sage-green/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
                     <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isClosed ? 'bg-sage-green' : 'bg-soft-pink'}`} />
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{gap}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{gap}</p>
+                      {!isClosed && onRepairGap && (
+                        <button
+                          type="button"
+                          data-tour="student-gap-repair"
+                          onClick={() => onRepairGap(gap)}
+                          className="mt-2 text-[10px] font-black uppercase tracking-widest text-soft-pink hover:underline"
+                        >
+                          Repair this gap →
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })

@@ -27,12 +27,25 @@ describe('curriculum integrity', () => {
     }
   });
 
-  it('gives every module a grade, title, code, and gap', () => {
+  it('gives every module a grade, title, code, gap, order, and lessons', () => {
     for (const module of FULL_CURRICULUM) {
       expect(module.gradeLevel).toBeTruthy();
       expect(module.title.length).toBeGreaterThan(0);
       expect(module.code.length).toBeGreaterThan(0);
       expect(module.gap.length).toBeGreaterThan(0);
+      expect(module.order).toBeGreaterThan(0);
+      expect(module.lessons.length).toBeGreaterThan(0);
+      for (const lesson of module.lessons) {
+        expect(lesson.topics.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('orders modules within each unit by order field', () => {
+    for (const unit of UNITS) {
+      const orders = unit.modules.map(m => m.order);
+      const sorted = [...orders].sort((a, b) => a - b);
+      expect(orders).toEqual(sorted);
     }
   });
 

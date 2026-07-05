@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import { StudentOverview, TestResult } from '../types';
 import { ValerieMascot } from './ValerieMascot';
+import { AchievementPointsDisplay } from './AchievementPointsDisplay';
 import { chartTooltipStyle, chartAxisColors, chartGridColor, chartBarFill, useIsDarkMode } from '../lib/chartTheme';
 import { formatLearningTime } from '../lib/learningStats';
 import { GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { useProgressRefresh } from '../lib/useProgressRefresh';
 
 interface ParentDashboardProps {
   overview: StudentOverview | null;
@@ -20,12 +22,13 @@ interface ParentDashboardProps {
 
 type StatDetail = 'time' | 'tests' | 'average' | 'gaps' | null;
 
-
 export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent }: ParentDashboardProps) {
   const [statDetail, setStatDetail] = useState<StatDetail>(null);
   const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
   const isDark = useIsDarkMode();
   const tooltipProps = chartTooltipStyle(isDark);
+
+  useProgressRefresh(onRefresh);
 
   if (loading && !overview) {
     return (
@@ -115,7 +118,13 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
             <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-1">
               {firstName}'s Progress
             </h1>
-            <p className="text-lg text-slate-700 dark:text-slate-400 font-medium">
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              <AchievementPointsDisplay
+                totalPoints={studentProfile.totalPoints}
+                earnedAchievements={studentProfile.earnedAchievements}
+              />
+            </div>
+            <p className="text-lg text-slate-700 dark:text-slate-400 font-medium mt-2">
               A clear look at how your student is learning with Valley Science.
             </p>
           </div>
@@ -135,12 +144,18 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
               </select>
             </div>
           )}
-          <button
-            onClick={onRefresh}
-            className={`${GHOST_BUTTON_CLASS} self-end`}
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
-          </button>
+          <div className="flex flex-col items-end gap-1 self-end">
+            <button
+              type="button"
+              onClick={onRefresh}
+              className={GHOST_BUTTON_CLASS}
+            >
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Auto every 30s
+            </p>
+          </div>
         </div>
       </header>
 
