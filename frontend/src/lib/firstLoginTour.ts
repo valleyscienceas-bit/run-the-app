@@ -20,6 +20,28 @@ function tourFieldForRole(role: UserProfile['role']): keyof UserProfile | null {
 }
 
 /**
+ * True when this session should be treated as the account's first login for tour purposes.
+ * Parents/teachers are often provisioned with isFirstTime but may lack hasLoggedInBefore.
+ */
+export function isFirstLoginForTour(profileData: UserProfile): boolean {
+  if (profileData.hasLoggedInBefore === false) return true;
+  if (profileData.hasLoggedInBefore === true) return false;
+
+  const tourField = tourFieldForRole(profileData.role);
+  if (!tourField || profileData[tourField]) return false;
+
+  // Provisioned parent/teacher accounts before first real visit
+  if (
+    (profileData.role === 'parent' || profileData.role === 'teacher') &&
+    profileData.isFirstTime
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Pure decision for optional first-login tour.
  * Returns null when this login should not change tour state (demo / already handled).
  */
@@ -30,7 +52,7 @@ export function decideFirstLoginTourOffer(
 ): TourOfferDecision | null {
   if (profileData.isDemo || alreadyHandled) return null;
 
-  if (profileData.hasLoggedInBefore === false) {
+  if (isFirstLoginForTour(profileData)) {
     const tourField = tourFieldForRole(profileData.role);
     const needsPlacement =
       profileData.role === 'student' && profileData.isFirstTime && resultsCount === 0;
@@ -55,8 +77,9 @@ export function decideFirstLoginTourOffer(
     !profileData.hasCompletedStudentTour &&
     resultsCount > 0
   ) {
+    // Flag is cleared when the tour actually starts (after leaving Stats)
     return {
-      profileUpdates: { offerTourAfterPlacement: false },
+      profileUpdates: {},
       shouldShowTour: true,
       tourRole: 'student',
       deferTourAfterPlacement: false,
@@ -65,6 +88,7 @@ export function decideFirstLoginTourOffer(
   }
 
   if (profileData.hasLoggedInBefore !== true) {
+    // Legacy accounts without first-login markers — skip auto tour
     return {
       profileUpdates: { hasLoggedInBefore: true },
       shouldShowTour: false,

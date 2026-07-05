@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { BACK_LINK_CLASS, TEXT_LINK_CLASS } from '../lib/buttonStyles';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldCheck, ArrowRight, Mail, Lock, User as UserIcon, Phone } from 'lucide-react';
@@ -37,7 +37,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
   const [path, setPath] = useState<AccessPath | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [step, setStep] = useState<'selection' | 'form' | '2fa' | 'login-2fa' | 'guest' | 'complete-profile'>('selection');
+  const [step, setStep] = useState<'selection' | 'form' | 'forgot-password' | '2fa' | 'login-2fa' | 'complete-profile'>('selection');
   
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [twoFACode, setTwoFACode] = useState('');
@@ -120,36 +120,42 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
     setMessage(null);
   };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setFormError("Please enter your email address first.");
+  const handleForgotPassword = async (e?: FormEvent) => {
+    e?.preventDefault();
+    const email = formData.email.trim();
+    if (!email) {
+      setFormError('Enter the email address for your account.');
+      return;
+    }
+    if (!email.includes('@')) {
+      setFormError('Use your account email (not username) so we can send a reset link.');
       return;
     }
     setLoading(true);
+    clearErrors();
     try {
-      // 1. Try to activate or reset account via backend (branded email)
       const response = await fetch('/api/activate-parent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
+        body: JSON.stringify({ email })
       });
-      
       const sessionData = await response.json();
-      
       if (!response.ok) {
-        throw new Error(sessionData.error || "Failed to send reset link.");
+        throw new Error(sessionData.error || 'Failed to send reset link.');
       }
 
-      // 2. Trigger Firebase Auth's standard password reset email as a fail-safe backup.
       try {
-        await sendPasswordResetEmail(auth, formData.email);
+        await sendPasswordResetEmail(auth, email);
       } catch (fbErr) {
-        console.warn("Firebase native email reset failed or redundant:", fbErr);
+        console.warn('Firebase native email reset failed or redundant:', fbErr);
       }
 
-      setMessage({ type: 'success', text: "Verification link sent! Please check your inbox (and spam) for an email from Valley Science." });
+      setMessage({
+        type: 'success',
+        text: 'Password reset email sent. Check your inbox (and spam) for a message from Valley Science, then open the link to choose a new password.',
+      });
     } catch (err: any) {
-      setFormError(err.message);
+      setFormError(err.message || getSubmitErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -245,7 +251,8 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
     setMessage(null);
     setAgreedToTerms(false);
     if (path === 'district') {
-      setStep('guest');
+      setMode('login');
+      setStep('form');
     } else if (path === 'individual') {
       // Parents can only log in — accounts are created when their child signs up
       if (role === 'parent') {
@@ -306,13 +313,30 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
         const user = userCredential.user;
         
         const profileDoc = await getDoc(doc(db, 'users', user.uid));
-        if (profileDoc.exists()) {
-          const profileData = profileDoc.data() as UserProfile;
-          await handleAuthenticatedLogin(profileData, user);
-        } else {
-          // Fallback if profile missing
-          onLogin('individual', role || 'student', { email: user.email });
+        if (!profileDoc.exists()) {
+          await signOut(auth);
+          throw new Error('No Valley Science profile found for this account. Contact your school or use Individual Access to sign up.');
         }
+
+        const profileData = profileDoc.data() as UserProfile;
+
+        if (path === 'district') {
+          if (profileData.path !== 'district') {
+            await signOut(auth);
+            throw new Error('This account uses Individual Access. Go back and choose Individual Access to log in.');
+          }
+          if (role && profileData.role !== role) {
+            await signOut(auth);
+            throw new Error(
+              `This account is registered as a district ${profileData.role}. Select ${profileData.role === 'teacher' ? 'Teacher' : 'Student'} and try again.`
+            );
+          }
+        } else if (profileData.path === 'district') {
+          await signOut(auth);
+          throw new Error('This is a district account. Go back and choose District Partnership to log in.');
+        }
+
+        await handleAuthenticatedLogin(profileData, user);
       }
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
@@ -548,66 +572,13 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                       disabled={!role}
                       className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 transition-all"
                     >
-                      {path === 'district' ? 'Continue as Guest' : (mode === 'login' ? 'Continue to Login' : 'Start Sign Up')}
+                      {mode === 'login' ? 'Continue to Login' : 'Start Sign Up'}
                       <ArrowRight size={20} />
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </>
-          )}
-
-          {step === 'guest' && (
-            <div className="text-center space-y-8 py-8">
-              <div className="w-20 h-20 bg-sage-green/10 rounded-full flex items-center justify-center mx-auto">
-                <Users size={40} className="text-sage-green" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-4">District Access</h2>
-                <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  District SSO is being provisioned for your school. Try the sandbox to explore teacher and student district accounts with a live class roster.
-                </p>
-              </div>
-              {error && <p className="text-sm font-bold text-red-500">{error}</p>}
-              {role === 'teacher' && (
-                <button
-                  onClick={handleSandboxLogin}
-                  disabled={loading}
-                  className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Loading...' : 'Try Sandbox (Demo Teacher)'}
-                </button>
-              )}
-              {role === 'student' && (
-                <button
-                  onClick={handleSandboxStudentLogin}
-                  disabled={loading}
-                  className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Loading...' : 'Try Sandbox (Demo Student)'}
-                </button>
-              )}
-              <p className="text-xs text-slate-400 font-bold">
-                Sandbox password for all demo accounts: <code className="text-slate-600 dark:text-slate-300">Sandbox123!</code>
-              </p>
-              <button 
-                onClick={() =>
-                  onLogin('district', role || 'student', {
-                    isGuestEntry: true,
-                    name: role === 'teacher' ? 'District Guest Teacher' : 'District Guest Student',
-                  })
-                }
-                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
-              >
-                Enter as Guest
-              </button>
-              <button 
-                onClick={() => handleGoBack('selection')}
-                className={TEXT_LINK_CLASS}
-              >
-                Change Access Path
-              </button>
-            </div>
           )}
 
           {step === 'form' && (
@@ -620,11 +591,17 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                 <ArrowLeft size={16} /> Back
               </button>
 
-              <h2 className="text-4xl font-black text-slate-900 mb-2">
-                {mode === 'login' ? 'Login' : 'Create Account'}
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">
+                {path === 'district' ? 'District Login' : (mode === 'login' ? 'Login' : 'Create Account')}
               </h2>
 
-              {mode === 'signup' && (
+              {path === 'district' && (
+                <p className="text-slate-500 dark:text-slate-400 font-medium mb-6 leading-relaxed">
+                  Sign in with the email and password provided by your school district. LASD, PAUSD, and MVWSD accounts are supported.
+                </p>
+              )}
+
+              {mode === 'signup' && path !== 'district' && (
                 <div className="mb-6 p-4 bg-soft-pink/10 border border-soft-pink/20 rounded-2xl">
                   <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-1">Pricing</p>
                   <p className="text-sm font-bold text-slate-700">
@@ -667,18 +644,18 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                   placeholder={mode === 'login' ? "you@example.com or username" : "you@example.com"} 
                   icon={<Mail size={18} />} 
                 />
-                <div className="relative">
-                  <Input label="Password" type="password" value={formData.password} onChange={v => { clearErrors(); setFormData({...formData, password: v}); }} placeholder="••••••••" icon={<Lock size={18} />} />
-                  {mode === 'login' && (
-                    <button 
+                <Input label="Password" type="password" value={formData.password} onChange={v => { clearErrors(); setFormData({...formData, password: v}); }} placeholder="••••••••" icon={<Lock size={18} />} />
+                {mode === 'login' && (
+                  <div className="flex justify-end -mt-2">
+                    <button
                       type="button"
-                      onClick={handleForgotPassword}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-soft-pink uppercase tracking-widest hover:underline bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100"
+                      onClick={() => { clearErrors(); setStep('forgot-password'); }}
+                      className="text-sm font-black text-soft-pink hover:underline"
                     >
-                      Forgot?
+                      Forgot your password?
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {mode === 'signup' && (
                   <Input label="Confirm Password" type="password" value={formData.confirmPassword} onChange={v => setFormData({...formData, confirmPassword: v})} placeholder="••••••••" icon={<ShieldCheck size={18} />} />
@@ -709,17 +686,107 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                   {loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Send Verification Code')}
                 </button>
 
+                {path === 'district' && (
+                  <>
+                    <div className="relative py-4">
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-slate-800"></div></div>
+                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-black tracking-widest">Or explore the sandbox</span></div>
+                    </div>
+
+                    {role === 'teacher' && (
+                      <button
+                        type="button"
+                        onClick={handleSandboxLogin}
+                        disabled={loading}
+                        className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
+                      >
+                        {loading ? 'Loading...' : 'Try Sandbox (Demo Teacher)'}
+                      </button>
+                    )}
+                    {role === 'student' && (
+                      <button
+                        type="button"
+                        onClick={handleSandboxStudentLogin}
+                        disabled={loading}
+                        className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
+                      >
+                        {loading ? 'Loading...' : 'Try Sandbox (Demo Student)'}
+                      </button>
+                    )}
+                    <p className="text-xs text-slate-400 font-bold text-center">
+                      Sandbox password for all demo accounts: <code className="text-slate-600 dark:text-slate-300">Sandbox123!</code>
+                    </p>
+                  </>
+                )}
+
+                {path !== 'district' && (
+                  <>
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
                   <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400 font-black tracking-widest">Or continue with</span></div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <SocialButton icon={<img src="https://www.google.com/favicon.ico" className="w-5 h-5" />} onClick={handleGoogleLogin} />
-                  <SocialButton icon={<img src="https://www.apple.com/favicon.ico" className="w-5 h-5" />} onClick={() => alert("Apple Login Setup: Requires Apple Developer Program. Enable in Firebase Console.")} />
-                  <SocialButton icon={<img src="https://www.microsoft.com/favicon.ico" className="w-5 h-5" />} onClick={() => alert("Microsoft Login Setup: Requires Azure AD App. Enable in Firebase Console.")} />
+                  <SocialButton icon={<img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="" />} onClick={handleGoogleLogin} />
+                  <SocialButton icon={<img src="https://www.apple.com/favicon.ico" className="w-5 h-5" alt="" />} onClick={() => alert("Apple Login Setup: Requires Apple Developer Program. Enable in Firebase Console.")} />
+                  <SocialButton icon={<img src="https://www.microsoft.com/favicon.ico" className="w-5 h-5" alt="" />} onClick={() => alert("Microsoft Login Setup: Requires Azure AD App. Enable in Firebase Console.")} />
                 </div>
+                  </>
+                )}
               </div>
+            </form>
+          )}
+
+          {step === 'forgot-password' && (
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <button
+                type="button"
+                onClick={() => { clearErrors(); setStep('form'); setMode('login'); }}
+                className={`${BACK_LINK_CLASS} mb-8`}
+              >
+                <ArrowLeft size={16} /> Back to login
+              </button>
+              <h2 className="text-4xl font-black text-slate-900 mb-2">Reset password</h2>
+              <p className="text-slate-500 font-medium mb-2 leading-relaxed">
+                Enter the email on your Valley Science account. We&apos;ll send a secure link so you can choose a new password.
+              </p>
+              <p className="text-xs font-bold text-slate-400 mb-6">
+                Works for student, parent, and teacher accounts. Use your email address (not username).
+              </p>
+              {message && (
+                <div className={`p-4 rounded-2xl text-sm font-bold border ${
+                  message.type === 'success'
+                    ? 'bg-sage-green/10 border-sage-green/20 text-sage-green'
+                    : 'bg-red-50 border-red-100 text-red-600'
+                }`}>
+                  {message.text}
+                </div>
+              )}
+              <FormError message={error} shake={errorShake} />
+              <Input
+                label="Account Email"
+                type="email"
+                value={formData.email}
+                onChange={v => { clearErrors(); setFormData({ ...formData, email: v }); }}
+                placeholder="you@example.com"
+                icon={<Mail size={18} />}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 disabled:opacity-50 transition-all"
+              >
+                {loading ? 'Sending…' : 'Send reset link'}
+              </button>
+              {message?.type === 'success' && (
+                <button
+                  type="button"
+                  onClick={() => { clearErrors(); setStep('form'); setMode('login'); }}
+                  className="w-full font-black text-sm text-slate-600 hover:text-slate-900"
+                >
+                  Return to login
+                </button>
+              )}
             </form>
           )}
 

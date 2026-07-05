@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Eye, EyeOff, KeyRound, RefreshCw, ChevronRight } from 'lucide-react';
+import { useProgressRefresh } from '../lib/useProgressRefresh';
+import { ChevronLeft, Eye, EyeOff, KeyRound, RefreshCw, ChevronRight, Download, Upload } from 'lucide-react';
 import { StudentOverview } from '../types';
 import { ParentDashboard } from './ParentDashboard';
 import { TeacherQuestionsPanel } from './TeacherQuestionsPanel';
+import { AchievementPointsDisplay, sumClassPoints } from './AchievementPointsDisplay';
+import { reconcileTotalPoints } from '../lib/points';
 import { BACK_LINK_CLASS, GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { formatLearningTime } from '../lib/learningStats';
+import { computeOpenAndClosedGaps } from '../lib/learningContext';
 
 interface TeacherDashboardProps {
   students: StudentOverview[];
@@ -15,16 +20,135 @@ interface TeacherDashboardProps {
   onNotificationsChange?: (count: number) => void;
 }
 
+function parseCsvRows(text: string): { name: string; email: string; grade?: string; username?: string }[] {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+  const nameIdx = header.findIndex(h => h === 'name');
+  const emailIdx = header.findIndex(h => h === 'email');
+  const gradeIdx = header.findIndex(h => h === 'grade');
+  const usernameIdx = header.findIndex(h => h === 'username');
+  if (nameIdx < 0 || emailIdx < 0) return [];
+
+  const parseCell = (line: string, idx: number): string => {
+    const cells = line.match(/("([^"]|"")*"|[^,]*)/g) || [];
+    const raw = (cells[idx] || '').trim();
+    return raw.replace(/^"|"$/g, '').replace(/""/g, '"');
+  };
+
+  return lines.slice(1).map(line => ({
+    name: parseCell(line, nameIdx),
+    email: parseCell(line, emailIdx),
+    grade: gradeIdx >= 0 ? parseCell(line, gradeIdx) : undefined,
+    username: usernameIdx >= 0 ? parseCell(line, usernameIdx) : undefined,
+  })).filter(r => r.name && r.email);
+}
+
 export function TeacherDashboard({
-  students, teacherUid, onSelectStudent, selectedOverview, onRefresh, onNotificationsChange
+  students, teacherUid, classroomId, onSelectStudent, selectedOverview, onRefresh, onNotificationsChange
 }: TeacherDashboardProps) {
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [passwordDraft, setPasswordDraft] = useState<Record<string, string>>({});
   const [resetting, setResetting] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Class table auto-refresh; student detail view uses ParentDashboard's hook instead
+  useProgressRefresh(() => {
+    if (!selectedOverview?.studentProfile) onRefresh();
+  });
 
   const togglePassword = (uid: string) => {
     setShowPasswords(prev => ({ ...prev, [uid]: !prev[uid] }));
+  };
+
+  const exportClassCsv = () => {
+    const header = [
+      'Name', 'Email', 'Username', 'Grade', 'Tests', 'Avg Score', 'Best Score',
+      'Points', 'Time Learning (seconds)', 'Time Learning', 'Open Gaps', 'Open Gap List', 'Last Active',
+    ];
+    const rows = students.map(s => {
+      const profile = s.studentProfile;
+      if (!profile) return null;
+      const scores = s.results.map(r => r.score);
+      const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : '';
+      const best = scores.length ? Math.round(Math.max(...scores)) : '';
+      const openGaps = s.results.length
+        ? computeOpenAndClosedGaps(s.results).openGaps
+        : [];
+      const lastTs = s.results.length
+        ? s.results[s.results.length - 1].timestamp
+        : s.stats?.lastUpdated;
+      const secs = s.stats?.totalSeconds || 0;
+      const points = reconcileTotalPoints(profile.totalPoints, profile.earnedAchievements);
+      return [
+        profile.name,
+        profile.email,
+        profile.username,
+        profile.grade || '',
+        s.results.length,
+        avg,
+        best,
+        points,
+        secs,
+        formatLearningTime(secs),
+        openGaps.length,
+        openGaps.join('; '),
+        lastTs ? new Date(lastTs).toISOString() : '',
+      ].map(cell => {
+        const str = String(cell ?? '');
+        return str.includes(',') || str.includes('"') || str.includes('\n')
+          ? `"${str.replace(/"/g, '""')}"`
+          : str;
+      }).join(',');
+    }).filter(Boolean);
+
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `valley-science-class-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportCsv = async (file: File) => {
+    if (!teacherUid || !classroomId) {
+      setMessage('Select a classroom before importing a roster.');
+      return;
+    }
+    setImporting(true);
+    setMessage(null);
+    try {
+      const text = await file.text();
+      const rows = parseCsvRows(text);
+      if (rows.length === 0) throw new Error('CSV must include Name and Email columns with at least one data row.');
+
+      const res = await fetch('/api/sync-class-roster', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroomId, teacherUid, rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Import failed');
+
+      const added = data.added?.length || 0;
+      const linked = data.linked?.length || 0;
+      const errCount = data.errors?.length || 0;
+      setMessage(
+        `Roster import complete: ${added} added, ${linked} already in class` +
+        (errCount ? `, ${errCount} error(s).` : '.')
+      );
+      onRefresh();
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleResetPassword = async (studentUid: string) => {
@@ -121,13 +245,50 @@ export function TeacherDashboard({
           <p className="text-xl text-slate-700 dark:text-slate-400 font-medium">
             {students.length} student{students.length !== 1 ? 's' : ''} — click a row for full progress & password controls.
           </p>
+          {students.length > 0 && (
+            <AchievementPointsDisplay
+              totalPoints={sumClassPoints(students)}
+              earnedAchievements={[]}
+              className="mt-3"
+            />
+          )}
         </div>
-        <button
-          onClick={onRefresh}
-          className={`${GHOST_BUTTON_CLASS} self-start`}
-        >
-          <RefreshCw size={16} /> Refresh
-        </button>
+        <div className="flex flex-wrap gap-3 self-start">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={e => {
+              const file = e.target.files?.[0];
+              if (file) void handleImportCsv(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing || !classroomId}
+            data-tour="teacher-import-csv"
+            className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 px-5 py-3 rounded-2xl font-black text-sm hover:border-soft-pink disabled:opacity-40 transition-all"
+          >
+            <Upload size={16} /> {importing ? 'Importing...' : 'Import CSV'}
+          </button>
+          <button
+            type="button"
+            onClick={exportClassCsv}
+            disabled={students.length === 0}
+            data-tour="teacher-export-csv"
+            className="inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 rounded-2xl font-black text-sm hover:opacity-90 disabled:opacity-40 transition-all"
+          >
+            <Download size={16} /> Export CSV
+          </button>
+          <button
+            onClick={onRefresh}
+            className={`${GHOST_BUTTON_CLASS}`}
+          >
+            <RefreshCw size={16} /> Refresh
+          </button>
+        </div>
       </header>
 
       {message && !selectedOverview && (
@@ -149,7 +310,7 @@ export function TeacherDashboard({
             <table className="w-full text-left min-w-[900px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700">
-                  {['Student', 'Grade', 'Username', 'Password', 'Avg Score', 'Tests', 'Time', 'Open Gaps', 'Last Active', ''].map(h => (
+                  {['Student', 'Grade', 'Username', 'Password', 'Avg Score', 'Tests', 'Points', 'Time', 'Open Gaps', 'Last Active', ''].map(h => (
                     <th key={h} className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
                   ))}
                 </tr>
@@ -163,7 +324,7 @@ export function TeacherDashboard({
                     ? Math.round(s.results.reduce((sum, r) => sum + r.score, 0) / s.results.length)
                     : null;
                   const gaps = s.results.length
-                    ? new Set(s.results[s.results.length - 1]?.gaps || []).size
+                    ? computeOpenAndClosedGaps(s.results).openGaps.length
                     : 0;
                   const lastTs = s.results.length
                     ? s.results[s.results.length - 1].timestamp
@@ -198,7 +359,10 @@ export function TeacherDashboard({
                         </span>
                       </td>
                       <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">{s.results.length}</td>
-                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300 text-sm">{formatTime(s.stats?.totalSeconds || 0)}</td>
+                      <td className="px-5 py-4 font-bold text-amber-800 dark:text-amber-300">
+                        {reconcileTotalPoints(profile.totalPoints, profile.earnedAchievements) || '—'}
+                      </td>
+                      <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300 text-sm">{formatLearningTime(s.stats?.totalSeconds || 0)}</td>
                       <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">{gaps}</td>
                       <td className="px-5 py-4 text-xs font-bold text-slate-400">
                         {lastTs ? new Date(lastTs).toLocaleDateString() : '—'}
@@ -218,9 +382,3 @@ export function TeacherDashboard({
   );
 }
 
-function formatTime(seconds: number): string {
-  if (!seconds) return '0m';
-  const mins = Math.floor(seconds / 60);
-  if (mins < 60) return `${mins}m`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-}

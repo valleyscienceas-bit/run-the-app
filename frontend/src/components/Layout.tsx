@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { UserState, AppTab } from '../types';
 import { ValerieMascot } from './ValerieMascot';
 import { ThemeToggle } from './ThemeToggle';
-import { DANGER_LINK_CLASS, ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -25,11 +25,10 @@ interface LayoutProps {
 
 export function Layout({ children, activeTab, onTabChange, userState, onLogout, isDemo, demoViewRole, onDemoRoleSwitch, teacherUnreadCount = 0, studentUnreadCount = 0 }: LayoutProps) {
   const role = isDemo ? demoViewRole : userState.role;
-  const isDistrictGuestSession = userState.path === 'district' && userState.profile?.uid === 'guest';
   const showStudentNav = role === 'student';
-  const showDistrictStudentNav = role === 'student' && userState.path === 'district' && !isDistrictGuestSession;
+  const showDistrictStudentNav = role === 'student' && userState.path === 'district';
   const showParentNav = role === 'parent';
-  const showTeacherNav = userState.role === 'teacher' && !isDistrictGuestSession;
+  const showTeacherNav = userState.role === 'teacher';
   const showAdminNav = userState.role === 'admin';
 
   return (
@@ -104,25 +103,27 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
           <NavItem icon={<Settings size={22} />} label="Settings" active={activeTab === 'settings'} onClick={() => onTabChange('settings')} tourId="nav-settings" />
         </div>
 
-        <div className="absolute bottom-10 left-8 right-8 space-y-3">
+        <div className="absolute bottom-8 left-8 right-8 space-y-3" data-tour="nav-account-footer">
+          <div className="p-5 bg-cream dark:bg-slate-800 rounded-[28px] border border-slate-100 dark:border-slate-700">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
+              {userState.role === 'parent' ? 'Parent Account' : (userState.path === 'district' ? 'District Access' : 'Individual Access')}
+            </p>
+            <p className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+              {userState.profile?.username || userState.profile?.name || 'User'}
+            </p>
+          </div>
           <ThemeToggle
             showLabel
             className="w-full justify-center py-3 px-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
           />
-          <div className="p-6 bg-cream dark:bg-slate-800 rounded-[32px] border border-slate-100 dark:border-slate-700">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
-              {userState.role === 'parent' ? 'Parent Account' : (userState.path === 'district' ? 'District Access' : 'Individual Access')}
-            </p>
-            <p className="text-sm font-black text-slate-900 dark:text-slate-100 mb-4 truncate">
-              {userState.profile?.username || userState.profile?.name || 'Guest User'}
-            </p>
-            <button 
-              onClick={onLogout}
-              className={cn(DANGER_LINK_CLASS, 'text-xs')}
-            >
-              <LogOut size={14} /> Log Out
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onLogout}
+            data-tour="nav-logout"
+            className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl font-black text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-2 border-red-200 dark:border-red-900/60 hover:bg-red-100 dark:hover:bg-red-950/60 hover:border-red-300 transition-all"
+          >
+            <LogOut size={18} /> Log Out
+          </button>
         </div>
       </nav>
 

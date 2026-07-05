@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { NGSSModule, ChatMessage } from '../types';
-import { Send, ArrowLeft, RefreshCw } from 'lucide-react';
+import { NGSSModule, ChatMessage, Lesson, Topic } from '../types';
+import { Send, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { auth, db, doc, setDoc, onSnapshot } from '../lib/firebase';
 import { ValerieMascot } from './ValerieMascot';
@@ -15,13 +15,28 @@ function cn(...inputs: ClassValue[]) {
 
 interface SocraticChatProps {
   selectedModule: NGSSModule | null;
+  activeLesson?: Lesson | null;
+  activeTopic?: Topic | null;
+  topicComplete?: boolean;
+  onCompleteTopic?: () => void;
+  completingTopic?: boolean;
   onBack: () => void;
   /** Rich learning context for Valerie (grade, gaps, assignment, etc.) */
   studentContext?: string;
   onChatTopic?: (topic: string) => void;
 }
 
-export function SocraticChat({ selectedModule, onBack, studentContext, onChatTopic }: SocraticChatProps) {
+export function SocraticChat({
+  selectedModule,
+  activeLesson,
+  activeTopic,
+  topicComplete,
+  onCompleteTopic,
+  completingTopic,
+  onBack,
+  studentContext,
+  onChatTopic,
+}: SocraticChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +74,9 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
         // Initial message
         const initialMsg: ChatMessage = { 
           role: 'model', 
-          text: selectedModule 
+          text: activeTopic && selectedModule
+            ? `Hi! Let's explore "${activeTopic.title}" in ${selectedModule.title}. ${activeTopic.description || 'What do you already know about this idea?'}`
+            : selectedModule 
             ? `Hi! I'm Valerie. I see you're starting the "${selectedModule.title}" module. Let's build a mental model for this together! What's your current understanding of ${selectedModule.title.toLowerCase()}?`
             : "Hi! I'm Valerie. I'm here to help you build mental models for science. What's on your mind today?",
           timestamp: new Date().toISOString()
@@ -70,7 +87,13 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
     });
 
     return () => unsubscribe();
-  }, [selectedModule]);
+  }, [selectedModule, activeTopic?.id]);
+
+  useEffect(() => {
+    if (activeTopic && onChatTopic) {
+      onChatTopic(activeTopic.title);
+    }
+  }, [activeTopic?.id]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -78,7 +101,11 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
     }
   }, [messages]);
 
-  const sendMessage = async (messageText: string, historyMessages: ChatMessage[]) => {
+  const sendMessage = async (
+    messageText: string,
+    historyMessages: ChatMessage[],
+    attempt = 0
+  ) => {
     const userId = auth.currentUser?.uid;
     if (!userId) {
       setSendError('You need to be signed in to chat with Valerie.');
@@ -86,13 +113,19 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
     }
 
     setIsLoading(true);
-    setSendError(null);
-    setFailedMessage(null);
-    onChatTopic?.(messageText.slice(0, 120));
+    if (attempt === 0) {
+      setSendError(null);
+      setFailedMessage(null);
+      onChatTopic?.(messageText.slice(0, 120));
+    }
 
     try {
       const moduleContext = selectedModule
-        ? `Module: ${selectedModule.title}. Gap to repair: ${selectedModule.gap}`
+        ? `Module: ${selectedModule.title}. Gap to repair: ${selectedModule.gap}${
+            activeLesson && activeTopic
+              ? `. Current lesson: ${activeLesson.title}. Current topic: ${activeTopic.title}. ${activeTopic.description || ''}`
+              : ''
+          }`
         : undefined;
 
       const res = await fetch('/api/chat', {
@@ -133,6 +166,9 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
+      if (attempt === 0) {
+        return sendMessage(messageText, historyMessages, 1);
+      }
       console.error('Chat error:', error);
       setFailedMessage(messageText);
       setSendError(
@@ -201,11 +237,41 @@ export function SocraticChat({ selectedModule, onBack, studentContext, onChatTop
           </div>
         </div>
         {selectedModule && (
-          <div className="hidden md:block px-4 py-1.5 bg-white/20 dark:bg-slate-800/50 rounded-full text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">
-            {selectedModule.code}
+          <div className="hidden md:flex flex-col items-end gap-1">
+            <div className="px-4 py-1.5 bg-white/20 dark:bg-slate-800/50 rounded-full text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">
+              {selectedModule.code}
+            </div>
+            {activeTopic && (
+              <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                {activeTopic.title}
+              </p>
+            )}
           </div>
         )}
       </div>
+
+      {activeTopic && onCompleteTopic && !topicComplete && (
+        <div className="px-6 py-3 bg-sage-green/10 dark:bg-sage-green/10 border-b border-sage-green/20 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            Finished exploring <span className="font-black">{activeTopic.title}</span>? Mark it complete to unlock the next step.
+          </p>
+          <button
+            type="button"
+            onClick={onCompleteTopic}
+            disabled={completingTopic}
+            className="inline-flex items-center gap-2 bg-sage-green text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:opacity-90 disabled:opacity-50 transition-all"
+          >
+            <CheckCircle2 size={14} />
+            {completingTopic ? 'Saving…' : 'Mark topic complete'}
+          </button>
+        </div>
+      )}
+
+      {activeTopic && topicComplete && (
+        <div className="px-6 py-3 bg-sage-green/15 border-b border-sage-green/20 text-sm font-black text-sage-green">
+          Topic complete — return to the module to continue your path.
+        </div>
+      )}
 
       {/* Messages */}
       <div 

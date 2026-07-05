@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { useProgressRefresh } from '../lib/useProgressRefresh';
 import { School, Users, ChevronRight } from 'lucide-react';
+import { StudentOverview } from '../types';
+import { AchievementPointsDisplay, sumClassPoints } from './AchievementPointsDisplay';
 
 interface Classroom {
   id: string;
@@ -10,11 +13,16 @@ interface Classroom {
 
 interface AdminDashboardProps {
   classrooms: Classroom[];
+  students?: StudentOverview[];
   onSelectClassroom: (id: string) => void;
+  onRefresh?: () => void;
 }
 
-export function AdminDashboard({ classrooms, onSelectClassroom }: AdminDashboardProps) {
+export function AdminDashboard({ classrooms, students = [], onSelectClassroom, onRefresh }: AdminDashboardProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const classPoints = sumClassPoints(students);
+
+  useProgressRefresh(onRefresh ?? (() => {}));
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
@@ -46,6 +54,30 @@ export function AdminDashboard({ classrooms, onSelectClassroom }: AdminDashboard
           </button>
         ))}
       </div>
+
+      {selectedId && students.length > 0 && (
+        <section className="bg-white p-8 md:p-10 rounded-[40px] border border-slate-100 shadow-xl">
+          <h2 className="text-2xl font-black text-slate-900 mb-2">Classroom achievement points</h2>
+          <p className="text-slate-600 font-medium mb-6">
+            Rare points earned across {students.length} student{students.length !== 1 ? 's' : ''} in this classroom.
+          </p>
+          <AchievementPointsDisplay totalPoints={classPoints} earnedAchievements={[]} variant="full" />
+          <ul className="mt-8 space-y-2">
+            {students.map(s => {
+              const profile = s.studentProfile;
+              if (!profile) return null;
+              const pts = profile.totalPoints ?? 0;
+              if (pts <= 0) return null;
+              return (
+                <li key={profile.uid} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                  <span className="font-bold text-slate-800">{profile.name}</span>
+                  <span className="font-black text-amber-800">{pts} pt{pts !== 1 ? 's' : ''}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {classrooms.length === 0 && (
         <div className="bg-white p-12 rounded-[40px] border border-slate-100 text-center">

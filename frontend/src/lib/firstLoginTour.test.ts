@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideFirstLoginTourOffer, shouldOfferTourAfterPlacementComplete } from './firstLoginTour';
+import { decideFirstLoginTourOffer, isFirstLoginForTour, shouldOfferTourAfterPlacementComplete } from './firstLoginTour';
 import { UserProfile } from '../types';
 
 function baseProfile(overrides: Partial<UserProfile> = {}): UserProfile {
@@ -40,7 +40,7 @@ describe('decideFirstLoginTourOffer', () => {
 
   it('offers parent tour immediately on first login', () => {
     const decision = decideFirstLoginTourOffer(
-      baseProfile({ role: 'parent', isFirstTime: false }),
+      baseProfile({ role: 'parent', isFirstTime: true, hasLoggedInBefore: false }),
       0,
       false
     );
@@ -48,6 +48,29 @@ describe('decideFirstLoginTourOffer', () => {
       shouldShowTour: true,
       tourRole: 'parent',
       deferTourAfterPlacement: false,
+      profileUpdates: { hasLoggedInBefore: true },
+    });
+  });
+
+  it('offers parent tour when provisioned without hasLoggedInBefore flag', () => {
+    const decision = decideFirstLoginTourOffer(
+      baseProfile({
+        role: 'parent',
+        isFirstTime: true,
+        hasLoggedInBefore: undefined,
+        hasCompletedParentTour: undefined,
+      }),
+      0,
+      false
+    );
+    expect(isFirstLoginForTour(baseProfile({
+      role: 'parent',
+      isFirstTime: true,
+      hasLoggedInBefore: undefined,
+    }))).toBe(true);
+    expect(decision).toMatchObject({
+      shouldShowTour: true,
+      tourRole: 'parent',
       profileUpdates: { hasLoggedInBefore: true },
     });
   });
@@ -86,7 +109,7 @@ describe('decideFirstLoginTourOffer', () => {
       shouldShowTour: true,
       tourRole: 'student',
       clearDeferredTour: true,
-      profileUpdates: { offerTourAfterPlacement: false },
+      profileUpdates: {},
     });
   });
 

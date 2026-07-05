@@ -1,4 +1,4 @@
-import express, { type Request } from "express";
+import express, { type Request, type Response } from "express";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
@@ -11,8 +11,35 @@ import crypto from "crypto";
 import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
 import QRCode from "qrcode";
 import { getSocraticResponse } from "./services/gemini.js";
+import {
+  buildAchievementCatalog,
+  computeTotalPoints,
+  getAchievementById,
+  hasEarnedAchievement,
+  verifyCompletionInResults,
+  type AwardEligibilityContext,
+  type EarnedAchievement,
+} from "./lib/pointsAward.js";
+import { runDueDateReminders, runInactivityNudges } from "./lib/studentEmailCron.js";
+import { computeOpenAndClosedGaps } from "./lib/gapLogic.js";
+import { computeNextAssignmentSubmission } from "./lib/assignmentProgress.js";
+import {
+  applyTopicCompletionServer,
+  canCompleteTopicServer,
+  emptyProgress,
+  type StudentLearningProgress,
+} from "./lib/learningProgression.js";
+import { logEnvValidation, validateEnv } from "./lib/env.js";
+import { formatHealthAlertBody, runHealthChecks } from "./lib/health.js";
 
 dotenv.config();
+
+const envValidation = validateEnv();
+logEnvValidation(envValidation);
+if (!envValidation.ok) {
+  console.error("\n[ENV] Startup aborted — fix missing configuration and restart.\n");
+  process.exit(1);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +72,16 @@ function emailHash(email: string): string {
 }
 
 type AuthUser = { uid: string; email: string };
+
+function verifyCronSecret(req: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  const auth = req.headers.authorization;
+  if (auth === `Bearer ${secret}`) return true;
+  const headerSecret = req.headers["x-cron-secret"];
+  if (typeof headerSecret === "string" && headerSecret === secret) return true;
+  return false;
+}
 
 async function verifyAuthHeader(req: Request): Promise<AuthUser | null> {
   const header = req.headers.authorization;
@@ -188,18 +225,40 @@ async function verifyTotpForUser(uid: string, totpCode: string): Promise<boolean
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3001;
+  const APP_BASE_URL = (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
 
   app.use(express.json());
 
-  app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, port: PORT, pid: process.pid });
+  app.get("/api/health", async (_req, res) => {
+    try {
+      const health = await runHealthChecks(adminDb);
+      res.status(health.ok ? 200 : 503).json({
+        ...health,
+        port: PORT,
+        pid: process.pid,
+      });
+    } catch (error: any) {
+      console.error("Health check error:", error);
+      res.status(503).json({
+        ok: false,
+        checks: {
+          server: { ok: true, message: "up" },
+          firestore: { ok: false, message: error.message },
+          smtp: { ok: false, message: "unavailable" },
+          ai: { ok: false, message: "unavailable" },
+        },
+        timestamp: new Date().toISOString(),
+        port: PORT,
+        pid: process.pid,
+      });
+    }
   });
 
   // CORS for local frontend dev (allow any origin so 127.0.0.1 / LAN IPs work)
   app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin) res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-cron-secret");
     res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
     if (req.method === "OPTIONS") return res.sendStatus(200);
     next();
@@ -607,20 +666,23 @@ async function startServer() {
       }
 
       // 2. Create or update parent Firestore profile stored at Auth UID (so login works)
-      const parentProfile = {
+      const existingParentSnap = await adminDb.collection("users").doc(parentAuthUid).get();
+      const existingParent = existingParentSnap.exists ? existingParentSnap.data()! : null;
+      const parentProfile: Record<string, unknown> = {
         uid: parentAuthUid,
         linkedStudentUid: studentUid,
-        name: `Parent of ${studentName || "Student"}`,
-        username: `parent_${studentUid.slice(-6)}`,
+        name: existingParent?.name || `Parent of ${studentName || "Student"}`,
+        username: existingParent?.username || `parent_${studentUid.slice(-6)}`,
         email: parentEmail,
         role: "parent",
         path: "individual",
-        grade: studentGrade || "6",
-        xp: 0,
-        isFirstTime: true,
+        grade: studentGrade || existingParent?.grade || "6",
+        xp: existingParent?.xp ?? 0,
+        isFirstTime: existingParent?.isFirstTime ?? true,
         isPaid: true,
-        hasLoggedInBefore: false,
-        createdAt: new Date().toISOString()
+        // Only mark first-login for brand-new parent docs (do not reset after they have logged in)
+        hasLoggedInBefore: existingParent?.hasLoggedInBefore === true ? true : false,
+        createdAt: existingParent?.createdAt || new Date().toISOString()
       };
 
       // Store at Auth UID so onAuthStateChanged can find it directly
@@ -803,6 +865,87 @@ async function startServer() {
   });
 
   // ==========================================
+  // ACHIEVEMENT POINTS (server-verified, idempotent)
+  // ==========================================
+  app.post("/api/award-points", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { achievementId, context } = req.body as {
+      achievementId?: string;
+      context?: AwardEligibilityContext;
+    };
+
+    if (!achievementId || !context?.testType || typeof context.score !== "number") {
+      return res.status(400).json({ error: "achievementId and context (testType, score) are required" });
+    }
+
+    const studentUid = authUser.uid;
+
+    try {
+      const userSnap = await adminDb.collection("users").doc(studentUid).get();
+      if (!userSnap.exists) {
+        return res.status(404).json({ error: "Profile not found" });
+      }
+      const userData = userSnap.data() || {};
+      if (userData.role !== "student") {
+        return res.status(403).json({ error: "Only students earn achievement points" });
+      }
+
+      const def = getAchievementById(achievementId);
+      if (!def) {
+        return res.status(404).json({ error: "Achievement not configured or has no point value" });
+      }
+
+      const outcome = await adminDb.runTransaction(async (tx) => {
+        const userRef = adminDb.collection("users").doc(studentUid);
+        const resultsRef = adminDb.collection("results").doc(studentUid);
+        const [userDoc, resultsDoc] = await Promise.all([tx.get(userRef), tx.get(resultsRef)]);
+
+        const earned = (userDoc.data()?.earnedAchievements || []) as EarnedAchievement[];
+
+        if (hasEarnedAchievement(earned, achievementId)) {
+          const totalPoints = userDoc.data()?.totalPoints ?? computeTotalPoints(earned);
+          return { alreadyEarned: true as const, totalPoints, earnedAchievements: earned };
+        }
+
+        const results = resultsDoc.data()?.results || [];
+        if (!verifyCompletionInResults(results, def, context)) {
+          throw Object.assign(new Error("Completion criteria not met"), { code: "COMPLETION_NOT_VERIFIED" });
+        }
+
+        const newAchievement = {
+          id: def.id,
+          label: def.label,
+          points: def.pointsAwarded,
+          earnedAt: new Date().toISOString(),
+          source: def.source,
+          sourceId: def.sourceId,
+        };
+        const earnedAchievements = [...earned, newAchievement];
+        const totalPoints = computeTotalPoints(earnedAchievements);
+        tx.update(userRef, { earnedAchievements, totalPoints });
+        return {
+          alreadyEarned: false as const,
+          totalPoints,
+          earnedAchievements,
+          awarded: newAchievement,
+        };
+      });
+
+      res.json({ success: true, ...outcome });
+    } catch (error: any) {
+      if (error?.code === "COMPLETION_NOT_VERIFIED") {
+        return res.status(403).json({ error: "Completion criteria not verified" });
+      }
+      console.error("Award points error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
   // SAVE TEST RESULTS ROUTE
   // ==========================================
   app.post("/api/save-results", async (req, res) => {
@@ -901,12 +1044,12 @@ async function startServer() {
       // 5. Send branded activation/reset email
       const emailHtml = `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #0f172a;">Valley Science Account Access</h2>
+          <h2 style="color: #0f172a;">Reset your Valley Science password</h2>
           <p>Hello,</p>
-          <p>We received a request to access or reset the password for your Valley Science account.</p>
-          <p>To set your password and access your dashboard, please click the button below:</p>
+          <p>We received a request to reset the password for your Valley Science account (student, parent, or teacher).</p>
+          <p>Click the button below to choose a new password and sign in:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: #ec4899; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Set Your Password</a>
+            <a href="${resetLink}" style="background: #ec4899; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Set New Password</a>
           </div>
           <p style="color: #64748b; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
           <p style="color: #64748b; font-size: 14px;">If the button doesn't work, copy and paste this link: <br/> <a href="${resetLink}">${resetLink}</a></p>
@@ -915,10 +1058,10 @@ async function startServer() {
 
       const emailResult = await sendValleyScienceEmail({
         to: email,
-        subject: "Access Your Valley Science Account",
+        subject: "Reset your Valley Science password",
         html: emailHtml,
-        text: `Set your Valley Science password: ${resetLink}`,
-        context: "activate-parent"
+        text: `Reset your Valley Science password: ${resetLink}`,
+        context: "password-reset"
       });
 
       res.json({
@@ -934,9 +1077,500 @@ async function startServer() {
   });
 
   // ==========================================
-  // INQUIRY & FEEDBACK ROUTES (save-first, email best-effort)
+  // PARENT WEEKLY PROGRESS DIGEST (positive stats only)
+  // ==========================================
+  app.post("/api/send-parent-digest", async (req, res) => {
+    const { parentUid } = req.body;
+    if (!parentUid) return res.status(400).json({ error: "parentUid required" });
+
+    try {
+      const parentSnap = await adminDb.collection("users").doc(parentUid).get();
+      if (!parentSnap.exists || parentSnap.data()?.role !== "parent") {
+        return res.status(403).json({ error: "Not a parent account" });
+      }
+      const parent = parentSnap.data()!;
+      const lastSent = parent.lastParentDigestAt ? new Date(parent.lastParentDigestAt).getTime() : 0;
+      const weekMs = 7 * 24 * 60 * 60 * 1000;
+      if (lastSent && Date.now() - lastSent < weekMs) {
+        return res.json({ sent: false, skipped: "already_sent_this_week" });
+      }
+
+      const linked: string[] = parent.linkedStudentUids
+        || (parent.linkedStudentUid ? [parent.linkedStudentUid] : []);
+      if (linked.length === 0) {
+        return res.json({ sent: false, skipped: "no_students" });
+      }
+
+      const cards: { name: string; timeLabel: string; tests: number; avg: string; best: string; closed: number; exploring: string[] }[] = [];
+
+      for (const studentUid of linked) {
+        const [studentSnap, resultsSnap, statsSnap] = await Promise.all([
+          adminDb.collection("users").doc(studentUid).get(),
+          adminDb.collection("results").doc(studentUid).get(),
+          adminDb.collection("stats").doc(studentUid).get(),
+        ]);
+        if (!studentSnap.exists) continue;
+        const student = studentSnap.data()!;
+        const results: { score: number; gaps?: string[] }[] = resultsSnap.exists
+          ? (resultsSnap.data()?.results || [])
+          : [];
+        const totalSeconds = statsSnap.exists ? (statsSnap.data()?.totalSeconds || 0) : 0;
+        if (totalSeconds < 60 && results.length === 0) continue;
+
+        const { openGaps, closedGaps } = computeOpenAndClosedGaps(results);
+        const exploring = openGaps.slice(0, 4);
+        const avg = results.length
+          ? Math.round(results.reduce((s, r) => s + r.score, 0) / results.length)
+          : null;
+        const best = results.length ? Math.round(Math.max(...results.map(r => r.score))) : null;
+        const mins = Math.floor(totalSeconds / 60);
+        const timeLabel = mins < 60
+          ? `${Math.max(mins, totalSeconds > 0 ? 1 : 0)} min`
+          : `${Math.floor(mins / 60)}h ${mins % 60}m`;
+
+        cards.push({
+          name: (student.name || "Your student").split(" ")[0],
+          timeLabel,
+          tests: results.length,
+          avg: avg != null ? `${avg}%` : "—",
+          best: best != null ? `${best}%` : "—",
+          closed: closedGaps.length,
+          exploring,
+        });
+      }
+
+      if (cards.length === 0) {
+        return res.json({ sent: false, skipped: "no_activity" });
+      }
+
+      const to = (parent.email || "").trim();
+      if (!to) return res.json({ sent: false, skipped: "no_email" });
+
+      const cardHtml = cards.map(c => `
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:20px;margin:0 0 16px;">
+          <h3 style="margin:0 0 12px;color:#0f172a;font-size:18px;">${c.name}'s week in science</h3>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:25%;">
+                <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Time learning</div>
+                <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.timeLabel}</div>
+              </td>
+              <td style="width:8px;"></td>
+              <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:25%;">
+                <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Tests</div>
+                <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.tests}</div>
+              </td>
+              <td style="width:8px;"></td>
+              <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:25%;">
+                <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Avg score</div>
+                <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.avg}</div>
+              </td>
+              <td style="width:8px;"></td>
+              <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:25%;">
+                <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Best score</div>
+                <div style="font-size:22px;font-weight:900;color:#87A96B;margin-top:4px;">${c.best}</div>
+              </td>
+            </tr>
+          </table>
+          ${c.closed > 0 ? `<p style="margin:14px 0 0;color:#87A96B;font-weight:700;font-size:14px;">Closed ${c.closed} conceptual gap${c.closed === 1 ? "" : "s"} — nice progress.</p>` : ""}
+          ${c.exploring.length > 0 ? `<p style="margin:10px 0 0;color:#64748b;font-size:13px;"><strong style="color:#0f172a;">Next ideas to explore:</strong> ${c.exploring.join("; ")}</p>` : ""}
+        </div>
+      `).join("");
+
+      const html = `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a;">
+          <h2 style="margin:0 0 8px;font-size:24px;">Valley Science progress update</h2>
+          <p style="margin:0 0 20px;color:#64748b;line-height:1.5;">Here is a snapshot of learning activity on Valley Science. These highlights reflect time spent and growth — not a report card.</p>
+          ${cardHtml}
+          <p style="margin:24px 0 0;color:#94a3b8;font-size:12px;">You receive this at most once a week when there is learning activity to share.</p>
+        </div>
+      `;
+      const text = cards.map(c =>
+        `${c.name}: ${c.timeLabel} learning, ${c.tests} tests, avg ${c.avg}, best ${c.best}` +
+        (c.closed ? `, closed ${c.closed} gaps` : "") +
+        (c.exploring.length ? `. Exploring: ${c.exploring.join("; ")}` : "")
+      ).join("\n");
+
+      const emailResult = await sendValleyScienceEmail({
+        to,
+        subject: "Your child's Valley Science progress",
+        html,
+        text,
+        context: "parent-digest",
+      });
+
+      await adminDb.collection("users").doc(parentUid).update({
+        lastParentDigestAt: new Date().toISOString(),
+      });
+
+      res.json({
+        sent: emailResult.sent,
+        simulated: emailResult.simulated,
+        studentsIncluded: cards.length,
+      });
+    } catch (error: any) {
+      console.error("Parent digest error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // TEACHER WEEKLY CLASS SNAPSHOT (positive stats only)
+  // ==========================================
+  async function sendTeacherDigestForUid(teacherUid: string): Promise<{
+    sent: boolean;
+    simulated?: boolean;
+    skipped?: string;
+    classroomsIncluded?: number;
+  }> {
+    const teacherSnap = await adminDb.collection("users").doc(teacherUid).get();
+    if (!teacherSnap.exists || teacherSnap.data()?.role !== "teacher") {
+      return { sent: false, skipped: "not_teacher" };
+    }
+    const teacher = teacherSnap.data()!;
+    const lastSent = teacher.lastTeacherDigestAt ? new Date(teacher.lastTeacherDigestAt).getTime() : 0;
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    if (lastSent && Date.now() - lastSent < weekMs) {
+      return { sent: false, skipped: "already_sent_this_week" };
+    }
+
+    const classroomIds: string[] = teacher.classroomIds || [];
+    if (classroomIds.length === 0) {
+      return { sent: false, skipped: "no_classrooms" };
+    }
+
+    const now = new Date();
+    const classSections: {
+      name: string;
+      studentCount: number;
+      activeCount: number;
+      avgScore: string;
+      openGaps: number;
+      overdueAssignments: number;
+    }[] = [];
+
+    for (const classroomId of classroomIds) {
+      const classSnap = await adminDb.collection("classrooms").doc(classroomId).get();
+      if (!classSnap.exists) continue;
+      const classData = classSnap.data()!;
+      const studentUids: string[] = classData.studentUids || [];
+      if (studentUids.length === 0) continue;
+
+      let activeCount = 0;
+      let totalScore = 0;
+      let testsTaken = 0;
+      let openGapTotal = 0;
+
+      for (const uid of studentUids) {
+        const [resultsSnap, statsSnap] = await Promise.all([
+          adminDb.collection("results").doc(uid).get(),
+          adminDb.collection("stats").doc(uid).get(),
+        ]);
+        const results = resultsSnap.exists ? (resultsSnap.data()?.results || []) : [];
+        const totalSeconds = statsSnap.exists ? (statsSnap.data()?.totalSeconds || 0) : 0;
+        if (totalSeconds >= 60 || results.length > 0) activeCount++;
+        for (const r of results) {
+          totalScore += r.score || 0;
+          testsTaken++;
+        }
+        const { openGaps } = computeOpenAndClosedGaps(results);
+        openGapTotal += openGaps.length;
+      }
+
+      const assignSnap = await adminDb.collection("assignments").where("classroomId", "==", classroomId).get();
+      let overdueAssignments = 0;
+      for (const d of assignSnap.docs) {
+        const data = d.data();
+        const dueAt = new Date(data.dueAt);
+        if (dueAt >= now) continue;
+        const subs = data.submissions || {};
+        for (const uid of studentUids) {
+          const sub = subs[uid] || { status: "not_started" };
+          if (sub.status !== "completed") overdueAssignments++;
+        }
+      }
+
+      if (activeCount === 0 && testsTaken === 0) continue;
+
+      classSections.push({
+        name: classData.name || "Class",
+        studentCount: studentUids.length,
+        activeCount,
+        avgScore: testsTaken ? `${Math.round(totalScore / testsTaken)}%` : "—",
+        openGaps: openGapTotal,
+        overdueAssignments,
+      });
+    }
+
+    if (classSections.length === 0) {
+      return { sent: false, skipped: "no_activity" };
+    }
+
+    const to = (teacher.email || "").trim();
+    if (!to) return { sent: false, skipped: "no_email" };
+
+    const sectionHtml = classSections.map(c => `
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:20px;margin:0 0 16px;">
+        <h3 style="margin:0 0 12px;color:#0f172a;font-size:18px;">${c.name}</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:20%;">
+              <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">Students</div>
+              <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.studentCount}</div>
+            </td>
+            <td style="width:6px;"></td>
+            <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:20%;">
+              <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">Active</div>
+              <div style="font-size:22px;font-weight:900;color:#87A96B;margin-top:4px;">${c.activeCount}</div>
+            </td>
+            <td style="width:6px;"></td>
+            <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:20%;">
+              <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">Class avg</div>
+              <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.avgScore}</div>
+            </td>
+            <td style="width:6px;"></td>
+            <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:20%;">
+              <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">Open gaps</div>
+              <div style="font-size:22px;font-weight:900;color:#0f172a;margin-top:4px;">${c.openGaps}</div>
+            </td>
+            <td style="width:6px;"></td>
+            <td style="padding:8px;background:#fff;border-radius:12px;text-align:center;width:20%;">
+              <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">Overdue</div>
+              <div style="font-size:22px;font-weight:900;color:#${c.overdueAssignments > 0 ? "dc2626" : "0f172a"};margin-top:4px;">${c.overdueAssignments}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `).join("");
+
+    const html = `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a;">
+        <h2 style="margin:0 0 8px;font-size:24px;">Your class snapshot</h2>
+        <p style="margin:0 0 20px;color:#64748b;line-height:1.5;">Weekly summary of learning activity across your classrooms on Valley Science.</p>
+        ${sectionHtml}
+        <p style="margin:24px 0 0;color:#94a3b8;font-size:12px;">You receive this at most once a week when there is meaningful class activity.</p>
+      </div>
+    `;
+    const text = classSections.map(c =>
+      `${c.name}: ${c.activeCount}/${c.studentCount} active, avg ${c.avgScore}, ${c.openGaps} open gaps, ${c.overdueAssignments} overdue submissions`
+    ).join("\n");
+
+    const emailResult = await sendValleyScienceEmail({
+      to,
+      subject: "Your Valley Science class snapshot",
+      html,
+      text,
+      context: "teacher-digest",
+    });
+
+    await adminDb.collection("users").doc(teacherUid).update({
+      lastTeacherDigestAt: new Date().toISOString(),
+    });
+
+    return {
+      sent: emailResult.sent,
+      simulated: emailResult.simulated,
+      classroomsIncluded: classSections.length,
+    };
+  }
+
+  app.post("/api/send-teacher-digest", async (req, res) => {
+    const { teacherUid } = req.body;
+    if (!teacherUid) return res.status(400).json({ error: "teacherUid required" });
+    try {
+      const result = await sendTeacherDigestForUid(teacherUid);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Teacher digest error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // STUDENT EMAIL CRON (due reminders + inactivity nudges — students only)
+  // ==========================================
+
+  async function handleStudentEmailCron(
+    req: Request,
+    res: Response,
+    mode: "all" | "due-reminders" | "inactivity"
+  ) {
+    if (!verifyCronSecret(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!process.env.CRON_SECRET) {
+      return res.status(503).json({ error: "CRON_SECRET is not configured" });
+    }
+
+    try {
+      const dueReminders =
+        mode === "all" || mode === "due-reminders"
+          ? await runDueDateReminders(adminDb, sendValleyScienceEmail, APP_BASE_URL)
+          : null;
+      const inactivityNudges =
+        mode === "all" || mode === "inactivity"
+          ? await runInactivityNudges(adminDb, sendValleyScienceEmail, APP_BASE_URL)
+          : null;
+
+      res.json({
+        ok: true,
+        mode,
+        dueReminders,
+        inactivityNudges,
+      });
+    } catch (error: any) {
+      console.error("Student email cron error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  app.post("/api/cron/student-emails", (req, res) => {
+    const mode = (req.body?.mode || req.query?.mode || "all") as string;
+    const allowed = ["all", "due-reminders", "inactivity"];
+    if (!allowed.includes(mode)) {
+      return res.status(400).json({ error: `mode must be one of: ${allowed.join(", ")}` });
+    }
+    return handleStudentEmailCron(req, res, mode as "all" | "due-reminders" | "inactivity");
+  });
+
+  app.get("/api/cron/student-emails", (req, res) => {
+    const mode = (req.query?.mode || "all") as string;
+    const allowed = ["all", "due-reminders", "inactivity"];
+    if (!allowed.includes(mode)) {
+      return res.status(400).json({ error: `mode must be one of: ${allowed.join(", ")}` });
+    }
+    return handleStudentEmailCron(req, res, mode as "all" | "due-reminders" | "inactivity");
+  });
+
+  app.post("/api/cron/student-due-reminders", (req, res) =>
+    handleStudentEmailCron(req, res, "due-reminders")
+  );
+
+  app.post("/api/cron/student-inactivity-nudges", (req, res) =>
+    handleStudentEmailCron(req, res, "inactivity")
+  );
+
+  async function handleTeacherDigestCron(req: Request, res: Response) {
+    if (!verifyCronSecret(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!process.env.CRON_SECRET) {
+      return res.status(503).json({ error: "CRON_SECRET is not configured" });
+    }
+
+    try {
+      const teachersSnap = await adminDb.collection("users").where("role", "==", "teacher").get();
+      let sent = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      for (const doc of teachersSnap.docs) {
+        try {
+          const result = await sendTeacherDigestForUid(doc.id);
+          if (result.sent) sent++;
+          else skipped++;
+        } catch (err: any) {
+          errors.push(`${doc.id}: ${err.message}`);
+        }
+      }
+
+      res.json({ ok: true, teachers: teachersSnap.size, sent, skipped, errors });
+    } catch (error: any) {
+      console.error("Teacher digest cron error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  app.post("/api/cron/teacher-digest", handleTeacherDigestCron);
+  app.get("/api/cron/teacher-digest", handleTeacherDigestCron);
+
+  // ==========================================
+  // OPS CRON (health alerts + firestore export scaffold)
   // ==========================================
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "valley.science.as@gmail.com";
+
+  async function handleHealthCheckCron(req: Request, res: Response) {
+    if (!verifyCronSecret(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!process.env.CRON_SECRET) {
+      return res.status(503).json({ error: "CRON_SECRET is not configured" });
+    }
+
+    try {
+      const health = await runHealthChecks(adminDb);
+      if (health.ok) {
+        return res.json({ ok: true, health, alertSent: false });
+      }
+
+      const { text, html } = formatHealthAlertBody(health, APP_BASE_URL);
+      const alertResult = await sendValleyScienceEmail({
+        to: ADMIN_EMAIL,
+        subject: "[Valley Science] Health check failed",
+        text,
+        html,
+        context: "health-alert",
+      });
+
+      res.status(503).json({
+        ok: false,
+        health,
+        alertSent: alertResult.sent,
+        alertSimulated: alertResult.simulated,
+        alertError: alertResult.error,
+      });
+    } catch (error: any) {
+      console.error("Health check cron error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  app.post("/api/cron/health-check", handleHealthCheckCron);
+  app.get("/api/cron/health-check", handleHealthCheckCron);
+
+  async function handleFirestoreExportCron(req: Request, res: Response) {
+    if (!verifyCronSecret(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!process.env.CRON_SECRET) {
+      return res.status(503).json({ error: "CRON_SECRET is not configured" });
+    }
+
+    const bucket = process.env.GCS_BACKUP_BUCKET?.trim();
+    const projectId = firebaseConfig.projectId;
+    const databaseId = firebaseConfig.firestoreDatabaseId || "(default)";
+
+    if (!bucket) {
+      return res.status(503).json({
+        ok: false,
+        error: "GCS_BACKUP_BUCKET is not configured",
+        hint: "Set GCS_BACKUP_BUCKET in .env and run backend/scripts/export-firestore.sh via Cloud Scheduler or cron",
+      });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const outputUri = `${bucket.replace(/\/$/, "")}/${timestamp}`;
+    const gcloudCommand =
+      `gcloud firestore export "${outputUri}" --project="${projectId}" --database="${databaseId}"`;
+
+    res.json({
+      ok: true,
+      message:
+        "Firestore export is not triggered from the app — use gcloud or Cloud Scheduler with export-firestore.sh",
+      projectId,
+      databaseId,
+      outputUri,
+      gcloudCommand,
+      script: "backend/scripts/export-firestore.sh",
+    });
+  }
+
+  app.post("/api/cron/firestore-export", handleFirestoreExportCron);
+  app.get("/api/cron/firestore-export", handleFirestoreExportCron);
+
+  // ==========================================
+  // INQUIRY & FEEDBACK ROUTES (save-first, email best-effort)
+  // ==========================================
 
   async function sendEmailBestEffort(opts: {
     to: string;
@@ -1119,7 +1753,6 @@ async function startServer() {
   // ==========================================
   // DEMO REQUEST / APPROVE ROUTES
   // ==========================================
-  const APP_BASE_URL = process.env.APP_BASE_URL || "http://localhost:3000";
 
   function demoLoginInstructionsHtml(demoEmail: string, tempPassword: string) {
     return `
@@ -1687,35 +2320,15 @@ async function startServer() {
           continue;
         }
 
-        const completedSet = new Set<string>(prev.completedModuleIds || []);
-        if (completedModuleId && moduleIds.includes(completedModuleId)) {
-          completedSet.add(completedModuleId);
-        }
-
-        const total = moduleIds.length;
-        const done = moduleIds.filter((id: string) => completedSet.has(id)).length;
-        let progress = total > 0 ? Math.round((done / total) * 100) : 0;
-        if (progress === 0 && (moduleId || assignmentId)) progress = Math.max(prev.progress || 0, 10);
-
-        let status = prev.status || "not_started";
-        if (done >= total && total > 0) status = "completed";
-        else if (progress > 0 || moduleId || completedModuleId) status = "in_progress";
-
         const minScore = data.minScore != null ? Number(data.minScore) : null;
-        const nextScore = score != null ? Number(score) : prev.score;
-        if (status === "completed" && minScore != null && nextScore != null && nextScore < minScore) {
-          status = "in_progress";
-          progress = Math.min(progress, 90);
-        }
-
-        const next = {
-          ...prev,
-          status,
-          progress,
-          completedModuleIds: [...completedSet],
-          ...(nextScore != null ? { score: nextScore } : {}),
-          ...(status === "completed" ? { submittedAt: prev.submittedAt || new Date().toISOString() } : {}),
-        };
+        const next = computeNextAssignmentSubmission({
+          prev,
+          moduleIds,
+          moduleId,
+          completedModuleId,
+          score: score != null ? Number(score) : undefined,
+          minScore,
+        });
         // Dot-notation updates only this student's entry, avoiding lost writes when
         // classmates update the same assignment document concurrently.
         await d.ref.update({ [`submissions.${studentUid}`]: next });
@@ -1725,6 +2338,54 @@ async function startServer() {
       res.json({ updated });
     } catch (error: any) {
       console.error("Update assignment progress error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  /** Persist lesson/topic completion with sequential-order validation. */
+  app.post("/api/update-learning-progress", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    const { studentUid, moduleId, lessonId, topicId, action } = req.body as {
+      studentUid?: string;
+      moduleId?: string;
+      lessonId?: string;
+      topicId?: string;
+      action?: string;
+    };
+
+    const uid = studentUid || authUser?.uid;
+    if (!uid) return res.status(401).json({ error: "Authentication required" });
+    if (authUser && authUser.uid !== uid) {
+      return res.status(403).json({ error: "Cannot update another student's progress" });
+    }
+    if (action !== "complete_topic" || !moduleId || !lessonId || !topicId) {
+      return res.status(400).json({ error: "moduleId, lessonId, topicId, and action=complete_topic required" });
+    }
+
+    try {
+      const studentRef = adminDb.collection("users").doc(uid);
+      const studentSnap = await studentRef.get();
+      if (!studentSnap.exists) return res.status(404).json({ error: "Student not found" });
+      const studentData = studentSnap.data()!;
+      if (studentData.role !== "student") {
+        return res.status(403).json({ error: "Only students have learning progress" });
+      }
+
+      const prev: StudentLearningProgress = studentData.learningProgress || emptyProgress();
+      const check = canCompleteTopicServer(prev, moduleId, lessonId, topicId);
+      if (!check.ok) return res.status(400).json({ error: check.reason || "Cannot complete topic" });
+
+      const next = applyTopicCompletionServer(prev, moduleId, lessonId, topicId);
+      await studentRef.update({
+        learningProgress: next,
+        lastModuleId: moduleId,
+        lastLessonId: lessonId,
+        lastTopicId: topicId,
+      });
+
+      res.json({ success: true, learningProgress: next });
+    } catch (error: any) {
+      console.error("Update learning progress error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -2046,6 +2707,124 @@ async function startServer() {
         frequentMisses
       });
     } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // DISTRICT ROSTER SYNC (CSV import)
+  // ==========================================
+  const DEFAULT_ROSTER_PASSWORD = "Sandbox123!";
+
+  async function getOrCreateDistrictAuthUser(email: string, password: string, displayName: string) {
+    try {
+      return (await adminAuth.getUserByEmail(email)).uid;
+    } catch {
+      return (await adminAuth.createUser({ email, password, displayName })).uid;
+    }
+  }
+
+  function slugUsername(name: string, email: string): string {
+    const fromName = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const fromEmail = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    return (fromName || fromEmail || "student").slice(0, 32);
+  }
+
+  async function addStudentToAssignmentSubmissions(classroomId: string, studentUid: string) {
+    const assignSnap = await adminDb.collection("assignments").where("classroomId", "==", classroomId).get();
+    for (const d of assignSnap.docs) {
+      const subs = d.data().submissions || {};
+      if (subs[studentUid]) continue;
+      await d.ref.update({
+        [`submissions.${studentUid}`]: { status: "not_started", progress: 0, completedModuleIds: [] },
+      });
+    }
+  }
+
+  app.post("/api/sync-class-roster", async (req, res) => {
+    const { classroomId, teacherUid, rows } = req.body as {
+      classroomId?: string;
+      teacherUid?: string;
+      rows?: { name?: string; email?: string; grade?: string; username?: string }[];
+    };
+    if (!classroomId || !teacherUid || !Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: "classroomId, teacherUid, and rows[] required" });
+    }
+
+    try {
+      const [teacherSnap, classSnap] = await Promise.all([
+        adminDb.collection("users").doc(teacherUid).get(),
+        adminDb.collection("classrooms").doc(classroomId).get(),
+      ]);
+      if (!teacherSnap.exists || teacherSnap.data()?.role !== "teacher") {
+        return res.status(403).json({ error: "Teacher not found" });
+      }
+      if (!classSnap.exists) return res.status(404).json({ error: "Classroom not found" });
+      const classData = classSnap.data()!;
+      if (classData.teacherUid !== teacherUid) {
+        return res.status(403).json({ error: "Not your classroom" });
+      }
+
+      const districtId = classData.districtId || teacherSnap.data()?.districtId;
+      const existingUids: string[] = classData.studentUids || [];
+      const added: string[] = [];
+      const linked: string[] = [];
+      const skipped: string[] = [];
+      const errors: { email: string; error: string }[] = [];
+
+      for (const row of rows) {
+        const name = (row.name || "").trim();
+        const email = (row.email || "").trim().toLowerCase();
+        if (!name || !email) {
+          skipped.push(email || name || "(blank row)");
+          continue;
+        }
+
+        try {
+          let uid: string;
+          try {
+            uid = (await adminAuth.getUserByEmail(email)).uid;
+          } catch {
+            uid = await getOrCreateDistrictAuthUser(email, DEFAULT_ROSTER_PASSWORD, name);
+          }
+
+          const username = (row.username || slugUsername(name, email)).slice(0, 32);
+          const grade = row.grade || classData.grade || teacherSnap.data()?.grade || "7";
+
+          await adminDb.collection("users").doc(uid).set({
+            uid,
+            name,
+            username,
+            email,
+            role: "student",
+            path: "district",
+            grade,
+            xp: 0,
+            isFirstTime: true,
+            isPaid: true,
+            districtId,
+            classroomIds: [classroomId],
+            teacherUid,
+            demoPassword: DEFAULT_ROSTER_PASSWORD,
+            createdAt: new Date().toISOString(),
+          }, { merge: true });
+
+          if (!existingUids.includes(uid)) {
+            existingUids.push(uid);
+            await classSnap.ref.update({ studentUids: existingUids });
+            await addStudentToAssignmentSubmissions(classroomId, uid);
+            added.push(uid);
+          } else {
+            linked.push(uid);
+          }
+        } catch (err: any) {
+          errors.push({ email, error: err.message });
+        }
+      }
+
+      res.json({ success: true, added, linked, skipped, errors });
+    } catch (error: any) {
+      console.error("Roster sync error:", error);
       res.status(500).json({ error: error.message });
     }
   });

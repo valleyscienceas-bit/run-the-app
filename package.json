@@ -7,6 +7,8 @@
     "build": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
     "build:all": "npm run build --prefix frontend && npm run build --prefix backend",
-    "start": "NODE_ENV=production npm run start --prefix backend"
+    "start": "NODE_ENV=production npm run start --prefix backend",
+    "test": "npm test --prefix frontend && npm test --prefix backend",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend"
   }
 }

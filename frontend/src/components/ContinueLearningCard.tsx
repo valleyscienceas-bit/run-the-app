@@ -24,7 +24,7 @@ export function ContinueLearningCard({
   if (!hasAnything) return null;
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 text-white p-8 md:p-10 rounded-[40px] shadow-xl border border-slate-700/50">
+    <div data-tour="student-continue-card" className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 text-white p-8 md:p-10 rounded-[40px] shadow-xl border border-slate-700/50">
       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-soft-pink mb-2">Continue where you left off</p>
       <h2 className="text-2xl md:text-3xl font-black mb-6">Pick up your learning path</h2>
 

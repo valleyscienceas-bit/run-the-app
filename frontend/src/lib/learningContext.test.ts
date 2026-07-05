@@ -9,7 +9,7 @@ import {
 } from './learningContext';
 import { TestResult } from '../types';
 
-function result(gaps: string[], type: TestResult['type'] = 'placement'): TestResult {
+function result(gaps: string[], type: TestResult['type'] = 'placement', extra: Partial<TestResult> = {}): TestResult {
   return {
     id: Math.random().toString(36).slice(2),
     userId: 'u1',
@@ -18,6 +18,7 @@ function result(gaps: string[], type: TestResult['type'] = 'placement'): TestRes
     gaps,
     timestamp: new Date().toISOString(),
     answers: [],
+    ...extra,
   };
 }
 
@@ -30,6 +31,16 @@ describe('computeOpenAndClosedGaps', () => {
     const { openGaps, closedGaps } = computeOpenAndClosedGaps(results);
     expect(openGaps).toEqual(['Forces']);
     expect(closedGaps).toEqual(['Matter']);
+  });
+
+  it('closes a module gap when the student passes that module placement test', () => {
+    const results = [
+      result(['Action-reaction pairs in collisions.'], 'placement', { moduleId: '8-1-1', score: 85 }),
+      result(['Forces']),
+    ];
+    const { openGaps, closedGaps } = computeOpenAndClosedGaps(results);
+    expect(openGaps).toEqual(['Forces']);
+    expect(closedGaps).toContain('Action-reaction pairs in collisions.');
   });
 
   it('returns empty sets with no results', () => {
