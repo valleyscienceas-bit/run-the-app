@@ -43,14 +43,14 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
         <header>
-          <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Student Progress</h1>
-          <p className="text-xl text-slate-700 font-medium">Monitoring your student's conceptual growth.</p>
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">Student Progress</h1>
+          <p className="text-xl text-slate-700 dark:text-slate-400 font-medium">Monitoring your student's conceptual growth.</p>
         </header>
-        <div className="bg-white p-12 rounded-[40px] border border-slate-100 shadow-xl text-center">
+        <div className="bg-white dark:bg-slate-900 p-12 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl dark:shadow-black/20 text-center">
           <div className="w-20 h-20 bg-soft-pink/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertTriangle size={36} className="text-soft-pink" />
           </div>
-          <h3 className="text-2xl font-black text-slate-900 mb-3">No linked student found</h3>
+          <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-3">No linked student found</h3>
           <p className="text-slate-500 font-medium max-w-md mx-auto mb-8">
             We couldn't load a student account linked to your parent profile yet. If your child just created their account, try refreshing in a moment.
           </p>
@@ -159,33 +159,33 @@ export function ParentDashboard({ overview, loading, onRefresh, onSwitchStudent 
         </div>
       </header>
 
-      <section className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-        <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-100 bg-slate-50/50">
-          <div className="w-10 h-10 bg-soft-pink/10 rounded-2xl flex items-center justify-center">
+      <section className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20 overflow-hidden">
+        <div className="flex items-center gap-3 px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+          <div className="w-10 h-10 bg-soft-pink/10 dark:bg-soft-pink/15 rounded-2xl flex items-center justify-center">
             <BellRing size={20} className="text-soft-pink" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-900">Notifications</h3>
+            <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Notifications</h3>
             <p className="text-xs font-bold text-slate-400">In-app alerts about your student's activity</p>
           </div>
         </div>
         <div className="p-8 space-y-3">
           {activeAlerts.length > 0 ? (
             activeAlerts.map(alert => (
-              <div key={alert.id} className="flex items-start gap-4 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
+              <div key={alert.id} className="flex items-start gap-4 p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-2xl">
                 <AlertTriangle size={20} className="text-orange-500 shrink-0 mt-0.5" />
-                <p className="text-sm font-bold text-slate-700 leading-relaxed">{alert.text}</p>
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{alert.text}</p>
               </div>
             ))
           ) : (
-            <div className="flex items-start gap-4 p-4 bg-sage-green/5 border border-sage-green/20 rounded-2xl">
+            <div className="flex items-start gap-4 p-4 bg-sage-green/5 dark:bg-sage-green/10 border border-sage-green/20 dark:border-sage-green/30 rounded-2xl">
               <CheckCircle2 size={20} className="text-sage-green shrink-0 mt-0.5" />
-              <p className="text-sm font-bold text-slate-700 leading-relaxed">
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed">
                 All good! No alerts right now. {firstName} is on track.
               </p>
             </div>
           )}
-          <div className="mt-4 pt-4 border-t border-dashed border-slate-200">
+          <div className="mt-4 pt-4 border-t border-dashed border-slate-200 dark:border-slate-700">
             <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Coming with modules</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <ScaffoldAlert icon={<CalendarClock size={16} />} text="Idle time during a module" />
@@ -312,7 +312,7 @@ function TestDetailRow({ result, expanded, onToggle }: { result: TestResult; exp
             <p className="text-sm text-slate-500 font-medium">Question-level detail not available for this test.</p>
           ) : (
             result.answers!.map((a, i) => (
-              <div key={i} className={`p-4 rounded-xl border ${a.correct ? 'bg-sage-green/5 border-sage-green/20' : 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/50'}`}>
+              <div key={i} className={`p-4 rounded-xl border ${a.correct ? 'bg-sage-green/5 dark:bg-sage-green/10 border-sage-green/20 dark:border-sage-green/30' : 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/50'}`}>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{a.questionText}</p>
                 {a.selectedAnswer && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Answer: {a.selectedAnswer}</p>}
                 {a.concept && <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">{a.concept}</p>}
@@ -341,16 +341,16 @@ function StatDetailModal({ type, results, totalSeconds, avgScore, firstName, onC
 
         {type === 'time' && (
           <div className="space-y-3">
-            <p className="text-4xl font-black text-slate-900">{formatLearningTime(totalSeconds)}</p>
-            <p className="text-slate-600 font-medium">Total learning time for {firstName}. Valerie chat and module time will appear here as modules roll out.</p>
+            <p className="text-4xl font-black text-slate-900 dark:text-slate-100">{formatLearningTime(totalSeconds)}</p>
+            <p className="text-slate-600 dark:text-slate-400 font-medium">Total learning time for {firstName}. Valerie chat and module time will appear here as modules roll out.</p>
           </div>
         )}
         {type === 'tests' && (
           <ul className="space-y-2">
-            {results.length === 0 ? <p className="text-slate-500">No tests yet.</p> : results.map(r => (
-              <li key={r.id} className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                <span className="font-bold text-slate-700 capitalize">{r.type} test</span>
-                <span className="text-sm font-black text-slate-900">{Math.round(r.score)}% · {new Date(r.timestamp).toLocaleDateString()}</span>
+            {results.length === 0 ? <p className="text-slate-500 dark:text-slate-400">No tests yet.</p> : results.map(r => (
+              <li key={r.id} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between">
+                <span className="font-bold text-slate-700 dark:text-slate-300 capitalize">{r.type} test</span>
+                <span className="text-sm font-black text-slate-900 dark:text-slate-100">{Math.round(r.score)}% · {new Date(r.timestamp).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
@@ -361,15 +361,15 @@ function StatDetailModal({ type, results, totalSeconds, avgScore, firstName, onC
               const typed = results.filter(r => r.type === t);
               const avg = typed.length ? Math.round(typed.reduce((s, r) => s + r.score, 0) / typed.length) : null;
               return (
-                <li key={t} className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                  <span className="font-bold text-slate-700 capitalize">{t}</span>
-                  <span className="font-black text-slate-900">{avg !== null ? `${avg}% (${typed.length})` : 'N/A'}</span>
+                <li key={t} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl flex justify-between">
+                  <span className="font-bold text-slate-700 dark:text-slate-300 capitalize">{t}</span>
+                  <span className="font-black text-slate-900 dark:text-slate-100">{avg !== null ? `${avg}% (${typed.length})` : 'N/A'}</span>
                 </li>
               );
             })}
-            <li className="p-3 bg-soft-pink/10 rounded-xl flex justify-between mt-4">
-              <span className="font-black text-slate-900">Overall</span>
-              <span className="font-black text-slate-900">{results.length ? `${avgScore}%` : 'N/A'}</span>
+            <li className="p-3 bg-soft-pink/10 dark:bg-soft-pink/15 rounded-xl flex justify-between mt-4">
+              <span className="font-black text-slate-900 dark:text-slate-100">Overall</span>
+              <span className="font-black text-slate-900 dark:text-slate-100">{results.length ? `${avgScore}%` : 'N/A'}</span>
             </li>
           </ul>
         )}
@@ -408,14 +408,14 @@ function PlainStatCard({ icon, value, label, explanation, accent, onClick }: {
   icon: React.ReactNode; value: string; label: string; explanation: string; accent?: string; onClick?: () => void;
 }) {
   const accentMap: Record<string, string> = {
-    green: 'bg-sage-green/10', blue: 'bg-blue-50', pink: 'bg-soft-pink/10', orange: 'bg-orange-50', purple: 'bg-purple-50',
+    green: 'bg-sage-green/10 dark:bg-sage-green/15', blue: 'bg-blue-50 dark:bg-blue-950/30', pink: 'bg-soft-pink/10 dark:bg-soft-pink/15', orange: 'bg-orange-50 dark:bg-orange-950/30', purple: 'bg-purple-50 dark:bg-purple-950/30',
   };
-  const bg = accent ? accentMap[accent] || 'bg-slate-50' : 'bg-slate-50';
+  const bg = accent ? accentMap[accent] || 'bg-slate-50 dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800';
   return (
     <button onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:scale-105 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-black/40 hover:border-soft-pink/30 transition-all duration-200 flex flex-col text-left cursor-pointer w-full">
       <div className={`w-11 h-11 ${bg} rounded-2xl flex items-center justify-center mb-5`}>{icon}</div>
-      <h4 className="text-3xl font-black text-slate-900 mb-1">{value}</h4>
-      <p className="text-sm font-black text-slate-700 mb-2">{label}</p>
+      <h4 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{value}</h4>
+      <p className="text-sm font-black text-slate-700 dark:text-slate-300 mb-2">{label}</p>
       <p className="text-xs text-slate-400 font-bold leading-relaxed">{explanation}</p>
     </button>
   );
@@ -423,9 +423,9 @@ function PlainStatCard({ icon, value, label, explanation, accent, onClick }: {
 
 function ScaffoldAlert({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl opacity-70">
+    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl opacity-70">
       <div className="text-slate-400 shrink-0">{icon}</div>
-      <p className="text-xs font-bold text-slate-500">{text}</p>
+      <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{text}</p>
       <span className="ml-auto text-[9px] font-black text-slate-300 uppercase tracking-widest shrink-0">Soon</span>
     </div>
   );

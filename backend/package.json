@@ -13,7 +13,8 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "export-firestore": "bash scripts/export-firestore.sh"
+    "export-firestore": "bash scripts/export-firestore.sh",
+    "backfill-auth-role-labels": "tsx scripts/backfill-auth-role-labels.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

@@ -28,6 +28,7 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
   const showStudentNav = role === 'student';
   const showDistrictStudentNav = role === 'student' && userState.path === 'district';
   const showParentNav = role === 'parent';
+  const showDistrictParent = role === 'parent' && userState.path === 'district';
   const showTeacherNav = userState.role === 'teacher';
   const showAdminNav = userState.role === 'admin';
 
@@ -85,11 +86,14 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
           {isDemo && (
             <NavItem icon={<HelpCircle size={22} />} label="Demo Guide" active={activeTab === 'demo-guide'} onClick={() => onTabChange('demo-guide')} />
           )}
-          {showParentNav && (
+          {showParentNav && !showDistrictParent && (
             <>
               <NavItem icon={<UserCircle size={22} />} label="Student Account" active={activeTab === 'student-account'} onClick={() => onTabChange('student-account')} tourId="nav-student-account" />
               <NavItem icon={<CreditCard size={22} />} label="Billing" active={activeTab === 'billing'} onClick={() => onTabChange('billing')} tourId="nav-billing" />
             </>
+          )}
+          {showDistrictParent && (
+            <NavItem icon={<UserCircle size={22} />} label="Student Account" active={activeTab === 'student-account'} onClick={() => onTabChange('student-account')} tourId="nav-student-account" />
           )}
           {showTeacherNav && (
             <>
@@ -106,7 +110,9 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
         <div className="absolute bottom-8 left-8 right-8 space-y-3" data-tour="nav-account-footer">
           <div className="p-5 bg-cream dark:bg-slate-800 rounded-[28px] border border-slate-100 dark:border-slate-700">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-              {userState.role === 'parent' ? 'Parent Account' : (userState.path === 'district' ? 'District Access' : 'Individual Access')}
+              {userState.role === 'parent'
+                ? (userState.path === 'district' ? 'District Parent' : 'Parent Account')
+                : (userState.path === 'district' ? 'District Access' : 'Individual Access')}
             </p>
             <p className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
               {userState.profile?.username || userState.profile?.name || 'User'}
@@ -154,9 +160,11 @@ export function Layout({ children, activeTab, onTabChange, userState, onLogout, 
             <button onClick={() => onTabChange('student-account')} className={cn("p-2", activeTab === 'student-account' ? "text-soft-pink" : "text-slate-300")}>
               <UserCircle size={28} />
             </button>
-            <button onClick={() => onTabChange('billing')} className={cn("p-2", activeTab === 'billing' ? "text-soft-pink" : "text-slate-300")}>
-              <CreditCard size={28} />
-            </button>
+            {!showDistrictParent && (
+              <button onClick={() => onTabChange('billing')} className={cn("p-2", activeTab === 'billing' ? "text-soft-pink" : "text-slate-300")}>
+                <CreditCard size={28} />
+              </button>
+            )}
           </>
         )}
         {showDistrictStudentNav && (

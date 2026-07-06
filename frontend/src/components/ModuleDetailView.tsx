@@ -187,7 +187,7 @@ export function ModuleDetailView({
             type="button"
             onClick={() => onTakePlacementTest(module)}
             disabled={!complete}
-            className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-700"
           >
             Take placement test <ArrowRight size={20} />
           </button>

@@ -23,6 +23,7 @@ import {
 import { runDueDateReminders, runInactivityNudges } from "./lib/studentEmailCron.js";
 import { computeOpenAndClosedGaps } from "./lib/gapLogic.js";
 import { computeNextAssignmentSubmission } from "./lib/assignmentProgress.js";
+import { getPasswordValidationError } from "./lib/passwordValidation.js";
 import {
   applyTopicCompletionServer,
   canCompleteTopicServer,
@@ -31,6 +32,12 @@ import {
 } from "./lib/learningProgression.js";
 import { logEnvValidation, validateEnv } from "./lib/env.js";
 import { formatHealthAlertBody, runHealthChecks } from "./lib/health.js";
+import {
+  backfillAuthRoleLabelsFromFirestore,
+  createAuthUserWithRoleLabels,
+  syncAuthUserRoleLabels,
+} from "./lib/authUserProvisioning.js";
+import { provisionParentForStudent } from "./lib/parentProvisioning.js";
 
 dotenv.config();
 
@@ -268,8 +275,13 @@ async function startServer() {
   // VERIFICATION CODE ROUTES (10-min expiry)
   // ==========================================
   app.post("/api/send-verification-code", async (req, res) => {
-    const { email, purpose = "signup" } = req.body;
+    const { email, purpose = "signup", password } = req.body;
     if (!email) return res.status(400).json({ error: "email is required" });
+
+    if (purpose === "signup" && password) {
+      const passwordError = getPasswordValidationError(password);
+      if (passwordError) return res.status(400).json({ error: passwordError });
+    }
 
     try {
       const authUser = await verifyAuthHeader(req);
@@ -624,6 +636,7 @@ async function startServer() {
         return res.status(403).json({ error: "Parent profiles cannot be created via this endpoint. Parent accounts are provisioned automatically when a student signs up." });
       }
       await adminDb.collection("users").doc(uid).set(profile);
+      await syncAuthUserRoleLabels(adminAuth, uid, profile.role, profile.name);
       res.json({ success: true });
     } catch (error: any) {
       console.error("Create profile error:", error);
@@ -635,98 +648,74 @@ async function startServer() {
   // PROVISION PARENT ACCOUNT ROUTE
   // ==========================================
   app.post("/api/provision-parent", async (req, res) => {
-    const { studentUid, studentName, parentEmail, studentGrade } = req.body;
+    const { studentUid, studentName, parentEmail, studentGrade, path, districtId } = req.body;
 
     if (!studentUid || !parentEmail) {
       return res.status(400).json({ error: "studentUid and parentEmail are required" });
     }
 
     try {
-      const parentDocId = `parent_${studentUid}`;
-
-      // 1. Check if parent Auth user already exists
-      let parentAuthUid: string;
-      try {
-        const existingUser = await adminAuth.getUserByEmail(parentEmail);
-        parentAuthUid = existingUser.uid;
-      } catch (err: any) {
-        if (err.code === "auth/user-not-found") {
-          // Create real Firebase Auth user for the parent
-          const newUser = await adminAuth.createUser({
-            email: parentEmail,
-            emailVerified: false,
-            displayName: `Parent of ${studentName || "Student"}`,
-            password: Math.random().toString(36).slice(-12) + "A1!"
-          });
-          parentAuthUid = newUser.uid;
-          console.log(`[PROVISION] Created Auth user for parent: ${parentEmail}`);
-        } else {
-          throw err;
-        }
-      }
-
-      // 2. Create or update parent Firestore profile stored at Auth UID (so login works)
-      const existingParentSnap = await adminDb.collection("users").doc(parentAuthUid).get();
-      const existingParent = existingParentSnap.exists ? existingParentSnap.data()! : null;
-      const parentProfile: Record<string, unknown> = {
-        uid: parentAuthUid,
-        linkedStudentUid: studentUid,
-        name: existingParent?.name || `Parent of ${studentName || "Student"}`,
-        username: existingParent?.username || `parent_${studentUid.slice(-6)}`,
-        email: parentEmail,
-        role: "parent",
-        path: "individual",
-        grade: studentGrade || existingParent?.grade || "6",
-        xp: existingParent?.xp ?? 0,
-        isFirstTime: existingParent?.isFirstTime ?? true,
-        isPaid: true,
-        // Only mark first-login for brand-new parent docs (do not reset after they have logged in)
-        hasLoggedInBefore: existingParent?.hasLoggedInBefore === true ? true : false,
-        createdAt: existingParent?.createdAt || new Date().toISOString()
-      };
-
-      // Store at Auth UID so onAuthStateChanged can find it directly
-      await adminDb.collection("users").doc(parentAuthUid).set(parentProfile, { merge: true });
-      // Also keep legacy doc for backward compatibility
-      await adminDb.collection("users").doc(parentDocId).set({ ...parentProfile, uid: parentDocId, authUid: parentAuthUid }, { merge: true });
-      console.log(`[PROVISION] Created/updated parent profile at Auth UID: ${parentAuthUid}`);
-
-      // 3. Generate password reset link so parent can set their own password
-      const resetLink = await adminAuth.generatePasswordResetLink(parentEmail);
-
-      // 4. Send branded welcome email with direct set-password button
-      const emailHtml = `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 520px;">
-          <h2 style="color: #0f172a;">Your Valley Science Parent Account is Ready</h2>
-          <p>A parent monitoring account has been created for you to track <strong>${studentName || "your student"}'s</strong> science progress.</p>
-          <p>Click the button below to set your password and access your dashboard:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: #ec4899; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">Set Your Password</a>
-          </div>
-          <div style="background: #f8fafc; padding: 16px; border-radius: 10px; margin: 20px 0;">
-            <p style="margin: 0; font-size: 14px; color: #475569;"><strong>To log in after setting your password:</strong></p>
-            <ol style="font-size: 14px; color: #475569; margin: 8px 0 0;">
-              <li>Go to the Valley Science login page</li>
-              <li>Select <strong>Individual Access → Parent</strong></li>
-              <li>Enter your email: <strong>${parentEmail}</strong></li>
-            </ol>
-          </div>
-          <p style="color: #94a3b8; font-size: 13px;">If you didn't expect this email, you can safely ignore it.</p>
-          <p style="color: #94a3b8; font-size: 13px;">If the button doesn't work, copy this link: <a href="${resetLink}">${resetLink}</a></p>
-        </div>
-      `;
-
-      await sendValleyScienceEmail({
-        to: parentEmail,
-        subject: `${studentName || "Your student"} just joined Valley Science — Set up your parent account`,
-        html: emailHtml,
-        text: `Set your Valley Science parent password: ${resetLink}`,
-        context: "provision-parent"
+      const accessPath = path === "district" ? "district" : "individual";
+      const result = await provisionParentForStudent(adminAuth, adminDb, sendValleyScienceEmail, {
+        studentUid,
+        studentName,
+        parentEmail,
+        studentGrade,
+        path: accessPath,
+        districtId: accessPath === "district" ? districtId : undefined,
       });
-
-      res.json({ success: true, parentDocId });
+      console.log(`[PROVISION] Created/updated parent profile at Auth UID: ${result.parentUid}`);
+      res.json({ success: true, parentDocId: result.parentDocId, parentUid: result.parentUid });
     } catch (error: any) {
       console.error("Parent provisioning error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/provision-district-parent", async (req, res) => {
+    const { teacherUid, studentUid, parentEmail, parentName } = req.body;
+    if (!teacherUid || !studentUid || !parentEmail) {
+      return res.status(400).json({ error: "teacherUid, studentUid, and parentEmail are required" });
+    }
+
+    try {
+      const [teacherSnap, studentSnap] = await Promise.all([
+        adminDb.collection("users").doc(teacherUid).get(),
+        adminDb.collection("users").doc(studentUid).get(),
+      ]);
+      if (!teacherSnap.exists || teacherSnap.data()?.role !== "teacher") {
+        return res.status(403).json({ error: "Teacher not found" });
+      }
+      if (!studentSnap.exists || studentSnap.data()?.role !== "student") {
+        return res.status(404).json({ error: "Student not found" });
+      }
+
+      const student = studentSnap.data()!;
+      if (student.path !== "district") {
+        return res.status(400).json({ error: "Student is not a district account" });
+      }
+
+      const teacherClassrooms: string[] = teacherSnap.data()?.classroomIds || [];
+      const studentClassrooms: string[] = student.classroomIds || [];
+      const sharesClassroom = studentClassrooms.some((id) => teacherClassrooms.includes(id));
+      if (!sharesClassroom && student.teacherUid !== teacherUid) {
+        return res.status(403).json({ error: "Student is not in your class" });
+      }
+
+      const districtId = student.districtId || teacherSnap.data()?.districtId;
+      const result = await provisionParentForStudent(adminAuth, adminDb, sendValleyScienceEmail, {
+        studentUid,
+        studentName: student.name,
+        parentEmail,
+        parentName,
+        studentGrade: student.grade,
+        path: "district",
+        districtId,
+      });
+
+      res.json({ success: true, parentUid: result.parentUid });
+    } catch (error: any) {
+      console.error("District parent provisioning error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -1029,11 +1018,13 @@ async function startServer() {
 
       // 3. Create user in Auth if not exists
       if (!userExists) {
-        await adminAuth.createUser({
+        const role = userData.role || "parent";
+        await createAuthUserWithRoleLabels(adminAuth, {
           email,
           emailVerified: true,
-          displayName: userData.name || "Parent User",
-          password: Math.random().toString(36).slice(-12) + "A1!"
+          role,
+          name: userData.name || "User",
+          password: Math.random().toString(36).slice(-12) + "A1!",
         });
         console.log(`[AUTH-SYSTEM] Created new Auth user for activation: ${email}`);
       }
@@ -1938,9 +1929,15 @@ async function startServer() {
         const existing = await adminAuth.getUserByEmail(demoEmail);
         studentUid = existing.uid;
         await adminAuth.updateUser(studentUid, { password: tempPassword });
+        await syncAuthUserRoleLabels(adminAuth, studentUid, "student", data.name);
       } catch {
-        const u = await adminAuth.createUser({ email: demoEmail, password: tempPassword, displayName: data.name });
-        studentUid = u.uid;
+        const created = await createAuthUserWithRoleLabels(adminAuth, {
+          email: demoEmail,
+          password: tempPassword,
+          role: "student",
+          name: data.name,
+        });
+        studentUid = created.uid;
       }
 
       const studentProfile = {
@@ -1957,9 +1954,15 @@ async function startServer() {
         const p = await adminAuth.getUserByEmail(parentEmail);
         parentUid = p.uid;
         await adminAuth.updateUser(parentUid, { password: tempPassword });
+        await syncAuthUserRoleLabels(adminAuth, parentUid, "parent", `Parent of ${data.name}`);
       } catch {
-        const p = await adminAuth.createUser({ email: parentEmail, password: tempPassword, displayName: `Parent of ${data.name}` });
-        parentUid = p.uid;
+        const created = await createAuthUserWithRoleLabels(adminAuth, {
+          email: parentEmail,
+          password: tempPassword,
+          role: "parent",
+          name: `Parent of ${data.name}`,
+        });
+        parentUid = created.uid;
       }
       await adminDb.collection("users").doc(parentUid).set({
         uid: parentUid, linkedStudentUid: studentUid, linkedStudentUids: [studentUid], activeStudentUid: studentUid,
@@ -2049,12 +2052,19 @@ async function startServer() {
   app.post("/api/parent-create-student", async (req, res) => {
     const { parentUid, name, username, email, password, grade } = req.body;
     if (!parentUid || !name || !email || !password) return res.status(400).json({ error: "Missing required fields" });
+    const passwordError = getPasswordValidationError(password);
+    if (passwordError) return res.status(400).json({ error: passwordError });
     try {
       const parentSnap = await adminDb.collection("users").doc(parentUid).get();
       if (!parentSnap.exists || parentSnap.data()?.role !== "parent") return res.status(403).json({ error: "Not a parent account" });
 
-      const userCred = await adminAuth.createUser({ email, password, displayName: name });
-      const studentUid = userCred.uid;
+      const created = await createAuthUserWithRoleLabels(adminAuth, {
+        email,
+        password,
+        role: "student",
+        name,
+      });
+      const studentUid = created.uid;
       const parentData = parentSnap.data()!;
 
       await adminDb.collection("users").doc(studentUid).set({
@@ -2716,11 +2726,19 @@ async function startServer() {
   // ==========================================
   const DEFAULT_ROSTER_PASSWORD = "Sandbox123!";
 
-  async function getOrCreateDistrictAuthUser(email: string, password: string, displayName: string) {
+  async function getOrCreateDistrictAuthUser(
+    email: string,
+    password: string,
+    name: string,
+    role: "student" | "teacher" | "parent" = "student"
+  ) {
     try {
-      return (await adminAuth.getUserByEmail(email)).uid;
+      const uid = (await adminAuth.getUserByEmail(email)).uid;
+      await syncAuthUserRoleLabels(adminAuth, uid, role, name);
+      return uid;
     } catch {
-      return (await adminAuth.createUser({ email, password, displayName })).uid;
+      const created = await createAuthUserWithRoleLabels(adminAuth, { email, password, role, name });
+      return created.uid;
     }
   }
 
@@ -2745,7 +2763,7 @@ async function startServer() {
     const { classroomId, teacherUid, rows } = req.body as {
       classroomId?: string;
       teacherUid?: string;
-      rows?: { name?: string; email?: string; grade?: string; username?: string }[];
+      rows?: { name?: string; email?: string; grade?: string; username?: string; parentEmail?: string }[];
     };
     if (!classroomId || !teacherUid || !Array.isArray(rows) || rows.length === 0) {
       return res.status(400).json({ error: "classroomId, teacherUid, and rows[] required" });
@@ -2769,12 +2787,14 @@ async function startServer() {
       const existingUids: string[] = classData.studentUids || [];
       const added: string[] = [];
       const linked: string[] = [];
+      const parentsProvisioned: string[] = [];
       const skipped: string[] = [];
       const errors: { email: string; error: string }[] = [];
 
       for (const row of rows) {
         const name = (row.name || "").trim();
         const email = (row.email || "").trim().toLowerCase();
+        const parentEmail = (row.parentEmail || "").trim().toLowerCase();
         if (!name || !email) {
           skipped.push(email || name || "(blank row)");
           continue;
@@ -2784,8 +2804,9 @@ async function startServer() {
           let uid: string;
           try {
             uid = (await adminAuth.getUserByEmail(email)).uid;
+            await syncAuthUserRoleLabels(adminAuth, uid, "student", name);
           } catch {
-            uid = await getOrCreateDistrictAuthUser(email, DEFAULT_ROSTER_PASSWORD, name);
+            uid = await getOrCreateDistrictAuthUser(email, DEFAULT_ROSTER_PASSWORD, name, "student");
           }
 
           const username = (row.username || slugUsername(name, email)).slice(0, 32);
@@ -2806,6 +2827,7 @@ async function startServer() {
             classroomIds: [classroomId],
             teacherUid,
             demoPassword: DEFAULT_ROSTER_PASSWORD,
+            ...(parentEmail ? { parentEmail } : {}),
             createdAt: new Date().toISOString(),
           }, { merge: true });
 
@@ -2817,12 +2839,25 @@ async function startServer() {
           } else {
             linked.push(uid);
           }
+
+          if (parentEmail) {
+            const parentResult = await provisionParentForStudent(adminAuth, adminDb, sendValleyScienceEmail, {
+              studentUid: uid,
+              studentName: name,
+              parentEmail,
+              studentGrade: grade,
+              path: "district",
+              districtId,
+              initialPassword: DEFAULT_ROSTER_PASSWORD,
+            });
+            parentsProvisioned.push(parentResult.parentUid);
+          }
         } catch (err: any) {
           errors.push({ email, error: err.message });
         }
       }
 
-      res.json({ success: true, added, linked, skipped, errors });
+      res.json({ success: true, added, linked, parentsProvisioned, skipped, errors });
     } catch (error: any) {
       console.error("Roster sync error:", error);
       res.status(500).json({ error: error.message });
@@ -2852,10 +2887,11 @@ async function startServer() {
   // ==========================================
   // DISTRICT SANDBOX SEED
   // ==========================================
-  const SANDBOX_VERSION = 1;
+  const SANDBOX_VERSION = 2;
   const SANDBOX_TEACHER_EMAIL = "sandbox.teacher@valley-science.demo";
   const SANDBOX_PASSWORD = "Sandbox123!";
   const SANDBOX_STUDENT_EMAIL = "sandbox.student1@valley-science.demo";
+  const SANDBOX_PARENT_EMAIL = "sandbox.parent@valley-science.demo";
   const SANDBOX_FAKE_NAMES = ["Alex M.", "Jordan K.", "Sam R.", "Taylor L.", "Casey P.", "Riley N.", "Morgan B.", "Quinn D."];
   let sandboxSeedInFlight: Promise<void> | null = null;
 
@@ -2867,14 +2903,24 @@ async function startServer() {
       password: SANDBOX_PASSWORD,
       studentEmail: SANDBOX_STUDENT_EMAIL,
       studentPassword: SANDBOX_PASSWORD,
+      parentEmail: SANDBOX_PARENT_EMAIL,
+      parentPassword: SANDBOX_PASSWORD,
     };
   }
 
-  async function getOrCreateSandboxAuthUser(email: string, password: string, displayName: string) {
+  async function getOrCreateSandboxAuthUser(
+    email: string,
+    password: string,
+    name: string,
+    role: "student" | "teacher" | "parent" = "student"
+  ) {
     try {
-      return (await adminAuth.getUserByEmail(email)).uid;
+      const uid = (await adminAuth.getUserByEmail(email)).uid;
+      await syncAuthUserRoleLabels(adminAuth, uid, role, name);
+      return uid;
     } catch {
-      return (await adminAuth.createUser({ email, password, displayName })).uid;
+      const created = await createAuthUserWithRoleLabels(adminAuth, { email, password, role, name });
+      return created.uid;
     }
   }
 
@@ -2882,7 +2928,8 @@ async function startServer() {
     const teacherUid = await getOrCreateSandboxAuthUser(
       SANDBOX_TEACHER_EMAIL,
       SANDBOX_PASSWORD,
-      "Sandbox Teacher"
+      "Sandbox Teacher",
+      "teacher"
     );
 
     await adminDb.collection("users").doc(teacherUid).set({
@@ -2898,7 +2945,7 @@ async function startServer() {
 
     const studentUids = await Promise.all(SANDBOX_FAKE_NAMES.map(async (name, i) => {
       const email = `sandbox.student${i + 1}@valley-science.demo`;
-      const uid = await getOrCreateSandboxAuthUser(email, SANDBOX_PASSWORD, name);
+      const uid = await getOrCreateSandboxAuthUser(email, SANDBOX_PASSWORD, name, "student");
 
       await adminDb.collection("users").doc(uid).set({
         uid, name, username: `sandbox_s${i + 1}`, email,
@@ -2929,6 +2976,36 @@ async function startServer() {
 
       return uid;
     }));
+
+    const sandboxStudent1Uid = studentUids[0];
+    const parentUid = await getOrCreateSandboxAuthUser(
+      SANDBOX_PARENT_EMAIL,
+      SANDBOX_PASSWORD,
+      "Parent of Alex M.",
+      "parent"
+    );
+    await adminDb.collection("users").doc(parentUid).set({
+      uid: parentUid,
+      name: "Parent of Alex M.",
+      username: "sandbox_parent",
+      email: SANDBOX_PARENT_EMAIL,
+      role: "parent",
+      path: "district",
+      grade: "7",
+      xp: 0,
+      isFirstTime: false,
+      isPaid: true,
+      districtId: "sandbox-district",
+      linkedStudentUid: sandboxStudent1Uid,
+      linkedStudentUids: [sandboxStudent1Uid],
+      activeStudentUid: sandboxStudent1Uid,
+      demoPassword: SANDBOX_PASSWORD,
+      createdAt: new Date().toISOString(),
+    }, { merge: true });
+    await adminDb.collection("users").doc(sandboxStudent1Uid).set({
+      parentUid,
+      parentEmail: SANDBOX_PARENT_EMAIL,
+    }, { merge: true });
 
     await adminDb.collection("classrooms").doc("sandbox-class-1").set({
       id: "sandbox-class-1", name: "Period 3 — Grade 7", teacherUid, districtId: "sandbox-district", grade: "7", studentUids
@@ -3020,6 +3097,27 @@ async function startServer() {
       res.json(sandboxSeedResponse(alreadySeeded));
     } catch (error: any) {
       console.error("Sandbox seed error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ==========================================
+  // ADMIN: Backfill Auth displayName + role claims from Firestore
+  // ==========================================
+  app.post("/api/admin/backfill-auth-role-labels", async (req, res) => {
+    if (!verifyCronSecret(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!process.env.CRON_SECRET) {
+      return res.status(503).json({ error: "CRON_SECRET is not configured" });
+    }
+
+    try {
+      const dryRun = req.query.dryRun === "1" || req.body?.dryRun === true;
+      const result = await backfillAuthRoleLabelsFromFirestore(adminAuth, adminDb, { dryRun });
+      res.json({ ok: true, dryRun, ...result });
+    } catch (error: any) {
+      console.error("Auth role label backfill error:", error);
       res.status(500).json({ error: error.message });
     }
   });

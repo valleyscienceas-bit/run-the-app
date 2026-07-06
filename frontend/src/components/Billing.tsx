@@ -104,7 +104,7 @@ export function Billing({ profile, linkedStudents = [] }: BillingProps) {
                     >
                       <motion.div
                         layout
-                        className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
+                        className="absolute top-1 w-6 h-6 bg-white dark:bg-slate-200 rounded-full shadow-md"
                         animate={{ left: renewOn ? 'calc(100% - 1.75rem)' : '0.25rem' }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                       />

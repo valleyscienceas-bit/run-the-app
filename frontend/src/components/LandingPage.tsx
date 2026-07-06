@@ -254,14 +254,14 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
             <Zap size={16} />
             AI-Native Pedagogical Addendum
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-8">
+          <h1 className="text-6xl md:text-7xl font-black text-slate-900 dark:text-slate-100 leading-[1.1] mb-8">
             Repairing <span className="text-sage-green block md:inline mt-2 md:mt-0">Conceptual Gaps</span> <br className="hidden md:block" /> in Science.
           </h1>
           <p className="text-xl text-slate-700 mb-4 leading-relaxed">
             Valley Science supplements local curricula by identifying where students struggle to visualize dynamics, mapping every interaction to NGSS standards.
           </p>
           <p className="text-sm font-bold text-slate-500 mb-8">
-            Individual access: <span className="text-slate-900">$8/month</span> or <span className="text-slate-900">$90/year</span>
+            Individual access: <span className="text-slate-900 dark:text-slate-100">$8/month</span> or <span className="text-slate-900 dark:text-slate-100">$90/year</span>
           </p>
           <div className="flex flex-wrap gap-4">
             <button 
@@ -309,7 +309,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
                 className="absolute -top-16 -right-20 bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 max-w-[240px] z-10"
               >
                 <div className="absolute -bottom-2 left-10 w-4 h-4 bg-white dark:bg-slate-800 border-b border-r border-slate-100 dark:border-slate-700 rotate-45" />
-                <p className="text-sm font-bold text-slate-900 leading-tight">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
                   "{VALERIE_MESSAGES[messageIndex]}"
                 </p>
               </motion.div>
@@ -322,7 +322,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
       <section id="how-it-works" className="bg-cream/30 py-24 px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-900 mb-4">What Your Child Actually Does</h2>
+            <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-4">What Your Child Actually Does</h2>
             <p className="text-slate-700 max-w-3xl mx-auto leading-relaxed">
               Valley Science is not another worksheet app. Students learn through Socratic AI conversations, interactive simulations, and NGSS-aligned modules — with a parent dashboard that shows real progress.
             </p>
@@ -353,8 +353,8 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
             />
           </div>
 
-          <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl">
-            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+          <div className="bg-white dark:bg-slate-900 rounded-[40px] p-10 border border-slate-100 dark:border-slate-800 shadow-xl dark:shadow-black/20">
+            <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
               <Sparkles className="text-soft-pink" /> What Makes Us Different
             </h3>
             <div className="grid md:grid-cols-3 gap-6">
@@ -371,28 +371,28 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-black text-slate-900 mb-8">Built by Students, <br />For the Future.</h2>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-8">Built by Students, <br />For the Future.</h2>
               <div className="space-y-8">
                 <div className="flex gap-6">
-                  <div className="w-20 h-20 bg-soft-pink/20 rounded-3xl flex-shrink-0 flex items-center justify-center font-black text-2xl text-slate-900">SS</div>
+                  <div className="w-20 h-20 bg-soft-pink/20 rounded-3xl flex-shrink-0 flex items-center justify-center font-black text-2xl text-slate-900 dark:text-slate-100">SS</div>
                   <div>
-                    <h4 className="text-xl font-black text-slate-900">Sidak Soni</h4>
+                    <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">Sidak Soni</h4>
                     <p className="text-slate-500 font-bold text-sm mb-2 uppercase tracking-widest">Co-Founder</p>
                     <p className="text-slate-700 leading-relaxed">Sidak is a freshman in high school from the South Bay Area. He built Valley Science because he saw classmates memorize definitions without ever understanding how science actually works — and wanted to fix that from a student's perspective.</p>
                   </div>
                 </div>
                 <div className="flex gap-6">
-                  <div className="w-20 h-20 bg-sage-green/20 rounded-3xl flex-shrink-0 flex items-center justify-center font-black text-2xl text-slate-900">AS</div>
+                  <div className="w-20 h-20 bg-sage-green/20 rounded-3xl flex-shrink-0 flex items-center justify-center font-black text-2xl text-slate-900 dark:text-slate-100">AS</div>
                   <div>
-                    <h4 className="text-xl font-black text-slate-900">Ankan Shah</h4>
+                    <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">Ankan Shah</h4>
                     <p className="text-slate-500 font-bold text-sm mb-2 uppercase tracking-widest">Co-Founder</p>
                     <p className="text-slate-700 leading-relaxed">Ankan is a freshman in high school from the South Bay Area. He handles the technical side — building the AI integration, backend infrastructure, and the platform that makes Valerie and the curriculum work seamlessly.</p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-white p-8 rounded-[40px] shadow-2xl border border-slate-100">
-              <div className="aspect-video bg-slate-100 rounded-3xl mb-8 flex items-center justify-center overflow-hidden relative">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] shadow-2xl dark:shadow-black/30 border border-slate-100 dark:border-slate-800">
+              <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-3xl mb-8 flex items-center justify-center overflow-hidden relative">
                 <iframe 
                   width="100%" 
                   height="100%" 
@@ -412,7 +412,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
       {/* Pricing/Plans */}
       <section id="plans" className="py-24 px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-slate-900 mb-4">Choose Your Path</h2>
+          <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-4">Choose Your Path</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <PricingCard 
@@ -460,13 +460,13 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-[40px] shadow-2xl dark:shadow-black/30 border border-slate-100 dark:border-slate-800 overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <div className="p-12">
                 {activeForm === 'district' && (
                   <>
-                    <h2 className="text-3xl font-black text-slate-900 mb-2">District Inquiry</h2>
-                    <p className="text-slate-500 font-medium mb-8">Bring Valley Science to your school or district.</p>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2">District Inquiry</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium mb-8">Bring Valley Science to your school or district.</p>
                     <form className="space-y-4" onSubmit={(e) => handleInquirySubmit(e, 'district')}>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
@@ -546,7 +546,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
 
                 {activeForm === 'contact' && (
                   <>
-                    <h2 className="text-3xl font-black text-slate-900 mb-2">Contact Us</h2>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2">Contact Us</h2>
                     <p className="text-slate-500 font-medium mb-8">Have a question? We'd love to hear from you.</p>
                     <form className="space-y-4" onSubmit={(e) => handleInquirySubmit(e, 'contact')}>
                       <div className="space-y-2">
@@ -589,7 +589,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
 
                 {activeForm === 'demo' && (
                   <>
-                    <h2 className="text-3xl font-black text-slate-900 mb-2">Request a Demo</h2>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2">Request a Demo</h2>
                     <p className="text-slate-500 font-medium mb-8">Try Valley Science before you commit. We'll email you when your demo is approved.</p>
                     <form className="space-y-4" onSubmit={handleDemoSubmit}>
                       <div className="space-y-2">
@@ -619,7 +619,7 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
 
                 {activeForm === 'feedback' && (
                   <>
-                    <h2 className="text-3xl font-black text-slate-900 mb-2">Feedback</h2>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2">Feedback</h2>
                     <p className="text-slate-500 font-medium mb-8">Help us improve Valerie and Valley Science.</p>
                     <form className="space-y-4" onSubmit={handleFeedbackSubmit}>
                       <div className="space-y-2">
@@ -752,12 +752,12 @@ export function LandingPage({ onLoginClick, onSignUpClick, demoApprovalNotice, o
 
 function ProductBlock({ icon, title, description, placeholder }: { icon: React.ReactNode, title: string, description: string, placeholder?: string }) {
   return (
-    <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-lg">
-      <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-5">{icon}</div>
-      <h3 className="text-xl font-black text-slate-900 mb-3">{title}</h3>
-      <p className="text-slate-700 leading-relaxed mb-4">{description}</p>
+    <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg dark:shadow-black/20">
+      <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-5">{icon}</div>
+      <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-3">{title}</h3>
+      <p className="text-slate-700 dark:text-slate-400 leading-relaxed mb-4">{description}</p>
       {placeholder && (
-        <div className="aspect-video bg-slate-100 rounded-2xl flex items-center justify-center border border-dashed border-slate-200">
+        <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-dashed border-slate-200 dark:border-slate-700">
           <p className="text-xs font-bold text-slate-400">{placeholder}</p>
         </div>
       )}
@@ -768,35 +768,35 @@ function ProductBlock({ icon, title, description, placeholder }: { icon: React.R
 function DiffItem({ title, text }: { title: string, text: string }) {
   return (
     <div>
-      <h4 className="font-black text-slate-900 mb-2">{title}</h4>
-      <p className="text-sm text-slate-700 leading-relaxed">{text}</p>
+      <h4 className="font-black text-slate-900 dark:text-slate-100 mb-2">{title}</h4>
+      <p className="text-sm text-slate-700 dark:text-slate-400 leading-relaxed">{text}</p>
     </div>
   );
 }
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="p-8 bg-cream/30 rounded-3xl border border-slate-100 hover:shadow-xl transition-all">
-      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+    <div className="p-8 bg-cream/30 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-black/20 transition-all">
+      <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
-      <p className="text-slate-600 leading-relaxed">{description}</p>
+      <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">{title}</h3>
+      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
     </div>
   );
 }
 
 function PricingCard({ title, price, subPrice, features, buttonText, highlight = false, onClick, secondaryButtonText, onSecondaryClick }: { title: string, price: string, subPrice?: string, features: string[], buttonText: string, highlight?: boolean, onClick?: () => void, secondaryButtonText?: string, onSecondaryClick?: () => void }) {
   return (
-    <div className={`p-10 rounded-[40px] border-2 ${highlight ? 'border-sage-green bg-white shadow-2xl scale-105' : 'border-slate-200 bg-white/50'}`}>
-      <h3 className="text-2xl font-black text-slate-900 mb-2">{title}</h3>
+    <div className={`p-10 rounded-[40px] border-2 ${highlight ? 'border-sage-green bg-white dark:bg-slate-900 shadow-2xl dark:shadow-black/30 scale-105' : 'border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50'}`}>
+      <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">{title}</h3>
       <div className="flex flex-col mb-8">
-        <div className="text-4xl font-black text-slate-900">{price}</div>
+        <div className="text-4xl font-black text-slate-900 dark:text-slate-100">{price}</div>
         {subPrice && <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{subPrice}</div>}
       </div>
       <ul className="space-y-4 mb-10">
         {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-3 text-slate-700 font-medium">
+          <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-400 font-medium">
             <CheckCircle2 size={20} className="text-sage-green" />
             {f}
           </li>

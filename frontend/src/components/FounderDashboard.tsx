@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts';
 import { DollarSign, Users, School, TrendingUp, Activity, ShieldCheck, Mail, ExternalLink, Copy, Check, RefreshCw } from 'lucide-react';
+import { chartTooltipStyle, chartAxisColors, chartGridColor, useIsDarkMode } from '../lib/chartTheme';
+import { GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 const REVENUE_DATA = [
   { month: 'Jan', rev: 12000 },
@@ -33,6 +35,8 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
   const [loadingDemos, setLoadingDemos] = useState(true);
   const [demoLoadError, setDemoLoadError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const isDark = useIsDarkMode();
+  const tooltipProps = chartTooltipStyle(isDark);
 
   const loadPendingDemos = async () => {
     setLoadingDemos(true);
@@ -68,31 +72,31 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-2">Founder Command Center</h1>
-          <p className="text-lg text-slate-600 font-medium">Monitoring Valley Science growth and unit economics.</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">Founder Command Center</h1>
+          <p className="text-lg text-slate-600 dark:text-slate-400 font-medium">Monitoring Valley Science growth and unit economics.</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold">
+        <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-sm font-bold">
           <ShieldCheck size={18} />
           Admin Verified
         </div>
       </header>
 
       {/* Pending demo requests */}
-      <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-xl font-black flex items-center gap-2">
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Mail size={22} className="text-soft-pink" />
               Pending Demo Requests
             </h3>
-            <p className="text-sm text-slate-500 font-medium mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
               Approve here if the email didn&apos;t arrive{adminEmail ? ` (notifications go to ${adminEmail})` : ''}.
             </p>
           </div>
           <button
             onClick={loadPendingDemos}
             disabled={loadingDemos}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 disabled:opacity-50"
+            className={GHOST_BUTTON_CLASS}
           >
             <RefreshCw size={16} className={loadingDemos ? 'animate-spin' : ''} />
             Refresh
@@ -100,22 +104,22 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
         </div>
 
         {demoLoadError && (
-          <p className="text-sm font-bold text-red-600 mb-4">{demoLoadError}</p>
+          <p className="text-sm font-bold text-red-600 dark:text-red-400 mb-4">{demoLoadError}</p>
         )}
 
         {loadingDemos ? (
-          <p className="text-slate-500 font-medium">Loading demo requests…</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Loading demo requests…</p>
         ) : pendingDemos.length === 0 ? (
-          <p className="text-slate-500 font-medium">No pending demo requests right now.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">No pending demo requests right now.</p>
         ) : (
           <div className="space-y-4">
             {pendingDemos.map((request) => (
-              <div key={request.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/80">
+              <div key={request.id} className="p-5 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="font-black text-slate-900">{request.name}</p>
-                    <p className="text-sm font-bold text-slate-500">{request.email}</p>
-                    <p className="text-sm text-slate-600 mt-2">{request.reason}</p>
+                    <p className="font-black text-slate-900 dark:text-slate-100">{request.name}</p>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{request.email}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{request.reason}</p>
                     <p className="text-xs text-slate-400 font-bold mt-2">
                       Requested {request.requestedAt ? new Date(request.requestedAt).toLocaleString() : 'recently'}
                     </p>
@@ -132,7 +136,7 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
                     </a>
                     <button
                       onClick={() => copyApproveLink(request)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700"
                     >
                       {copiedId === request.id ? <Check size={14} /> : <Copy size={14} />}
                       {copiedId === request.id ? 'Copied' : 'Copy link'}
@@ -174,19 +178,22 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-          <h3 className="text-xl font-black mb-8 flex items-center gap-2">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20">
+          <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-8 flex items-center gap-2">
             <Activity size={24} className="text-blue-600" />
             Revenue Growth
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={REVENUE_DATA}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 700 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 700 }} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 700 }}
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor(isDark)} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartAxisColors(isDark), fontWeight: 700 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartAxisColors(isDark), fontWeight: 700 }} />
+                <Tooltip
+                  cursor={tooltipProps.cursor}
+                  contentStyle={tooltipProps.contentStyle}
+                  labelStyle={tooltipProps.labelStyle}
+                  itemStyle={tooltipProps.itemStyle}
                 />
                 <Line type="monotone" dataKey="rev" stroke="#2563eb" strokeWidth={4} dot={{ r: 6, fill: '#2563eb' }} />
               </LineChart>
@@ -194,17 +201,19 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
           </div>
         </div>
 
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-          <h3 className="text-xl font-black mb-8">User Composition</h3>
+        <div className="bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20">
+          <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-8">User Composition</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={USER_STATS} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={chartGridColor(isDark)} />
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 700 }} />
-                <Tooltip 
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: chartAxisColors(isDark), fontWeight: 700 }} />
+                <Tooltip
+                  cursor={tooltipProps.cursor}
+                  contentStyle={tooltipProps.contentStyle}
+                  labelStyle={tooltipProps.labelStyle}
+                  itemStyle={tooltipProps.itemStyle}
                 />
                 <Bar dataKey="value" radius={[0, 10, 10, 0]}>
                   {USER_STATS.map((entry, index) => (
@@ -215,10 +224,10 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
             </ResponsiveContainer>
           </div>
           <div className="mt-8 space-y-4">
-            <div className="p-4 bg-cream rounded-2xl">
+            <div className="p-4 bg-cream dark:bg-slate-800 rounded-2xl">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Pricing Strategy</p>
-              <p className="text-sm font-bold text-slate-700">District: $12/student/year</p>
-              <p className="text-sm font-bold text-slate-700">Individual: $19/month</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">District: $12/student/year</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Individual: $19/month</p>
             </div>
           </div>
         </div>
@@ -229,13 +238,13 @@ export function FounderDashboard({ founderUid }: FounderDashboardProps) {
 
 function FounderStatCard({ icon, label, value, subtext }: { icon: React.ReactNode, label: string, value: string, subtext: string }) {
   return (
-    <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-      <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6">
+    <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20">
+      <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6">
         {icon}
       </div>
       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-      <h4 className="text-3xl font-black text-slate-900 mb-1">{value}</h4>
-      <p className="text-sm text-slate-500 font-bold">{subtext}</p>
+      <h4 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{value}</h4>
+      <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">{subtext}</p>
     </div>
   );
 }

@@ -353,9 +353,9 @@ function StatCard({ icon, label, value, subtext, accent, onClick }: {
   icon: React.ReactNode; label: string; value: string; subtext: string; accent?: string; onClick?: () => void;
 }) {
   const accentMap: Record<string, string> = {
-    green: 'bg-sage-green/10', blue: 'bg-blue-50', pink: 'bg-soft-pink/10', orange: 'bg-orange-50', purple: 'bg-purple-50', yellow: 'bg-yellow-50',
+    green: 'bg-sage-green/10 dark:bg-sage-green/15', blue: 'bg-blue-50 dark:bg-blue-950/30', pink: 'bg-soft-pink/10 dark:bg-soft-pink/15', orange: 'bg-orange-50 dark:bg-orange-950/30', purple: 'bg-purple-50 dark:bg-purple-950/30', yellow: 'bg-yellow-50 dark:bg-yellow-950/30',
   };
-  const bg = accent ? accentMap[accent] || 'bg-slate-50' : 'bg-slate-50';
+  const bg = accent ? accentMap[accent] || 'bg-slate-50 dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800';
   return (
     <button type="button" onClick={onClick} className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-black/20 hover:scale-105 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-black/40 hover:border-soft-pink/30 transition-all duration-200 flex flex-col text-left w-full cursor-pointer">
       <div className={`w-11 h-11 ${bg} rounded-2xl flex items-center justify-center mb-5`}>{icon}</div>

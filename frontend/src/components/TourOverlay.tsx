@@ -20,11 +20,11 @@ export function TourOverlay({ steps, onComplete, onDismiss }: TourOverlayProps) 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-8 relative">
-        <button onClick={onDismiss} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500"><X size={22} /></button>
+      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[32px] shadow-2xl p-8 relative border border-slate-100 dark:border-slate-700">
+        <button onClick={onDismiss} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-300"><X size={22} /></button>
         <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-2">Step {index + 1} of {steps.length}</p>
-        <h3 className="text-2xl font-black text-slate-900 mb-3">{step.title}</h3>
-        <p className="text-slate-700 leading-relaxed mb-8">{step.body}</p>
+        <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-3">{step.title}</h3>
+        <p className="text-slate-700 dark:text-slate-400 leading-relaxed mb-8">{step.body}</p>
         <div className="flex gap-3">
           {index > 0 && (
             <button onClick={() => setIndex(i => i - 1)} className={TOUR_BACK_BUTTON_CLASS}>
@@ -33,7 +33,7 @@ export function TourOverlay({ steps, onComplete, onDismiss }: TourOverlayProps) 
           )}
           <button
             onClick={() => isLast ? onComplete() : setIndex(i => i + 1)}
-            className="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-black flex items-center justify-center gap-1"
+            className="flex-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-3 rounded-2xl font-black flex items-center justify-center gap-1 hover:opacity-90 transition-all"
           >
             {isLast ? 'Finish Tour' : <>Next <ChevronRight size={18} /></>}
           </button>

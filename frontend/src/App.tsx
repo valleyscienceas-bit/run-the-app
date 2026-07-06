@@ -1082,10 +1082,10 @@ export default function App() {
 
   if (demoExpired) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center p-8">
-        <div className="bg-white max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl border border-slate-100">
-          <h2 className="text-3xl font-black text-slate-900 mb-4">Demo Ended</h2>
-          <p className="text-slate-600 font-medium mb-8 leading-relaxed">
+      <div className="min-h-screen bg-cream dark:bg-slate-950 flex items-center justify-center p-8">
+        <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl dark:shadow-black/30 border border-slate-100 dark:border-slate-800">
+          <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-4">Demo Ended</h2>
+          <p className="text-slate-600 dark:text-slate-400 font-medium mb-8 leading-relaxed">
             Your 48-hour demo access has expired. We'd love to hear your feedback, and you can sign up anytime for full access at $8/month or $90/year.
           </p>
           <button onClick={() => { setDemoExpired(false); handleLogout(); }} className={`w-full ${TEXT_LINK_CLASS} py-3 mb-4 hover:text-soft-pink dark:hover:text-soft-pink`}>
@@ -1163,19 +1163,19 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl"
+            className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-[40px] p-12 text-center shadow-2xl dark:shadow-black/30 border border-slate-100 dark:border-slate-800"
           >
-            <div className="w-20 h-20 bg-soft-pink/10 rounded-full flex items-center justify-center mx-auto mb-8">
+            <div className="w-20 h-20 bg-soft-pink/10 dark:bg-soft-pink/15 rounded-full flex items-center justify-center mx-auto mb-8">
               <Brain size={40} className="text-soft-pink" />
             </div>
-            <h2 className="text-3xl font-black text-slate-900 mb-4">Welcome to Valley Science!</h2>
-            <p className="text-slate-600 font-medium leading-relaxed mb-4">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-4">Welcome to Valley Science!</h2>
+            <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-4">
               Before you start, you need to take a quick placement test. This helps Valerie identify your conceptual gaps and build a personalized learning path just for you.
             </p>
             <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-10">Required to get started</p>
             <button 
               onClick={() => { setShowPlacementPopup(false); handleStartTest('placement'); }}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black hover:opacity-90 transition-all"
             >
               Start Placement Test
             </button>
@@ -1201,21 +1201,21 @@ export default function App() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white max-w-2xl w-full rounded-[40px] p-12 text-center shadow-2xl"
+                className="bg-white dark:bg-slate-900 max-w-2xl w-full rounded-[40px] p-12 text-center shadow-2xl dark:shadow-black/30 border border-slate-100 dark:border-slate-800"
               >
-                <div className="w-20 h-20 bg-sage-green/10 rounded-full flex items-center justify-center mx-auto mb-8 text-sage-green">
+                <div className="w-20 h-20 bg-sage-green/10 dark:bg-sage-green/15 rounded-full flex items-center justify-center mx-auto mb-8 text-sage-green">
                   <ClipboardCheck size={40} />
                 </div>
-                <h2 className="text-4xl font-black text-slate-900 mb-2">{lastTestResult.score}%</h2>
-                <h3 className="text-2xl font-black text-slate-900 mb-4">Test Results</h3>
-                <p className="text-slate-600 font-medium mb-8">
+                <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">{lastTestResult.score}%</h2>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-4">Test Results</h3>
+                <p className="text-slate-600 dark:text-slate-400 font-medium mb-8">
                   {lastTestResult.type === 'placement' ? 'Benchmark complete.' : 'Assessment complete.'} Valerie has updated your stats with {lastTestResult.gaps.length} identified gaps.
                 </p>
-                <div className="bg-slate-50 p-6 rounded-3xl text-left mb-8 max-h-40 overflow-y-auto">
+                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-3xl text-left mb-8 max-h-40 overflow-y-auto">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Identified Gaps</p>
                   <ul className="space-y-2">
                     {lastTestResult.gaps.map((gap, i) => (
-                      <li key={i} className="text-sm font-bold text-slate-700 flex items-start gap-2">
+                      <li key={i} className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-soft-pink rounded-full mt-1.5 shrink-0" />
                         {gap}
                       </li>
@@ -1224,7 +1224,7 @@ export default function App() {
                 </div>
                 <button 
                   onClick={() => setLastTestResult(null)}
-                  className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all"
+                  className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black hover:opacity-90 transition-all"
                 >
                   Continue to Learning Path
                 </button>
@@ -1421,6 +1421,7 @@ export default function App() {
           overview={studentOverview}
           loading={overviewLoading}
           parentUid={effectiveParentUid || user.uid}
+          readOnly={appState.path === 'district'}
           onDeleteStudent={handleDeleteStudent}
           onSwitchStudent={handleSwitchStudent}
           onAddStudent={handleAddStudent}
@@ -1428,7 +1429,7 @@ export default function App() {
         />
       )}
 
-      {activeTab === 'billing' && effectiveRole === 'parent' && (
+      {activeTab === 'billing' && effectiveRole === 'parent' && appState.path !== 'district' && (
         <Billing profile={appState.profile} linkedStudents={studentOverview?.linkedStudents} />
       )}
 
