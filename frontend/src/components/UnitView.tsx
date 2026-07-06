@@ -107,7 +107,7 @@ export function UnitView({ unit, progress, onBack, onSelectModule, onTakeUnitTes
         <button
           type="button"
           onClick={() => onTakeUnitTest(unit)}
-          className="bg-white text-slate-900 px-10 py-5 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap"
+          className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-10 py-5 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap"
         >
           Take Unit Test <ArrowRight size={20} />
         </button>

@@ -43,39 +43,39 @@ export function ClassTestsTab({ classroomId }: ClassTestsTabProps) {
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
       <header>
-        <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Class Tests</h1>
-        <p className="text-xl text-slate-700 font-medium">Class-wide averages and frequently missed questions.</p>
+        <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">Class Tests</h1>
+        <p className="text-xl text-slate-700 dark:text-slate-400 font-medium">Class-wide averages and frequently missed questions.</p>
       </header>
 
       {!analytics ? (
-        <div className="bg-white p-12 rounded-[40px] border border-slate-100 text-center">
-          <BarChart2 size={40} className="text-slate-300 mx-auto mb-4" />
-          <p className="font-black text-slate-500">No test data available for this classroom yet.</p>
+        <div className="bg-white dark:bg-slate-900 p-12 rounded-[40px] border border-slate-100 dark:border-slate-800 text-center">
+          <BarChart2 size={40} className="text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+          <p className="font-black text-slate-500 dark:text-slate-400">No test data available for this classroom yet.</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-lg">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg dark:shadow-black/20">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Class Average</p>
               <p className="text-5xl font-black text-sage-green">{analytics.classAverage}%</p>
             </div>
-            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-lg">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-lg dark:shadow-black/20">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tests Completed</p>
-              <p className="text-5xl font-black text-slate-900">{analytics.testsTaken}</p>
+              <p className="text-5xl font-black text-slate-900 dark:text-slate-100">{analytics.testsTaken}</p>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
-            <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl dark:shadow-black/20">
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
               <AlertTriangle size={20} className="text-orange-500" /> Frequently Missed Questions
             </h3>
             {analytics.frequentMisses.length === 0 ? (
-              <p className="text-slate-500 font-medium">No missed-question data yet.</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No missed-question data yet.</p>
             ) : (
               <ul className="space-y-3">
                 {analytics.frequentMisses.map((m, i) => (
-                  <li key={i} className="p-4 bg-orange-50 border border-orange-100 rounded-2xl flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-700">{m.question}</span>
+                  <li key={i} className="p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-2xl flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{m.question}</span>
                     <span className="text-xs font-black text-orange-500 uppercase tracking-widest">{m.count} misses</span>
                   </li>
                 ))}

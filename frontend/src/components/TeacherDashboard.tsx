@@ -9,6 +9,7 @@ import { reconcileTotalPoints } from '../lib/points';
 import { BACK_LINK_CLASS, GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 import { formatLearningTime } from '../lib/learningStats';
 import { computeOpenAndClosedGaps } from '../lib/learningContext';
+import { parseRosterCsv } from '../lib/rosterCsv';
 
 interface TeacherDashboardProps {
   students: StudentOverview[];
@@ -18,31 +19,6 @@ interface TeacherDashboardProps {
   selectedOverview: StudentOverview | null;
   onRefresh: () => void;
   onNotificationsChange?: (count: number) => void;
-}
-
-function parseCsvRows(text: string): { name: string; email: string; grade?: string; username?: string }[] {
-  const lines = text.trim().split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) return [];
-
-  const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-  const nameIdx = header.findIndex(h => h === 'name');
-  const emailIdx = header.findIndex(h => h === 'email');
-  const gradeIdx = header.findIndex(h => h === 'grade');
-  const usernameIdx = header.findIndex(h => h === 'username');
-  if (nameIdx < 0 || emailIdx < 0) return [];
-
-  const parseCell = (line: string, idx: number): string => {
-    const cells = line.match(/("([^"]|"")*"|[^,]*)/g) || [];
-    const raw = (cells[idx] || '').trim();
-    return raw.replace(/^"|"$/g, '').replace(/""/g, '"');
-  };
-
-  return lines.slice(1).map(line => ({
-    name: parseCell(line, nameIdx),
-    email: parseCell(line, emailIdx),
-    grade: gradeIdx >= 0 ? parseCell(line, gradeIdx) : undefined,
-    username: usernameIdx >= 0 ? parseCell(line, usernameIdx) : undefined,
-  })).filter(r => r.name && r.email);
 }
 
 export function TeacherDashboard({
@@ -124,7 +100,7 @@ export function TeacherDashboard({
     setMessage(null);
     try {
       const text = await file.text();
-      const rows = parseCsvRows(text);
+      const rows = parseRosterCsv(text);
       if (rows.length === 0) throw new Error('CSV must include Name and Email columns with at least one data row.');
 
       const res = await fetch('/api/sync-class-roster', {
@@ -137,9 +113,11 @@ export function TeacherDashboard({
 
       const added = data.added?.length || 0;
       const linked = data.linked?.length || 0;
+      const parents = data.parentsProvisioned?.length || 0;
       const errCount = data.errors?.length || 0;
       setMessage(
         `Roster import complete: ${added} added, ${linked} already in class` +
+        (parents ? `, ${parents} parent(s) linked` : '') +
         (errCount ? `, ${errCount} error(s).` : '.')
       );
       onRefresh();

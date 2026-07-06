@@ -5,10 +5,13 @@ import { Users, School, ArrowLeft, GraduationCap, UserCircle, Briefcase, ShieldC
 import { UserRole, AccessPath, GradeLevel, UserProfile } from '../types';
 import { FormError } from './FormError';
 import { INPUT_CLASS, INPUT_CLASS_WITH_ICON } from '../lib/formStyles';
+import { personNameFromAuthDisplayName } from '../lib/authDisplayName';
+import { districtRoleLabel, validateLoginPathAndRole } from '../lib/districtLogin';
 import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken, signOut, doc, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from '../lib/firebase';
 import { getMfaPending, setMfaPending, clearMfaPending } from '../lib/mfaSession';
 import { getDoc } from 'firebase/firestore';
 import { getSubmitErrorMessage, parseApiError } from '../utils/formSubmit';
+import { getPasswordValidationError, PASSWORD_REQUIREMENTS_MESSAGE } from '../lib/passwordValidation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -187,6 +190,23 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
     }
   };
 
+  const handleSandboxParentLogin = async () => {
+    setLoading(true);
+    clearErrors();
+    try {
+      await ensureSandboxSeeded();
+      const userCredential = await signInWithEmailAndPassword(auth, 'sandbox.parent@valley-science.demo', 'Sandbox123!');
+      const profileDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      if (!profileDoc.exists()) {
+        throw new Error('Sandbox parent profile is missing. Please try again.');
+      }
+    } catch (err: unknown) {
+      setFormError(getSubmitErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSandboxStudentLogin = async () => {
     setLoading(true);
     clearErrors();
@@ -233,7 +253,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
         setFormData(prev => ({
           ...prev,
           email: user.email || '',
-          name: user.displayName || ''
+          name: personNameFromAuthDisplayName(user.displayName || '')
         }));
         setStep('complete-profile');
       }
@@ -272,17 +292,27 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
         if (!formData.parentEmail) {
           throw new Error("Parent email is mandatory for individual students.");
         }
-        if (formData.password !== formData.confirmPassword) {
+        if (mode === 'signup' && step === 'form') {
+          const passwordError = getPasswordValidationError(formData.password);
+          if (passwordError) {
+            throw new Error(passwordError);
+          }
+        }
+        if (mode === 'signup' && step === 'form' && formData.password !== formData.confirmPassword) {
           throw new Error("Passwords do not match.");
         }
-        if (!agreedToTerms) {
+        if (step === 'form' && mode === 'signup' && !agreedToTerms) {
           throw new Error("You must agree to the Terms of Service to continue.");
         }
         // Send verification code via backend (10-min expiry)
         const codeRes = await fetch('/api/send-verification-code', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, purpose: 'signup' })
+          body: JSON.stringify({
+            email: formData.email,
+            purpose: 'signup',
+            ...(mode === 'signup' && step === 'form' ? { password: formData.password } : {}),
+          })
         });
         if (!codeRes.ok) {
           const err = await codeRes.json();
@@ -320,20 +350,10 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
 
         const profileData = profileDoc.data() as UserProfile;
 
-        if (path === 'district') {
-          if (profileData.path !== 'district') {
-            await signOut(auth);
-            throw new Error('This account uses Individual Access. Go back and choose Individual Access to log in.');
-          }
-          if (role && profileData.role !== role) {
-            await signOut(auth);
-            throw new Error(
-              `This account is registered as a district ${profileData.role}. Select ${profileData.role === 'teacher' ? 'Teacher' : 'Student'} and try again.`
-            );
-          }
-        } else if (profileData.path === 'district') {
+        const pathCheck = validateLoginPathAndRole(path, role, profileData);
+        if (pathCheck.ok === false) {
           await signOut(auth);
-          throw new Error('This is a district account. Go back and choose District Partnership to log in.');
+          throw new Error(pathCheck.message);
         }
 
         await handleAuthenticatedLogin(profileData, user);
@@ -366,6 +386,10 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
       let user = googleUser || auth.currentUser;
         
         if (!user) {
+          const passwordError = getPasswordValidationError(formData.password);
+          if (passwordError) {
+            throw new Error(passwordError);
+          }
           // Create Firebase Auth User for email/pass signup
           const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
           user = userCredential.user;
@@ -456,7 +480,11 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
       const res = await fetch('/api/send-verification-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, purpose: 'signup' })
+        body: JSON.stringify({
+          email: formData.email,
+          purpose: 'signup',
+          ...(formData.password ? { password: formData.password } : {}),
+        })
       });
       if (!res.ok) {
         const err = await res.json();
@@ -497,7 +525,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                   onClick={() => { setPath('district'); setRole(null); }}
                   icon={<School className={path === 'district' ? 'text-soft-pink' : 'text-slate-400 dark:text-slate-500'} />}
                   title="District Partnership"
-                  description="LASD, PAUSD, MVWSD students & teachers"
+                  description="LASD, PAUSD, MVWSD students, parents & teachers"
                 />
                 
                 <SelectionButton 
@@ -522,6 +550,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                         <>
                           <RoleButton active={role === 'teacher'} onClick={() => setRole('teacher')} icon={<Briefcase size={20} />} label="Teacher" />
                           <RoleButton active={role === 'student'} onClick={() => setRole('student')} icon={<GraduationCap size={20} />} label="Student" />
+                          <RoleButton active={role === 'parent'} onClick={() => { setRole('parent'); setMode('login'); }} icon={<UserCircle size={20} />} label="Parent" />
                         </>
                       ) : (
                         <>
@@ -562,7 +591,9 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                       <div className="p-4 bg-sage-green/5 border border-sage-green/20 rounded-2xl">
                         <p className="text-xs font-black text-sage-green uppercase tracking-widest mb-1">Parent Login Only</p>
                         <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                          Parent accounts are created when your child signs up. Use the email from your welcome message to log in.
+                          {path === 'district'
+                            ? 'Parent accounts are created by your school district. Use the email from your welcome message to log in.'
+                            : 'Parent accounts are created when your child signs up. Use the email from your welcome message to log in.'}
                         </p>
                       </div>
                     )}
@@ -605,7 +636,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                 <div className="mb-6 p-4 bg-soft-pink/10 border border-soft-pink/20 rounded-2xl">
                   <p className="text-xs font-black text-soft-pink uppercase tracking-widest mb-1">Pricing</p>
                   <p className="text-sm font-bold text-slate-700">
-                    Individual access is <span className="text-slate-900">$8/month</span> or <span className="text-slate-900">$90/year</span> — shown before payment after signup.
+                    Individual access is <span className="text-slate-900 dark:text-slate-100">$8/month</span> or <span className="text-slate-900 dark:text-slate-100">$90/year</span> — shown before payment after signup.
                   </p>
                 </div>
               )}
@@ -629,7 +660,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                       <select 
                         value={formData.grade}
                         onChange={e => setFormData({...formData, grade: e.target.value as GradeLevel})}
-                        className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold text-slate-900 outline-none transition-all appearance-none"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold text-slate-900 dark:text-slate-100 outline-none transition-all appearance-none"
                       >
                         {['3','4','5','6','7','8'].map(g => <option key={g} value={g}>Grade {g}</option>)}
                       </select>
@@ -645,6 +676,11 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                   icon={<Mail size={18} />} 
                 />
                 <Input label="Password" type="password" value={formData.password} onChange={v => { clearErrors(); setFormData({...formData, password: v}); }} placeholder="••••••••" icon={<Lock size={18} />} />
+                {mode === 'signup' && (
+                  <p className="text-xs text-slate-400 font-medium ml-1 -mt-2 leading-relaxed">
+                    {PASSWORD_REQUIREMENTS_MESSAGE}
+                  </p>
+                )}
                 {mode === 'login' && (
                   <div className="flex justify-end -mt-2">
                     <button
@@ -713,6 +749,16 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                         {loading ? 'Loading...' : 'Try Sandbox (Demo Student)'}
                       </button>
                     )}
+                    {role === 'parent' && (
+                      <button
+                        type="button"
+                        onClick={handleSandboxParentLogin}
+                        disabled={loading}
+                        className="w-full bg-sage-green text-white py-4 rounded-2xl font-black hover:opacity-90 transition-all disabled:opacity-50"
+                      >
+                        {loading ? 'Loading...' : 'Try Sandbox (Demo Parent)'}
+                      </button>
+                    )}
                     <p className="text-xs text-slate-400 font-bold text-center">
                       Sandbox password for all demo accounts: <code className="text-slate-600 dark:text-slate-300">Sandbox123!</code>
                     </p>
@@ -722,8 +768,8 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                 {path !== 'district' && (
                   <>
                 <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400 font-black tracking-widest">Or continue with</span></div>
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-slate-700"></div></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-black tracking-widest">Or continue with</span></div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -746,8 +792,8 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
               >
                 <ArrowLeft size={16} /> Back to login
               </button>
-              <h2 className="text-4xl font-black text-slate-900 mb-2">Reset password</h2>
-              <p className="text-slate-500 font-medium mb-2 leading-relaxed">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">Reset password</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium mb-2 leading-relaxed">
                 Enter the email on your Valley Science account. We&apos;ll send a secure link so you can choose a new password.
               </p>
               <p className="text-xs font-bold text-slate-400 mb-6">
@@ -757,7 +803,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                 <div className={`p-4 rounded-2xl text-sm font-bold border ${
                   message.type === 'success'
                     ? 'bg-sage-green/10 border-sage-green/20 text-sage-green'
-                    : 'bg-red-50 border-red-100 text-red-600'
+                    : 'bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400'
                 }`}>
                   {message.text}
                 </div>
@@ -782,7 +828,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                 <button
                   type="button"
                   onClick={() => { clearErrors(); setStep('form'); setMode('login'); }}
-                  className="w-full font-black text-sm text-slate-600 hover:text-slate-900"
+                  className="w-full font-black text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 >
                   Return to login
                 </button>
@@ -792,7 +838,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
 
           {step === 'complete-profile' && (
             <form onSubmit={handleFormSubmit} className="space-y-6">
-              <h2 className="text-4xl font-black text-slate-900 mb-2">Almost there!</h2>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-2">Almost there!</h2>
               <p className="text-slate-500 font-medium mb-8">Complete your profile to start learning.</p>
 
               <FormError message={error} shake={errorShake} />
@@ -876,9 +922,9 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
 
           {step === '2fa' && (
             <div className="space-y-8">
-              <h2 className="text-4xl font-black text-slate-900">Verify Your Email</h2>
-              <p className="text-slate-500 font-medium leading-relaxed">
-                We've sent a verification code to <span className="text-slate-900 font-bold">{formData.email}</span>. Codes expire in 10 minutes.
+              <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100">Verify Your Email</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                We've sent a verification code to <span className="text-slate-900 dark:text-slate-100 font-bold">{formData.email}</span>. Codes expire in 10 minutes.
               </p>
 
               <FormError message={error} shake={errorShake} />
@@ -890,7 +936,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                   value={twoFACode}
                   onChange={e => setTwoFACode(e.target.value)}
                   placeholder="000000"
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 outline-none transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 dark:text-slate-100 outline-none transition-all"
                 />
 
                 <button 
@@ -928,7 +974,7 @@ function SocialButton({ icon, onClick }: { icon: React.ReactNode, onClick: () =>
     <button 
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-slate-200 hover:bg-slate-50 transition-all"
+      className="flex items-center justify-center p-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl hover:border-slate-200 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
     >
       {icon}
     </button>

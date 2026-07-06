@@ -5,6 +5,7 @@ import { auth, db, doc, updateDoc } from '../lib/firebase';
 import { updatePassword } from 'firebase/auth';
 import { ThemeToggle } from './ThemeToggle';
 import { MfaSettings } from './MfaSettings';
+import { INPUT_CLASS_PX } from '../lib/formStyles';
 
 interface SettingsProps {
   userState: UserState;
@@ -70,13 +71,13 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
       <header>
-        <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Settings</h1>
-        <p className="text-xl text-slate-600 font-medium">Manage your account and security.</p>
+        <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 mb-2">Settings</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400 font-medium">Manage your account and security.</p>
       </header>
 
       {message && (
         <div className={`p-6 rounded-[32px] border flex items-center gap-4 ${
-          message.type === 'success' ? 'bg-sage-green/10 border-sage-green/20 text-sage-green' : 'bg-red-50 border-red-100 text-red-600'
+          message.type === 'success' ? 'bg-sage-green/10 border-sage-green/20 text-sage-green' : 'bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <ShieldCheck size={24} /> : <AlertCircle size={24} />}
           <p className="font-bold">{message.text}</p>
@@ -93,7 +94,7 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
           <div className="space-y-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
-              <div className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-6 py-4 font-bold text-slate-400 cursor-not-allowed">
+              <div className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-2xl px-6 py-4 font-bold text-slate-400 cursor-not-allowed">
                 {profile?.email}
               </div>
               <p className="text-[10px] text-slate-400 mt-2 ml-1 font-bold italic">Email cannot be changed for security.</p>
@@ -106,11 +107,15 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 disabled={!isIndividual || isParent || loading}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold text-slate-900 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`${INPUT_CLASS_PX} disabled:opacity-50 disabled:cursor-not-allowed`}
               />
               {(!isIndividual || isParent) && (
                 <p className="text-[10px] text-soft-pink mt-2 ml-1 font-bold">
-                  {isParent ? "Parent usernames are automatically generated." : "Username is managed by your district."}
+                  {isParent
+                    ? (userState.path === 'district'
+                      ? "District parent usernames are managed by your school."
+                      : "Parent usernames are automatically generated.")
+                    : "Username is managed by your district."}
                 </p>
               )}
             </div>
@@ -119,7 +124,7 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
               <button 
                 onClick={handleUpdateUsername}
                 disabled={loading || username === profile?.username}
-                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 transition-all"
+                className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all"
               >
                 <Save size={20} />
                 Update Username
@@ -143,7 +148,7 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
                 onChange={e => setNewPassword(e.target.value)}
                 placeholder="••••••••"
                 disabled={loading}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold text-slate-900 outline-none transition-all"
+                className={INPUT_CLASS_PX}
               />
             </div>
 
@@ -155,14 +160,14 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
                 disabled={loading}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl px-6 py-4 font-bold text-slate-900 outline-none transition-all"
+                className={INPUT_CLASS_PX}
               />
             </div>
 
             <button 
               onClick={handleUpdatePassword}
               disabled={loading || !newPassword}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 transition-all"
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all"
             >
               <ShieldCheck size={20} />
               Change Password
@@ -197,35 +202,35 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
 
         {/* Account Management */}
         {isParent ? (
-          <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 lg:col-span-2">
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/20 lg:col-span-2">
             <div className="flex items-center gap-3 text-soft-pink font-black text-xs uppercase tracking-widest mb-8">
               <UserCircle size={20} />
               Account Management
             </div>
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-xl">
-                <h3 className="text-xl font-black text-slate-900 mb-2">Manage Student Account</h3>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">Manage Student Account</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                   Your student's account details and account deletion are available on the
-                  <span className="font-black text-slate-900"> Student Account </span>
+                  <span className="font-black text-slate-900 dark:text-slate-100"> Student Account </span>
                   page in the sidebar. Deleting the student account also removes this parent account.
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-sage-green/5 p-10 rounded-[40px] border border-sage-green/20 shadow-xl shadow-slate-200/20 lg:col-span-2">
+          <div className="bg-sage-green/5 dark:bg-sage-green/10 p-10 rounded-[40px] border border-sage-green/20 dark:border-sage-green/30 shadow-xl shadow-slate-200/20 dark:shadow-black/20 lg:col-span-2">
             <div className="flex items-center gap-3 text-sage-green font-black text-xs uppercase tracking-widest mb-6">
               <ShieldHalf size={20} />
               Account Management
             </div>
             <div className="flex items-start gap-5">
-              <div className="w-12 h-12 bg-sage-green/10 rounded-2xl flex items-center justify-center text-sage-green shrink-0">
+              <div className="w-12 h-12 bg-sage-green/10 dark:bg-sage-green/15 rounded-2xl flex items-center justify-center text-sage-green shrink-0">
                 <ShieldHalf size={24} />
               </div>
               <div className="max-w-2xl">
-                <h3 className="text-xl font-black text-slate-900 mb-2">Your account is managed by your parent or guardian</h3>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2">Your account is managed by your parent or guardian</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                   For your safety, only your parent or guardian can delete this account. If you need to make changes,
                   please ask them to manage it from their parent dashboard.
                 </p>

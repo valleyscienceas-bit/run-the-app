@@ -3,6 +3,7 @@ import { NGSSModule, Question, TestAnswer } from '../types';
 import { motion } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
+import { TEXTAREA_CLASS } from '../lib/formStyles';
 import { scoreTest } from '../lib/scoreTest';
 import { auth } from '../lib/firebase';
 import {
@@ -182,19 +183,19 @@ export function PlacementTest({
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white p-12 rounded-[40px] border-4 border-sage-green text-center max-w-2xl mx-auto shadow-2xl"
+        className="bg-white dark:bg-slate-900 p-12 rounded-[40px] border-4 border-sage-green text-center max-w-2xl mx-auto shadow-2xl dark:shadow-black/30"
       >
-        <div className="w-20 h-20 bg-sage-green/10 rounded-full flex items-center justify-center mx-auto mb-8 text-sage-green">
+        <div className="w-20 h-20 bg-sage-green/10 dark:bg-sage-green/15 rounded-full flex items-center justify-center mx-auto mb-8 text-sage-green">
           <CheckCircle2 size={48} />
         </div>
-        <h2 className="text-3xl font-black text-slate-900 mb-2">Test Complete!</h2>
-        <div className="text-6xl font-black text-slate-900 mb-6">{score}%</div>
-        <p className="text-slate-600 font-medium mb-10 leading-relaxed">
+        <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-2">Test Complete!</h2>
+        <div className="text-6xl font-black text-slate-900 dark:text-slate-100 mb-6">{score}%</div>
+        <p className="text-slate-600 dark:text-slate-400 font-medium mb-10 leading-relaxed">
           Valerie has analyzed your responses. You've identified some key conceptual gaps to work on.
         </p>
         <button 
           onClick={calculateResults}
-          className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-2 mx-auto hover:bg-slate-800 transition-colors"
+          className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-10 py-4 rounded-2xl font-bold flex items-center gap-2 mx-auto hover:opacity-90 transition-colors"
         >
           View My Stats & Path <ArrowRight size={20} />
         </button>
@@ -208,7 +209,7 @@ export function PlacementTest({
     <div className="max-w-2xl mx-auto">
       <div className="mb-12 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 mb-1">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-1">
             {module ? 'Module Placement' : 'Assessment'}
           </h2>
           <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
@@ -218,7 +219,7 @@ export function PlacementTest({
         <div className="flex items-center gap-6">
           <div className="text-right">
             <p className="text-sm font-bold text-slate-400">Question</p>
-            <p className="text-xl font-black text-slate-900">{currentQuestionIndex + 1} / {questions.length}</p>
+            <p className="text-xl font-black text-slate-900 dark:text-slate-100">{currentQuestionIndex + 1} / {questions.length}</p>
           </div>
           <button 
             onClick={onCancel}
@@ -229,8 +230,8 @@ export function PlacementTest({
         </div>
       </div>
 
-      <div className="bg-white p-10 rounded-[40px] shadow-xl shadow-slate-200/50 border border-slate-100">
-        <h3 className="text-xl font-bold text-slate-900 mb-8 leading-relaxed">
+      <div className="bg-white dark:bg-slate-900 p-10 rounded-[40px] shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-slate-100 dark:border-slate-800">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-8 leading-relaxed">
           {currentQuestion.text}
         </h3>
         
@@ -240,10 +241,10 @@ export function PlacementTest({
               <button
                 key={i}
                 onClick={() => handleNext(i)}
-                className="w-full p-6 text-left rounded-2xl border-2 border-slate-100 hover:border-soft-pink hover:bg-soft-pink/5 transition-all font-bold text-slate-700 flex items-center justify-between group"
+                className="w-full p-6 text-left rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-soft-pink hover:bg-soft-pink/5 dark:hover:bg-soft-pink/10 transition-all font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group"
               >
                 {option}
-                <div className="w-6 h-6 rounded-full border-2 border-slate-200 group-hover:border-soft-pink transition-colors" />
+                <div className="w-6 h-6 rounded-full border-2 border-slate-200 dark:border-slate-600 group-hover:border-soft-pink transition-colors" />
               </button>
             ))}
           </div>
@@ -253,12 +254,12 @@ export function PlacementTest({
               value={freeResponseText}
               onChange={(e) => setFreeResponseText(e.target.value)}
               placeholder="Type your scientific explanation here..."
-              className="w-full h-40 p-6 bg-slate-50 border-2 border-transparent focus:border-soft-pink rounded-2xl font-bold text-slate-900 outline-none transition-all resize-none"
+              className={`${TEXTAREA_CLASS} h-40`}
             />
             <button
               onClick={() => handleNext()}
               disabled={!freeResponseText.trim()}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 disabled:opacity-50 transition-all"
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-black hover:opacity-90 disabled:opacity-50 transition-all"
             >
               Submit Answer
             </button>
