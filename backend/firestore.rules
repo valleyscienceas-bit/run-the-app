@@ -25,9 +25,11 @@ service cloud.firestore {
     }
 
     function isParentOf(studentId) {
+      let parentData = getUserData();
       return isAuthenticated() && 
-             getUserData().role == 'parent' && 
-             getUserData().linkedStudentUid == studentId;
+             parentData.role == 'parent' && 
+             (parentData.linkedStudentUid == studentId ||
+              (parentData.linkedStudentUids != null && parentData.linkedStudentUids.hasAny([studentId])));
     }
 
     function isValidUser(data) {

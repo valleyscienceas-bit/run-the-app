@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // listen on 0.0.0.0 — reachable from other devices on the same Wi‑Fi
     port: 3000,
     proxy: {
       '/api': {

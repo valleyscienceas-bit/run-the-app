@@ -43,6 +43,7 @@ export function PaymentFirewall({ onPaymentSuccess, onSkip }: PaymentFirewallPro
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Full 3-8 Science Curriculum</p>
               </div>
               <div className="text-3xl font-black text-slate-900">$8<span className="text-sm text-slate-400">/mo</span></div>
+              <p className="text-xs font-bold text-slate-400 mt-1">or $90/year</p>
             </div>
 
             <ul className="space-y-4">

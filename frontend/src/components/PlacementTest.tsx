@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { NGSSModule, Question } from '../types';
+import { NGSSModule, Question, TestAnswer } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ArrowRight, Sparkles, X } from 'lucide-react';
+import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 interface PlacementTestProps {
   module: NGSSModule | null;
-  onComplete: (score: number, identifiedGaps: string[]) => void;
+  onComplete: (score: number, identifiedGaps: string[], answers: TestAnswer[]) => void;
   onCancel: () => void;
 }
 
@@ -105,26 +106,35 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
   const calculateResults = () => {
     let score = 0;
     const gaps: string[] = [];
-    
+    const testAnswers: TestAnswer[] = [];
+
     answers.forEach((answer, index) => {
       const q = questions[index];
+      let correct = false;
+      let selectedAnswer: string | undefined;
+
       if (q.type === 'multiple-choice') {
-        if (answer === q.correctAnswer) {
-          score++;
-        } else {
-          gaps.push(q.concept || `Concept related to: ${q.text}`);
-        }
+        correct = answer === q.correctAnswer;
+        selectedAnswer = q.options?.[answer];
+        if (correct) score++;
+        else gaps.push(q.concept || `Concept related to: ${q.text}`);
       } else {
-        // For free response in a demo, we'll assume it's "correct" if it has length > 10
-        if (answer.length > 15) {
-          score++;
-        } else {
-          gaps.push(q.concept || `Concept related to: ${q.text}`);
-        }
+        correct = answer.length > 15;
+        selectedAnswer = answer;
+        if (correct) score++;
+        else gaps.push(q.concept || `Concept related to: ${q.text}`);
       }
+
+      testAnswers.push({
+        questionId: q.id,
+        questionText: q.text,
+        selectedAnswer,
+        correct,
+        concept: q.concept
+      });
     });
 
-    onComplete((score / questions.length) * 100, gaps);
+    onComplete((score / questions.length) * 100, gaps, testAnswers);
   };
 
   if (isFinished) {
@@ -177,7 +187,7 @@ export function PlacementTest({ module, onComplete, onCancel }: PlacementTestPro
           </div>
           <button 
             onClick={onCancel}
-            className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-slate-900 transition-colors"
+            className={ICON_GHOST_BUTTON_CLASS}
           >
             <X size={20} />
           </button>

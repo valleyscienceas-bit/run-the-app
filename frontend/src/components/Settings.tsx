@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { User, Lock, ShieldCheck, Save, AlertCircle, Trash2 } from 'lucide-react';
+import { User, Lock, ShieldCheck, Save, AlertCircle, ShieldHalf, UserCircle, Sun } from 'lucide-react';
 import { UserState, UserProfile } from '../types';
-import { auth, db, doc, updateDoc, setDoc, deleteUser } from '../lib/firebase';
-import { updatePassword, updateProfile } from 'firebase/auth';
-import { deleteDoc } from 'firebase/firestore';
+import { auth, db, doc, updateDoc } from '../lib/firebase';
+import { updatePassword } from 'firebase/auth';
+import { ThemeToggle } from './ThemeToggle';
+import { MfaSettings } from './MfaSettings';
 
 interface SettingsProps {
   userState: UserState;
   onUpdateProfile: (updatedProfile: UserProfile) => void;
+  onReplayTour?: () => void;
 }
 
-export function Settings({ userState, onUpdateProfile }: SettingsProps) {
+export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsProps) {
   const profile = userState.profile;
   const isIndividual = userState.path === 'individual';
   const isParent = userState.role === 'parent';
@@ -65,81 +67,8 @@ export function Settings({ userState, onUpdateProfile }: SettingsProps) {
     }
   };
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const handleDeleteAccount = async () => {
-    if (!profile) return;
-    if (isParent) {
-      setMessage({ type: 'error', text: "Parent accounts are linked to student accounts and cannot be deleted independently. To delete this account, the primary student profile must be deleted." });
-      return;
-    }
-
-    setLoading(true);
-    setMessage(null);
-    try {
-      if (auth.currentUser) {
-        const uid = auth.currentUser.uid;
-        
-        // 1. Delete linked parent profile if it exists
-        if (profile.parentEmail) {
-          const parentUid = `parent_${uid}`;
-          await deleteDoc(doc(db, 'users', parentUid));
-        }
-
-        // 2. Delete Firestore Profile
-        await deleteDoc(doc(db, 'users', uid));
-        
-        // 3. Delete Auth User
-        await deleteUser(auth.currentUser);
-        
-        // 4. Force reload to landing page
-        window.location.reload();
-      }
-    } catch (err: any) {
-      if (err.code === 'auth/requires-recent-login') {
-        setMessage({ type: 'error', text: 'For security, please log out and log back in before deleting your account.' });
-      } else {
-        setMessage({ type: 'error', text: err.message });
-      }
-    } finally {
-      setLoading(false);
-      setShowDeleteConfirm(false);
-    }
-  };
-
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative bg-white w-full max-w-md rounded-[40px] p-10 shadow-2xl text-center">
-            <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-600 mx-auto mb-6">
-              <Trash2 size={40} />
-            </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-4">Are you absolutely sure?</h2>
-            <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-              This will permanently delete your account, your linked parent account, and all your learning progress. This action cannot be undone.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={handleDeleteAccount}
-                disabled={loading}
-                className="w-full bg-red-600 text-white py-4 rounded-2xl font-black hover:bg-red-700 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Deleting...' : 'Yes, Delete Everything'}
-              </button>
-              <button 
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={loading}
-                className="w-full bg-slate-100 text-slate-900 py-4 rounded-2xl font-black hover:bg-slate-200 transition-all disabled:opacity-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <header>
         <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">Settings</h1>
         <p className="text-xl text-slate-600 font-medium">Manage your account and security.</p>
@@ -156,12 +85,11 @@ export function Settings({ userState, onUpdateProfile }: SettingsProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Profile Settings */}
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800" data-tour="settings-profile">
           <div className="flex items-center gap-3 text-soft-pink font-black text-xs uppercase tracking-widest mb-8">
             <User size={20} />
             Profile Information
           </div>
-          
           <div className="space-y-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
@@ -201,12 +129,11 @@ export function Settings({ userState, onUpdateProfile }: SettingsProps) {
         </div>
 
         {/* Security Settings */}
-        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800" data-tour="settings-password">
           <div className="flex items-center gap-3 text-sage-green font-black text-xs uppercase tracking-widest mb-8">
             <Lock size={20} />
             Security & Password
           </div>
-
           <div className="space-y-6">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
@@ -243,30 +170,69 @@ export function Settings({ userState, onUpdateProfile }: SettingsProps) {
           </div>
         </div>
 
-        {/* Danger Zone */}
-        <div className="bg-red-50/50 p-10 rounded-[40px] border border-red-100 shadow-xl shadow-red-200/20 lg:col-span-2">
-          <div className="flex items-center gap-3 text-red-600 font-black text-xs uppercase tracking-widest mb-8">
-            <Trash2 size={20} />
-            Danger Zone
+        {isIndividual && profile && (
+          <MfaSettings profile={profile} onUpdateProfile={onUpdateProfile} />
+        )}
+
+        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:border-slate-800 lg:col-span-2" data-tour="settings-appearance">
+          <div className="flex items-center gap-3 text-blue-500 font-black text-xs uppercase tracking-widest mb-6">
+            <Sun size={20} />
+            Appearance
           </div>
-          
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="max-w-xl">
-              <h3 className="text-xl font-black text-slate-900 mb-2">Delete Account</h3>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                Permanently remove your account and all associated data. This includes your XP, test results, and conceptual gap history. This action is irreversible.
-              </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-4">Switch between light and dark mode.</p>
+          <ThemeToggle
+            showLabel
+            className="py-3 px-6 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
+          />
+          {onReplayTour && (
+            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-700">
+              <h3 className="font-black text-slate-900 dark:text-slate-100 mb-2">Account Tour</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-4">Replay the guided walkthrough of your account features.</p>
+              <button onClick={onReplayTour} className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-2xl font-black hover:opacity-90 transition-all">
+                Replay Tour
+              </button>
             </div>
-            <button 
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={loading}
-              className="bg-red-600 text-white px-10 py-5 rounded-2xl font-black flex items-center gap-3 hover:bg-red-700 transition-all whitespace-nowrap"
-            >
-              <Trash2 size={20} />
-              Delete My Account
-            </button>
-          </div>
+          )}
         </div>
+
+        {/* Account Management */}
+        {isParent ? (
+          <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 lg:col-span-2">
+            <div className="flex items-center gap-3 text-soft-pink font-black text-xs uppercase tracking-widest mb-8">
+              <UserCircle size={20} />
+              Account Management
+            </div>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-xl">
+                <h3 className="text-xl font-black text-slate-900 mb-2">Manage Student Account</h3>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                  Your student's account details and account deletion are available on the
+                  <span className="font-black text-slate-900"> Student Account </span>
+                  page in the sidebar. Deleting the student account also removes this parent account.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-sage-green/5 p-10 rounded-[40px] border border-sage-green/20 shadow-xl shadow-slate-200/20 lg:col-span-2">
+            <div className="flex items-center gap-3 text-sage-green font-black text-xs uppercase tracking-widest mb-6">
+              <ShieldHalf size={20} />
+              Account Management
+            </div>
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 bg-sage-green/10 rounded-2xl flex items-center justify-center text-sage-green shrink-0">
+                <ShieldHalf size={24} />
+              </div>
+              <div className="max-w-2xl">
+                <h3 className="text-xl font-black text-slate-900 mb-2">Your account is managed by your parent or guardian</h3>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                  For your safety, only your parent or guardian can delete this account. If you need to make changes,
+                  please ask them to manage it from their parent dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
