@@ -10,6 +10,10 @@ import {
   deleteUser,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCustomToken,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
   User 
 } from 'firebase/auth';
 import { 
@@ -46,6 +50,10 @@ export {
   deleteUser,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCustomToken,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
   doc,
   setDoc,
   getDoc,

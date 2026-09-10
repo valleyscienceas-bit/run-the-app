@@ -1,0 +1,205 @@
+================================================================================
+VALLEY SCIENCE - VISUAL STYLE PROFILE
+A copy-paste reference for the website's look & feel and the Valerie mascot.
+================================================================================
+
+DESIGN PHILOSOPHY (one line)
+Cream canvas -> white pillowy cards with hairline borders, oversized rounded
+corners, soft slate-tinted shadows, one pastel accent per element, and
+ultra-bold Inter type with wide-tracked uppercase micro-labels - all anchored by
+Valerie, the gently-animated pink graduate.
+
+
+================================================================================
+A. COLOR PALETTE
+================================================================================
+
+BRAND COLORS (defined in src/index.css @theme)
+  cream       #FFFDD0   App background, soft badges
+  soft-pink   #FADADD   Primary brand accent, Valerie body, focus rings
+  sage-green  #87A96B   Secondary accent, success, "good" scores
+
+NEUTRALS (Tailwind slate scale)
+  slate-900   #0F172A   Primary text, dark buttons
+  slate-600   #475569   Body copy
+  slate-400   #94A3B8   Muted labels / captions
+  slate-300   #CBD5E1   Inactive icons
+  slate-100   #F1F5F9   Borders, gridlines
+  slate-50    #F8FAFC   Input fills, inner panels
+  white       #FFFFFF   Card surfaces
+
+MASCOT DETAIL COLORS
+  ink         #334155   Valerie outlines, cap, eyes (slate-700)
+  blush       #FFB6C1   Cheeks
+  gold        #F1C40F   Graduation tassel
+
+FUNCTIONAL ACCENTS (used as soft tints, e.g. bg-blue-50 or icon at /500)
+  blue, purple, yellow, orange, red  (Tailwind 50 bg + 500 icon)
+
+CHART SCORE COLORS
+  >= 80%   #87A96B  (sage green)
+  >= 60%   #FADADD  (soft pink)
+  <  60%   #FCA5A5  (soft red)
+
+USAGE RULE
+  cream = the canvas. white = surfaces on top of it. soft-pink = active/primary
+  highlight. sage-green = success/positive. slate-900 = text + main button.
+  Use only ONE accent color per card.
+
+
+================================================================================
+B. TYPOGRAPHY
+================================================================================
+
+FONT FAMILY
+  "Inter", ui-sans-serif, system-ui, sans-serif
+  (loaded weights: 400, 500, 600, 700, 800 via Google Fonts)
+
+TYPE ROLES
+  Page title       text-5xl font-black tracking-tight        (slate-900)
+  Section heading  text-xl font-black
+  Stat value       text-3xl font-black
+  Body             text-slate-600 font-medium leading-relaxed
+  Micro-label      text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]
+  Pill / eyebrow   uppercase tracking-[0.2em]  (up to tracking-[0.3em])
+
+SIGNATURE CHOICE
+  font-black (heavy) on nearly all headings/labels/buttons, paired with
+  font-medium body text. Heavy + airy.
+  NOTE: the font import only loads up to 800. For true 900 weight, add 900 to
+  the Google Fonts import in src/index.css.
+
+
+================================================================================
+C. LAYOUT & SPACING
+================================================================================
+
+APP SHELL
+  Desktop sidebar : fixed, w-72, p-8, white, border-r border-slate-100
+                    logo (mascot 48px) + wordmark, NavItems space-y-3,
+                    account card pinned bottom-10
+  Main content    : md:ml-72, padding p-8 md:p-16 pb-32, max-w-6xl mx-auto
+  Mobile          : sidebar hidden; bottom tab bar (fixed, rounded-t-[32px],
+                    shadow-2xl)
+
+SPACING RHYTHM
+  Page sections    space-y-12
+  Within cards     space-y-6 / space-y-8
+  Stat card grid   grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6
+  Chart + sidebar  lg:grid-cols-3 gap-10
+
+CARD PADDING
+  Large cards   p-10
+  Stat cards    p-7
+  Inner rows    p-5
+
+
+================================================================================
+D. BORDER-RADIUS SCALE  (bigger surface = bigger radius)
+================================================================================
+  rounded-2xl      16px    Buttons, inputs, small icon tiles
+  rounded-3xl      24px    Inner panels, info rows
+  rounded-[32px]           Stat cards, mobile nav top
+  rounded-[40px]           Primary content cards & modals
+  rounded-full             Pills, avatars, toggles, mascot glow
+
+
+================================================================================
+E. SHADOWS  (always slate-tinted, never pure black)
+================================================================================
+  Primary card     shadow-xl  shadow-slate-200/50
+  Stat card        shadow-lg  shadow-slate-200/40   + hover:shadow-xl
+  Modals/mobile    shadow-2xl
+  Danger card      shadow-xl  shadow-red-100/30
+
+  Cards pair shadow with a hairline: border border-slate-100
+
+
+================================================================================
+F. COMPONENT RECIPES  (copy-paste Tailwind classes)
+================================================================================
+
+PRIMARY BUTTON
+  w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all
+  Accent variants: hover:bg-soft-pink | bg-sage-green | bg-red-500
+
+TEXT INPUT
+  w-full bg-slate-50 border-2 border-transparent focus:border-soft-pink
+  rounded-2xl px-6 py-4 font-bold text-slate-900 outline-none transition-all
+
+STAT CARD (structure)
+  <div class="bg-white p-7 rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/40 hover:shadow-xl transition-shadow">
+    <div class="w-11 h-11 bg-soft-pink/10 rounded-2xl flex items-center justify-center mb-5">ICON</div>
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">LABEL</p>
+    <h4 class="text-3xl font-black text-slate-900 mb-1">VALUE</h4>
+    <p class="text-xs text-slate-400 font-bold">SUBTEXT</p>
+  </div>
+
+PILL / BADGE
+  px-4 py-1.5 bg-cream text-slate-900 text-[10px] font-black rounded-full
+  uppercase tracking-[0.2em] border border-slate-100
+
+GRADIENT HEADER BAND
+  bg-gradient-to-r from-soft-pink to-sage-green
+
+
+================================================================================
+G. VALERIE - MASCOT SPECIFICATION
+================================================================================
+A friendly graduate "blob" rendered as inline SVG on a 200x200 viewBox.
+
+CONSTRUCTION & COLORS
+  Glow         radial #FADADD 0.4 -> 0   (circle r=80 behind body)
+  Body + head  fill #FADADD, stroke #334155 @ strokeWidth 4 (rounded organic path)
+  Cheeks       #FFB6C1 @ 0.6 opacity, r=6
+  Eyes         #334155, with white shine dots, r=5
+  Grad cap     #334155, tassel/bead #F1C40F (gold)
+  Arms         stroke #334155 @ strokeWidth 6, round caps
+  Legs         #334155 rounded rects (rx=4)
+
+EXPRESSIONS (via `expression` prop)
+  happy     gentle smile curve
+  excited   open filled smile
+  thinking  flat line
+  proud
+
+MOTION LANGUAGE (core to her personality)
+  idle "breathing"  body path morphs +/-2px, 4s easeInOut, infinite
+  head bob          y: [0,-2,0], 4s
+  blink             eyes scaleY [1,1,0.1,1,1] every ~3s
+  wave              right-arm path animates when isWaving=true
+  spin              full 360 rotate when isSpinning=true (2s linear)
+  hint bubble       "Need a hint?" fades in once (no bounce)
+
+SIZING IN USE
+  48px    sidebar logo
+  56-64px headers / avatars
+  200px   hero
+  Always place her on a light surface (cream/white) so the pink glow reads.
+
+
+================================================================================
+H. CONSOLIDATED DESIGN TOKENS  (drop-in for src/index.css @theme)
+================================================================================
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-cream: #FFFDD0;
+  --color-soft-pink: #FADADD;
+  --color-sage-green: #87A96B;
+  --color-ink: #334155;
+  --color-blush: #FFB6C1;
+  --color-gold: #F1C40F;
+
+  /* radius scale */
+  --radius-btn: 1rem;      /* rounded-2xl     */
+  --radius-panel: 1.5rem;  /* rounded-3xl     */
+  --radius-card: 2.5rem;   /* rounded-[40px]  */
+
+  /* elevation */
+  --shadow-card: 0 20px 25px -5px rgb(148 163 184 / 0.5);
+}
+
+================================================================================
+END OF STYLE PROFILE
+================================================================================

@@ -1,0 +1,1 @@
+This folder is for all training data for our AI to be put into. Information on file type and how to put it in is not known at this time.

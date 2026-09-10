@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NGSSModule, ChatMessage } from '../types';
 import { Send, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -6,6 +6,7 @@ import { auth, db, doc, setDoc, onSnapshot } from '../lib/firebase';
 import { ValerieMascot } from './ValerieMascot';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,6 +23,12 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7887/ingest/9957fc9c-a7ba-454b-b31a-1e2b29b7ba3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3efbc'},body:JSON.stringify({sessionId:'c3efbc',hypothesisId:'H1',location:'SocraticChat.tsx:mount',message:'SocraticChat mounted',data:{hasModule:!!selectedModule,moduleTitle:selectedModule?.title??null},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [selectedModule]);
 
   // Save time spent when leaving the chat
   useEffect(() => {
@@ -134,26 +141,27 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-[40px] border border-slate-100 shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-12rem)] bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="bg-soft-pink p-6 flex items-center justify-between">
+      <div className="bg-soft-pink dark:bg-rose-900/60 p-6 flex items-center justify-between" data-tour="chat-header">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack}
-            className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors text-slate-900"
+            data-tour="chat-back"
+            className={cn(ICON_GHOST_BUTTON_CLASS, 'text-slate-800 dark:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-800/50')}
           >
             <ArrowLeft size={20} />
           </button>
           <div className="flex items-center gap-3">
-            <ValerieMascot size={40} className="bg-white rounded-full p-1" />
+            <ValerieMascot size={40} className="bg-white dark:bg-slate-800 rounded-full p-1" />
             <div>
-              <h2 className="font-black text-slate-900 leading-none">Valerie</h2>
-              <p className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mt-1">Socratic Mentor</p>
+              <h2 className="font-black text-slate-900 dark:text-slate-100 leading-none">Valerie</h2>
+              <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mt-1">Socratic Mentor</p>
             </div>
           </div>
         </div>
         {selectedModule && (
-          <div className="hidden md:block px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black text-slate-900 uppercase tracking-widest">
+          <div className="hidden md:block px-4 py-1.5 bg-white/20 dark:bg-slate-800/50 rounded-full text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">
             {selectedModule.code}
           </div>
         )}
@@ -162,7 +170,8 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
       {/* Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-8 space-y-6 bg-cream/20"
+        data-tour="chat-messages"
+        className="flex-1 overflow-y-auto p-8 space-y-6 bg-cream/20 dark:bg-slate-950/50"
       >
         {messages.map((msg, i) => (
           <motion.div
@@ -177,8 +186,8 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
             <div className={cn(
               "max-w-[80%] p-6 rounded-[32px] font-medium leading-relaxed shadow-sm",
               msg.role === 'user' 
-                ? "bg-slate-900 text-white rounded-tr-none" 
-                : "bg-white text-slate-900 border border-slate-100 rounded-tl-none"
+                ? "bg-slate-900 dark:bg-slate-700 text-white rounded-tr-none" 
+                : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-100 dark:border-slate-700 rounded-tl-none"
             )}>
               {msg.text}
             </div>
@@ -198,7 +207,7 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
       </div>
 
       {/* Input */}
-      <div className="p-6 bg-white border-t border-slate-50">
+      <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-50 dark:border-slate-800" data-tour="chat-input">
         <div className="relative max-w-4xl mx-auto">
           <input
             type="text"
@@ -206,7 +215,7 @@ export function SocraticChat({ selectedModule, onBack }: SocraticChatProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask Valerie a question..."
-            className="w-full pl-6 pr-16 py-5 bg-cream rounded-3xl border-2 border-transparent focus:border-soft-pink outline-none font-bold text-slate-900 placeholder:text-slate-400 transition-all"
+            className="w-full pl-6 pr-16 py-5 bg-cream dark:bg-slate-800 rounded-3xl border-2 border-transparent focus:border-soft-pink outline-none font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400/60 transition-all"
           />
           <button
             onClick={handleSend}

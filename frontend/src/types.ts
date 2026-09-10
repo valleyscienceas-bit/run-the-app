@@ -1,13 +1,33 @@
 export type UserRole = 'student' | 'teacher' | 'parent' | 'admin' | 'founder';
 export type AccessPath = 'district' | 'individual';
 
+export type AppTab =
+  | 'curriculum'
+  | 'dashboard'
+  | 'chat'
+  | 'founder'
+  | 'settings'
+  | 'student-account'
+  | 'billing'
+  | 'demo-guide'
+  | 'assignments'
+  | 'class-tests'
+  | 'my-class'
+  | 'my-assignments'
+  | 'sandbox';
+
+export type ThemeMode = 'light' | 'dark';
+
 export interface UserProfile {
   uid: string;
   name: string;
   username: string;
   email: string;
   parentEmail?: string; // For students
-  linkedStudentUid?: string; // For parents
+  linkedStudentUid?: string; // For parents (legacy single)
+  linkedStudentUids?: string[]; // For parents (multi-student)
+  activeStudentUid?: string; // Which child parent is viewing
+  parentUid?: string; // For students — primary managing parent
   role: UserRole;
   path: AccessPath;
   grade?: GradeLevel;
@@ -16,6 +36,65 @@ export interface UserProfile {
   isPaid: boolean;
   createdAt: string;
   totalLearningSeconds?: number;
+  theme?: ThemeMode;
+  isDemo?: boolean;
+  demoExpiresAt?: string;
+  demoParentUid?: string;
+  demoStudentUid?: string;
+  hasCompletedParentTour?: boolean;
+  hasCompletedStudentTour?: boolean;
+  hasCompletedTeacherTour?: boolean;
+  hasSeenDemoStudentGuide?: boolean;
+  hasSeenDemoParentGuide?: boolean;
+  districtId?: string;
+  classroomIds?: string[];
+  teacherUid?: string;
+  demoPassword?: string; // Sandbox/demo accounts — visible to teachers
+  progressByGrade?: Record<string, GradeProgressArchive>;
+  gradeOverrides?: { grade: string; at: string; by: string }[];
+  mfaEnabled?: boolean;
+  mfaMethod?: 'email' | 'totp' | null;
+}
+
+export interface GradeProgressArchive {
+  results: TestResult[];
+  stats: LearningStats;
+  archivedAt: string;
+}
+
+export type AssignmentStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface AssignmentSubmission {
+  status: AssignmentStatus;
+  progress: number;
+  submittedAt?: string;
+  score?: number;
+}
+
+export interface ClassroomAssignment {
+  id: string;
+  classroomId: string;
+  teacherUid: string;
+  title: string;
+  dueAt: string;
+  grade: string;
+  minScore?: number | null;
+  moduleIds: string[];
+  moduleCount?: number;
+  submissions?: Record<string, AssignmentSubmission>;
+  createdAt: string;
+}
+
+export interface AssignmentStudentRow {
+  uid: string;
+  name: string;
+  username?: string;
+  grade?: string;
+  status: AssignmentStatus;
+  progress: number;
+  submittedAt?: string;
+  score?: number;
+  isLate?: boolean;
 }
 
 export interface UserState {
@@ -79,6 +158,15 @@ export interface TestResult {
   score: number;
   gaps: string[];
   timestamp: string;
+  answers?: TestAnswer[];
+}
+
+export interface TestAnswer {
+  questionId: string;
+  questionText: string;
+  selectedAnswer?: string;
+  correct: boolean;
+  concept?: string;
 }
 
 export interface ChatMessage {
@@ -91,4 +179,44 @@ export interface ChatHistory {
   userId: string;
   messages: ChatMessage[];
   lastUpdated: string;
+}
+
+export interface LearningStats {
+  totalSeconds?: number;
+  lastUpdated?: string;
+}
+
+export interface StudentOverview {
+  studentProfile: UserProfile | null;
+  results: TestResult[];
+  stats: LearningStats;
+  linkedStudents?: Pick<UserProfile, 'uid' | 'name' | 'grade' | 'username' | 'isPaid'>[];
+  activeStudentUid?: string;
+}
+
+export interface DemoProfileRefs {
+  demoStudentUid?: string;
+  demoParentUid?: string;
+}
+
+export type ClassQuestionStatus = 'open' | 'answered';
+
+export interface ClassQuestionMessage {
+  role: 'student' | 'teacher';
+  text: string;
+  timestamp: string;
+}
+
+export interface ClassQuestionThread {
+  id: string;
+  classroomId: string;
+  studentUid: string;
+  teacherUid: string;
+  studentName: string;
+  status: ClassQuestionStatus;
+  teacherUnreadCount: number;
+  studentUnreadCount: number;
+  messages: ClassQuestionMessage[];
+  createdAt: string;
+  updatedAt: string;
 }
