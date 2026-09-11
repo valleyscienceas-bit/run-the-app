@@ -8,31 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════════
-   RESET & FUTURISTIC THEME BASE
+   RESET & COSMIC INTERSTELLAR THEME
 ══════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#090D16;
+html,body{width:100%;height:100%;overflow:hidden;background:#080C15;
   font-family:'Nunito',system-ui,-apple-system,sans-serif;color:#E2E8F0}
 
-/* Ambient glow & cyber grid */
+/* Ambient cosmic glow & interstellar depth */
 body::before{content:'';position:fixed;inset:0;
-  background:radial-gradient(circle at 50% 0%, rgba(14,165,233,0.14) 0%, rgba(15,23,42,0) 65%),
-             radial-gradient(circle at 10% 90%, rgba(56,189,248,0.06) 0%, transparent 50%),
-             radial-gradient(circle at 90% 85%, rgba(245,158,11,0.05) 0%, transparent 50%);
+  background:radial-gradient(circle at 50% -10%, rgba(56,189,248,0.18) 0%, rgba(15,23,42,0) 65%),
+             radial-gradient(circle at 15% 90%, rgba(99,102,241,0.10) 0%, transparent 55%),
+             radial-gradient(circle at 85% 85%, rgba(245,158,11,0.08) 0%, transparent 55%);
   pointer-events:none;z-index:0}
+
+/* Background floating cosmic dust canvas */
+#cosmic-bg-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 
 /* ── SCREENS ── */
 .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
 .hidden{display:none!important}
 
-/* ── KEYFRAME ANIMATIONS ── */
+/* ── REFINED FLOATING & KEYFRAME ANIMATIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes floatAnim{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes floatSubtle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes spinAnim{to{transform:rotate(360deg)}}
 @keyframes cyberBlink{50%{opacity:0}}
-@keyframes pulseCyan{0%,100%{box-shadow:0 0 14px rgba(14,165,233,.3)}50%{box-shadow:0 0 28px rgba(14,165,233,.6)}}
-@keyframes pulseAmber{0%,100%{box-shadow:0 0 14px rgba(245,158,11,.3)}50%{box-shadow:0 0 28px rgba(245,158,11,.6)}}
+@keyframes pulseCyan{0%,100%{box-shadow:0 0 16px rgba(14,165,233,.3)}50%{box-shadow:0 0 30px rgba(56,189,248,.65)}}
 @keyframes pulseEmerald{0%,100%{box-shadow:0 0 16px rgba(16,185,129,.35)}50%{box-shadow:0 0 32px rgba(16,185,129,.7)}}
+@keyframes shimmerWave{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* Version tag */
 #version-tag{position:fixed;bottom:12px;right:16px;z-index:9999;
@@ -44,22 +48,22 @@ body::before{content:'';position:fixed;inset:0;
 /* ══════════════════════════════════════════════
    FUTURISTIC UI COMPONENTS & CARDS
 ══════════════════════════════════════════════ */
-.cyber-card{background:rgba(15,23,42,.78);border:1px solid rgba(56,189,248,.24);
-  border-radius:16px;padding:22px;backdrop-filter:blur(14px);
-  box-shadow:0 8px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
-  animation:fadeUp .45s cubic-bezier(.16,1,.3,1) both}
+.cyber-card{background:rgba(15,23,42,.78);border:1px solid rgba(56,189,248,.25);
+  border-radius:18px;padding:24px;backdrop-filter:blur(16px);
+  box-shadow:0 12px 36px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  animation:fadeUp .45s cubic-bezier(.16,1,.3,1) both, floatSubtle 6s ease-in-out infinite}
 
 /* Primary Cyan Futuristic Glow Button */
 .btn-cyber-primary{background:linear-gradient(135deg,#0284C7,#0369A1);
   border:1px solid rgba(56,189,248,.6);color:#fff;
   padding:12px 28px;border-radius:12px;
   font-family:'Nunito',system-ui,sans-serif;font-size:15px;font-weight:800;
-  cursor:pointer;letter-spacing:.03em;
+  cursor:pointer;letter-spacing:.02em;
   box-shadow:0 0 16px rgba(14,165,233,.35),0 4px 12px rgba(0,0,0,.3);
   transition:all .18s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn-cyber-primary:hover:not(:disabled){
   background:linear-gradient(135deg,#0EA5E9,#0284C7);
-  box-shadow:0 0 24px rgba(56,189,248,.6),0 4px 16px rgba(14,165,233,.4);
+  box-shadow:0 0 26px rgba(56,189,248,.65),0 4px 16px rgba(14,165,233,.45);
   transform:translateY(-1px)}
 .btn-cyber-primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 0 8px rgba(14,165,233,.4)}
 .btn-cyber-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
@@ -69,7 +73,7 @@ body::before{content:'';position:fixed;inset:0;
   color:#CBD5E1;padding:9px 20px;border-radius:10px;font-family:'Nunito',system-ui,sans-serif;
   font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;
   box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.btn-cyber-secondary:hover{background:rgba(51,65,85,.8);color:#F8FAFC;border-color:rgba(56,189,248,.5);box-shadow:0 0 12px rgba(56,189,248,.2)}
+.btn-cyber-secondary:hover{background:rgba(51,65,85,.8);color:#F8FAFC;border-color:rgba(56,189,248,.5);box-shadow:0 0 14px rgba(56,189,248,.25)}
 .btn-cyber-secondary:active{transform:translateY(1px)}
 
 /* Section Label */
@@ -78,14 +82,14 @@ body::before{content:'';position:fixed;inset:0;
   text-shadow:0 0 8px rgba(56,189,248,.3)}
 
 /* ══════════════════════════════════════════════
-   INTRO SCREEN — High-Tech Briefing Room
+   INTRO SCREEN — Space Lab Launchpad
 ══════════════════════════════════════════════ */
 #s-intro{flex-direction:column;background:transparent}
 
 .intro-grid-bg{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(56,189,248,.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(56,189,248,.04) 1px,transparent 1px);
-  background-size:48px 48px;pointer-events:none}
+  background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);
+  background-size:52px 52px;pointer-events:none}
 
 .intro-bar{position:absolute;top:0;left:0;right:0;display:flex;
   justify-content:space-between;align-items:center;padding:20px 28px;z-index:10}
@@ -93,17 +97,18 @@ body::before{content:'';position:fixed;inset:0;
 .intro-badge{background:rgba(14,165,233,.12);border:1px solid rgba(56,189,248,.45);
   color:#38BDF8;font-size:11px;font-weight:800;letter-spacing:.22em;
   text-transform:uppercase;padding:6px 18px;border-radius:20px;
-  box-shadow:0 0 16px rgba(56,189,248,.15);font-family:'JetBrains Mono',monospace}
+  box-shadow:0 0 16px rgba(56,189,248,.18);font-family:'JetBrains Mono',monospace}
 
-.intro-title{font-size:clamp(32px,5.5vw,54px);font-weight:900;
+.intro-title{font-size:clamp(34px,5.8vw,56px);font-weight:900;
   color:#F8FAFC;letter-spacing:-1px;line-height:1.08;
-  text-shadow:0 0 24px rgba(56,189,248,.25)}
-.intro-title span{color:#38BDF8;text-shadow:0 0 20px rgba(56,189,248,.5)}
+  text-shadow:0 0 28px rgba(56,189,248,.3)}
+.intro-title span{color:#38BDF8;text-shadow:0 0 24px rgba(56,189,248,.55)}
 
-.terminal-box{background:rgba(10,15,26,.92);border:1px solid rgba(56,189,248,.28);
+.terminal-box{background:rgba(10,15,26,.92);border:1px solid rgba(56,189,248,.3);
   border-radius:14px;padding:20px 22px;width:100%;text-align:left;
-  box-shadow:0 8px 32px rgba(0,0,0,.5),inset 0 0 18px rgba(56,189,248,.04)}
-#story-text{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;color:#94A3B8}
+  box-shadow:0 8px 32px rgba(0,0,0,.5),inset 0 0 20px rgba(56,189,248,.05);
+  animation:floatSubtle 5s ease-in-out infinite}
+#story-text{font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.75;color:#94A3B8}
 .cursor-blink{display:inline-block;width:7px;height:14px;background:#38BDF8;
   animation:cyberBlink 1s step-end infinite;vertical-align:middle;margin-left:3px;
   box-shadow:0 0 8px #38BDF8}
@@ -117,11 +122,11 @@ body::before{content:'';position:fixed;inset:0;
 .modal-bg.open{opacity:1;pointer-events:all}
 .modal-box{background:#0F172A;border:1px solid rgba(56,189,248,.35);border-radius:20px;
   padding:32px;max-width:480px;width:92%;
-  box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 28px rgba(56,189,248,.18);
-  text-align:center;animation:fadeUp .3s ease}
+  box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 32px rgba(56,189,248,.2);
+  text-align:center;animation:fadeUp .3s ease, floatSubtle 5s ease-in-out infinite}
 .modal-box h2{color:#F8FAFC;font-size:22px;font-weight:900;margin-bottom:14px}
 .modal-box p,.modal-box li{color:#94A3B8;font-size:14px;line-height:1.7}
-.modal-box li{text-align:left;margin-left:18px;margin-bottom:6px}
+.modal-box li{text-align:left;margin-left:18px;margin-bottom:8px}
 .std-tag{display:inline-block;background:rgba(14,165,233,.15);border:1px solid rgba(56,189,248,.4);
   color:#38BDF8;padding:4px 14px;border-radius:10px;font-size:11px;
   font-weight:800;letter-spacing:.12em;margin-bottom:12px;font-family:'JetBrains Mono',monospace}
@@ -134,7 +139,7 @@ body::before{content:'';position:fixed;inset:0;
 
 .hyp-ta{width:100%;background:rgba(10,15,26,.85);
   border:1px solid rgba(56,189,248,.25);border-radius:14px;color:#F8FAFC;
-  font-family:'Nunito',system-ui,sans-serif;font-size:14.5px;line-height:1.65;
+  font-family:'Nunito',system-ui,sans-serif;font-size:15px;line-height:1.65;
   padding:16px;resize:none;outline:none;height:112px;transition:all .2s;
   box-shadow:inset 0 2px 6px rgba(0,0,0,.4)}
 .hyp-ta:focus{border-color:#38BDF8;box-shadow:0 0 16px rgba(56,189,248,.25),inset 0 2px 6px rgba(0,0,0,.4)}
@@ -142,7 +147,7 @@ body::before{content:'';position:fixed;inset:0;
 
 .v-bubble{display:flex;align-items:flex-start;gap:14px;
   background:rgba(15,23,42,.9);border:1px solid rgba(56,189,248,.3);border-radius:16px;
-  padding:18px 22px;animation:fadeUp .4s ease both;
+  padding:18px 22px;animation:fadeUp .4s ease both, floatSubtle 5s ease-in-out infinite;
   box-shadow:0 0 20px rgba(56,189,248,.1)}
 .v-dot-sm{width:36px;height:36px;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 35% 35%,#7DD3FC,#0284C7,#0369A1);
@@ -156,10 +161,10 @@ body::before{content:'';position:fixed;inset:0;
 
 /* Valerie overlay — inside #s-sim, dims only when frozen */
 #valerie-overlay{position:absolute;inset:0;background:rgba(9,13,22,.84);
-  backdrop-filter:blur(5px);z-index:5;opacity:0;pointer-events:none;transition:opacity .35s ease}
+  backdrop-filter:blur(6px);z-index:5;opacity:0;pointer-events:none;transition:opacity .35s ease}
 #valerie-overlay.active{opacity:1;pointer-events:all}
 
-/* ─── DASHBOARD (2 parts = 40% width) ─── */
+/* ─── DASHBOARD SIDEBAR (2 parts = 40% width) ─── */
 .sidebar{width:40%;min-width:320px;max-width:440px;flex-shrink:0;background:rgba(11,17,30,.92);
   border-right:1px solid rgba(56,189,248,.22);
   display:flex;flex-direction:column;height:100vh;
@@ -178,7 +183,7 @@ body::before{content:'';position:fixed;inset:0;
   background:rgba(15,23,42,.65);border-bottom:1px solid rgba(56,189,248,.15)}
 .v-core{width:38px;height:38px;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 35% 35%,#BAE6FD,#0284C7,#075985);
-  box-shadow:0 0 14px rgba(14,165,233,.6)}
+  box-shadow:0 0 14px rgba(14,165,233,.6);animation:floatGentle 4s ease-in-out infinite}
 .v-name{font-size:14px;font-weight:900;color:#F8FAFC;letter-spacing:.02em}
 .v-role{font-size:11px;color:#94A3B8;font-family:'JetBrains Mono',monospace}
 
@@ -221,9 +226,9 @@ body::before{content:'';position:fixed;inset:0;
 /* Observation Box */
 .obs-wrap{display:flex;flex-direction:column;gap:8px;animation:fadeUp .35s ease both}
 .obs-lbl{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:.2em;font-family:'JetBrains Mono',monospace}
-.obs-prompt{font-size:12.5px;color:#CBD5E1;line-height:1.55;font-weight:600}
+.obs-prompt{font-size:13px;color:#CBD5E1;line-height:1.55;font-weight:600}
 .obs-ta{width:100%;background:rgba(10,15,26,.85);border:1px solid rgba(56,189,248,.3);
-  border-radius:10px;color:#F8FAFC;font-family:'Nunito',system-ui,sans-serif;font-size:13px;
+  border-radius:10px;color:#F8FAFC;font-family:'Nunito',system-ui,sans-serif;font-size:13.5px;
   line-height:1.55;padding:10px 12px;resize:none;outline:none;height:76px;transition:all .2s}
 .obs-ta:focus{border-color:#38BDF8;box-shadow:0 0 14px rgba(56,189,248,.3)}
 .obs-ta::placeholder{color:#64748B;font-style:italic}
@@ -237,17 +242,17 @@ body::before{content:'';position:fixed;inset:0;
 
 /* ─── LAB BOX (3 parts = 60% width) ─── */
 .sim-main{flex:3;min-width:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:20px;overflow-y:auto;position:relative;background:#090D16}
+  justify-content:center;padding:20px;overflow-y:auto;position:relative;background:#080C15}
 
 .canvas-wrap{position:relative;width:100%;max-width:920px;
-  background:#0B0F19;border:1px solid rgba(56,189,248,.35);
-  border-radius:16px;overflow:hidden;box-shadow:0 0 32px rgba(0,0,0,.6),inset 0 0 24px rgba(56,189,248,.04);
+  background:#0A0E18;border:1px solid rgba(56,189,248,.35);
+  border-radius:16px;overflow:hidden;box-shadow:0 0 36px rgba(0,0,0,.6),inset 0 0 24px rgba(56,189,248,.04);
   transition:border-color .3s,box-shadow .3s}
-.canvas-wrap.glow{border-color:#10B981;box-shadow:0 0 40px rgba(16,185,129,.35)}
+.canvas-wrap.glow{border-color:#10B981;box-shadow:0 0 44px rgba(16,185,129,.4)}
 #sim-canvas{display:block;width:100%;height:auto}
 
-.canvas-overlay{position:absolute;inset:0;background:rgba(9,13,22,.85);
-  backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;
+.canvas-overlay{position:absolute;inset:0;background:rgba(8,12,20,.85);
+  backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:12px;border-radius:16px;transition:opacity .45s ease}
 .canvas-overlay.gone{opacity:0;pointer-events:none}
 .ov-text{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#94A3B8;letter-spacing:1px}
@@ -255,7 +260,7 @@ body::before{content:'';position:fixed;inset:0;
 /* ─── LAB CONTROL DECK (IN-BOX SLIDERS) ─── */
 .lab-controls-deck{width:100%;max-width:920px;margin-top:14px;
   background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.25);
-  border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);
+  border-radius:16px;padding:16px 20px;backdrop-filter:blur(14px);
   display:flex;flex-direction:column;gap:14px;
   box-shadow:0 8px 30px rgba(0,0,0,.45)}
 
@@ -327,29 +332,36 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
   box-shadow:0 0 24px rgba(52,211,153,.7);transform:scale(1.02)}
 
 /* ══════════════════════════════════════════════
-   STEP TRANSITION LAYER — 70% OPACITY SILVERY-BLUE PAINT GLOB
+   INTERSTELLAR SHIMMER WAVE TRANSITION LAYER
+   Smooth Liquid Glass / iPhone Shimmer Wave
 ══════════════════════════════════════════════ */
 #step-glob-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;
-  opacity:0;transition:opacity .15s ease}
+  opacity:0;transition:opacity .2s ease}
 #step-glob-overlay.active{opacity:1;pointer-events:all}
 #glob-canvas{position:absolute;inset:0;width:100%;height:100%}
 
+/* Centered Apple / Frosted Glass HUD Card */
 .glob-hud-center{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:10;gap:10px;pointer-events:none;
+  align-items:center;justify-content:center;z-index:10;gap:12px;pointer-events:none;
   opacity:0;transform:scale(.92);transition:all .35s cubic-bezier(.16,1,.3,1)}
 .glob-hud-center.show{opacity:1;transform:scale(1)}
 
-.glob-badge{background:rgba(11,15,25,.88);border:1px solid rgba(56,189,248,.6);
-  color:#38BDF8;padding:6px 20px;border-radius:30px;font-size:11px;font-weight:800;
-  letter-spacing:.25em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;
-  box-shadow:0 0 20px rgba(56,189,248,.35)}
+.glob-card-box{background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.45);
+  border-radius:24px;padding:26px 48px;backdrop-filter:blur(24px);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 40px rgba(56,189,248,.25);
+  animation:floatSubtle 4s ease-in-out infinite}
 
-.glob-title{font-size:36px;font-weight:900;color:#F8FAFC;letter-spacing:.05em;
+.glob-badge{background:rgba(14,165,233,.18);border:1px solid rgba(56,189,248,.6);
+  color:#38BDF8;padding:5px 18px;border-radius:30px;font-size:11px;font-weight:800;
+  letter-spacing:.25em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;
+  box-shadow:0 0 16px rgba(56,189,248,.3)}
+
+.glob-title{font-size:32px;font-weight:900;color:#F8FAFC;letter-spacing:.02em;
   text-shadow:0 0 24px rgba(56,189,248,.6);text-transform:uppercase}
 
-.glob-step-name{font-size:16px;color:#CBD5E1;font-weight:700;letter-spacing:.02em;
-  background:rgba(15,23,42,.8);padding:6px 18px;border-radius:8px;
-  border:1px solid rgba(226,232,240,.25);box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.glob-step-name{font-size:15px;color:#CBD5E1;font-weight:700;letter-spacing:.02em;
+  font-family:'Nunito',system-ui,sans-serif}
 
 /* ══════════════════════════════════════════════
    VIDEO SCREEN
@@ -360,11 +372,11 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 .vid-title{font-size:26px;font-weight:900;color:#F8FAFC}
 .vid-sub{font-size:14px;color:#94A3B8;font-weight:600}
 
-.vid-player{position:relative;width:100%;aspect-ratio:16/9;background:#0B0F19;
+.vid-player{position:relative;width:100%;aspect-ratio:16/9;background:#0A0E18;
   border-radius:16px;overflow:hidden;border:1px solid rgba(56,189,248,.3);
   box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 24px rgba(56,189,248,.1)}
 #vid-canvas{width:100%;height:auto;display:block}
-.vid-loading{position:absolute;inset:0;background:#0B0F19;display:flex;flex-direction:column;
+.vid-loading{position:absolute;inset:0;background:#0A0E18;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:14px;transition:opacity .6s,visibility .6s}
 .vid-loading.gone{opacity:0;visibility:hidden}
 .spinner{width:48px;height:48px;border-radius:50%;
@@ -407,7 +419,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 .q-ta::placeholder{color:#64748B;font-style:italic}
 
 /* ══════════════════════════════════════════════
-   RESULTS SCREEN & COLOR CELEBRATION
+   RESULTS SCREEN & CELEBRATION
 ══════════════════════════════════════════════ */
 #s-results{flex-direction:column;background:transparent;padding:40px 20px;overflow-y:auto;
   align-items:center;justify-content:flex-start}
@@ -449,13 +461,18 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 </head>
 <body>
 
-<!-- ═══════════════ STEP TRANSITION OVERLAY ═══════════════ -->
+<!-- Ambient cosmic floating starfield background -->
+<canvas id="cosmic-bg-canvas"></canvas>
+
+<!-- ═══════════════ INTERSTELLAR SHIMMER STEP TRANSITION OVERLAY ═══════════════ -->
 <div id="step-glob-overlay">
   <canvas id="glob-canvas"></canvas>
   <div class="glob-hud-center" id="glob-hud-center">
-    <div class="glob-badge">[ SEQUENCE ADVANCING ]</div>
-    <div class="glob-title">NEXT STEP</div>
-    <div class="glob-step-name" id="glob-step-name">Step 2: Apply Left Force</div>
+    <div class="glob-card-box">
+      <div class="glob-badge">NEXT STEP</div>
+      <div class="glob-title" id="glob-title-text">STEP 2</div>
+      <div class="glob-step-name" id="glob-step-name">Fire Left Rocket</div>
+    </div>
   </div>
 </div>
 
@@ -464,7 +481,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
   <div class="intro-grid-bg"></div>
   <div class="intro-bar">
     <button class="btn-cyber-secondary" onclick="exitMod()">✕ Exit</button>
-    <button class="btn-cyber-secondary" onclick="toggleModal()">ⓘ Standards</button>
+    <button class="btn-cyber-secondary" onclick="toggleModal()">ⓘ What You'll Learn</button>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:70px 20px 20px;z-index:5;max-width:640px;animation:fadeUp .6s ease both">
     <div class="intro-badge">MS-PS2-1 · Grade 8 · Module 3001</div>
@@ -475,7 +492,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
     </div>
     <div style="margin-top:6px">
       <button class="btn-cyber-primary btn-launch" id="start-btn" onclick="goHyp()" style="opacity:0;pointer-events:none;transform:translateY(8px)">
-        INITIALIZE LAB SEQUENCE →
+        Launch Space Lab →
       </button>
     </div>
   </div>
@@ -485,26 +502,25 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 <div class="modal-bg" id="modal">
   <div class="modal-box">
     <span class="std-tag">MS-PS2-1</span>
-    <h2>Scientific Standards</h2>
+    <h2>What You'll Learn in This Lab</h2>
     <ul>
-      <li><strong>NGSS MS-PS2-1</strong> — Newton's First &amp; Third Laws, balanced forces and interactions.</li>
-      <li><strong>SEP 2</strong> — Developing and using deterministic models.</li>
-      <li><strong>CCC: Cause &amp; Effect</strong> — Zero net force causes zero acceleration.</li>
-      <li><strong>DCI PS2.A</strong> — Balanced forces produce equilibrium (static or constant velocity).</li>
+      <li><strong>Balanced Forces:</strong> What happens when two opposite pushes or pulls have equal strength.</li>
+      <li><strong>Total Net Force:</strong> Why equal opposite forces cancel each other out to zero (0 N).</li>
+      <li><strong>Newton's First Law:</strong> When the total net force is zero, an object will not speed up or slow down!</li>
     </ul>
-    <p style="color:#64748B;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science Core Curriculum.</p>
-    <button class="btn-cyber-primary" style="margin-top:18px" onclick="toggleModal()">Acknowledge</button>
+    <p style="color:#64748B;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science standards.</p>
+    <button class="btn-cyber-primary" style="margin-top:18px" onclick="toggleModal()">Got it!</button>
   </div>
 </div>
 
 <!-- ═══════════════ VALERIE SLEEP MODAL ═══════════════ -->
 <div class="modal-bg" id="valerie-sleep-modal">
   <div class="modal-box">
-    <div style="font-size:52px;margin-bottom:8px;animation:floatAnim 2s ease-in-out infinite">😴</div>
+    <div style="font-size:52px;margin-bottom:8px;animation:floatGentle 3s ease-in-out infinite">😴</div>
     <h2 style="color:#38BDF8">Valerie is Sleeping</h2>
-    <p>She's recharging her tutoring neural net right now.<br>She will rejoin you as you reach the next stage!</p>
+    <p>She's resting her neural network right now.<br>She'll be right back as you move to the next step!</p>
     <p style="font-size:12px;color:#64748B;margin-top:10px;font-family:'JetBrains Mono',monospace" id="sleep-timer">Closing in 3s...</p>
-    <button class="btn-cyber-secondary" style="margin-top:14px" onclick="closeValerieModal()">Return to Lab</button>
+    <button class="btn-cyber-secondary" style="margin-top:14px" onclick="closeValerieModal()">Back to Lab</button>
   </div>
 </div>
 
@@ -512,18 +528,18 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 <div class="screen hidden" id="s-hyp">
   <div class="hyp-wrap">
     <div class="cyber-card">
-      <div class="sec-lbl">Mission Brief</div>
-      <h3 style="font-size:20px;font-weight:900;color:#F8FAFC;margin-bottom:8px">Investigating Equilibrium</h3>
-      <p style="color:#94A3B8;font-size:14px;line-height:1.7;font-weight:600">Two opposing winches apply tension to a 50 kg test cart on a frictionless orbital track. Sometimes the cart accelerates violently — other times it maintains steady state while both winches pull with maximum power. Your task is to prove the exact mathematical condition for equilibrium.</p>
+      <div class="sec-lbl">The Mystery</div>
+      <h3 style="font-size:20px;font-weight:900;color:#F8FAFC;margin-bottom:8px">Why Isn't the Robot Moving?</h3>
+      <p style="color:#94A3B8;font-size:14.5px;line-height:1.7;font-weight:600">Two space rockets are hooked up to a 50 kg robot on a super smooth, frictionless track. Sometimes the robot zooms across space — other times it sits completely still even when both rockets fire at full blast! Let's find out why.</p>
     </div>
     <div class="cyber-card">
-      <div class="sec-lbl">Hypothesis Formulation</div>
+      <div class="sec-lbl">Your Prediction</div>
       <p style="color:#CBD5E1;font-size:14.5px;margin-bottom:12px;font-weight:600">
-        What will happen to the cart's acceleration and velocity when both winches pull with the <em>exact same force</em>?
+        What will happen to the robot when both rockets pull with the <em>exact same strength</em>?
       </p>
-      <textarea class="hyp-ta" id="hyp-ta" placeholder="I predict the cart will... because..."></textarea>
+      <textarea class="hyp-ta" id="hyp-ta" placeholder="I think the robot will... because..."></textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-cyber-primary" id="hyp-btn" onclick="submitHyp()" disabled>Lock In Hypothesis →</button>
+        <button class="btn-cyber-primary" id="hyp-btn" onclick="submitHyp()" disabled>Lock In Guess →</button>
       </div>
     </div>
     <div class="v-bubble hidden" id="v-hyp-reply">
@@ -534,7 +550,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 </div>
 
 <!-- ═══════════════ SIMULATION SCREEN (2:3 Ratio) ═══════════════ -->
-<div id="version-tag">v6.0 · FUTURISTIC HYBRID</div>
+<div id="version-tag">v6.2 · INTERSTELLAR HYBRID</div>
 <div class="screen hidden" id="s-sim">
   <div id="valerie-overlay"></div>
 
@@ -544,28 +560,28 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
       <div class="v-core"></div>
       <div>
         <div class="v-name">Valerie</div>
-        <div class="v-role">Curriculum AI Guide</div>
+        <div class="v-role">Your Science Guide</div>
       </div>
       <button class="btn-ask-valerie" onclick="askValerie()">Ask Valerie</button>
     </div>
 
     <div class="sidebar-scroll">
-      <div class="v-panel" id="v-panel">Initializing lab parameters...</div>
+      <div class="v-panel" id="v-panel">Getting lab ready...</div>
 
       <div class="steps">
-        <div class="step active" id="st-0"><div class="step-n">1</div><div class="step-lbl">Orient the Lab</div></div>
-        <div class="step" id="st-1"><div class="step-n">2</div><div class="step-lbl">Apply Left Force</div></div>
-        <div class="step" id="st-2"><div class="step-n">3</div><div class="step-lbl">Observe &amp; Reflect</div></div>
-        <div class="step" id="st-3"><div class="step-n">4</div><div class="step-lbl">Balance the Forces</div></div>
-        <div class="step" id="st-4"><div class="step-n">5</div><div class="step-lbl">Discover Equilibrium</div></div>
-        <div class="step" id="st-5"><div class="step-n">6</div><div class="step-lbl">Synthesis</div></div>
+        <div class="step active" id="st-0"><div class="step-n">1</div><div class="step-lbl">Get Ready</div></div>
+        <div class="step" id="st-1"><div class="step-n">2</div><div class="step-lbl">Fire Left Rocket</div></div>
+        <div class="step" id="st-2"><div class="step-n">3</div><div class="step-lbl">What Happened?</div></div>
+        <div class="step" id="st-3"><div class="step-n">4</div><div class="step-lbl">Balance the Rockets</div></div>
+        <div class="step" id="st-4"><div class="step-n">5</div><div class="step-lbl">Zero Net Force!</div></div>
+        <div class="step" id="st-5"><div class="step-n">6</div><div class="step-lbl">What You Learned</div></div>
       </div>
 
       <div class="metrics">
-        <div class="m-card"><div class="m-val" id="m-net">0.0 N</div><div class="m-lbl">Net Force</div></div>
-        <div class="m-card"><div class="m-val" id="m-acc">0.00</div><div class="m-lbl">Accel m/s²</div></div>
-        <div class="m-card"><div class="m-val" id="m-vel">0.00</div><div class="m-lbl">Velocity m/s</div></div>
-        <div class="m-card"><div class="m-val" id="m-pos">0.00</div><div class="m-lbl">Displacement m</div></div>
+        <div class="m-card"><div class="m-val" id="m-net">0.0 N</div><div class="m-lbl">Total Net Force</div></div>
+        <div class="m-card"><div class="m-val" id="m-acc">0.00</div><div class="m-lbl">Acceleration m/s²</div></div>
+        <div class="m-card"><div class="m-val" id="m-vel">0.00</div><div class="m-lbl">Speed m/s</div></div>
+        <div class="m-card"><div class="m-val" id="m-pos">0.00</div><div class="m-lbl">Position m</div></div>
       </div>
 
       <div id="action-inline"></div>
@@ -574,7 +590,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
     <!-- Sticky Bottom Action Bar -->
     <div class="sidebar-action">
       <div id="action-area">
-        <button class="btn-cyber-primary" style="width:100%" id="btn-start-sim" onclick="startSim()">Initialize Simulation →</button>
+        <button class="btn-cyber-primary" style="width:100%" id="btn-start-sim" onclick="startSim()">Start Experiment →</button>
       </div>
     </div>
   </div>
@@ -584,18 +600,18 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
     <div class="canvas-wrap" id="canvas-wrap">
       <canvas id="sim-canvas"></canvas>
       <div class="canvas-overlay" id="canvas-ov">
-        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#38BDF8;letter-spacing:.15em">[ SIMULATION STANDBY ]</div>
-        <div class="ov-text">Review briefing in Dashboard, then start!</div>
+        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#38BDF8;letter-spacing:.15em">[ SPACE LAB STANDBY ]</div>
+        <div class="ov-text">Read Valerie's tips, then hit Start Experiment!</div>
       </div>
     </div>
 
-    <!-- Intuitive Sliders Moved Into Lab Box -->
+    <!-- Intuitive Sliders Inside the Lab Box -->
     <div class="lab-controls-deck">
       <div class="lab-controllers-grid">
         <!-- Left Controller -->
         <div class="force-control-pod left-pod" id="pod-L">
           <div class="pod-header">
-            <span class="pod-title">Left Thruster [Pull ←]</span>
+            <span class="pod-title">Left Rocket [Pulls Left ←]</span>
             <span class="pod-value" id="lv">0 N</span>
           </div>
           <input type="range" class="cyber-range" id="sl-L" min="0" max="100" value="0" disabled>
@@ -609,16 +625,16 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 
         <!-- Center Telemetry & Balance Confirmation -->
         <div class="center-telemetry-pod">
-          <div class="net-chip-lbl">Net Force ΣF</div>
+          <div class="net-chip-lbl">Total Net Force ΣF</div>
           <div class="net-chip-val" id="c-FN">0.0 N</div>
-          <div class="status-pill" id="status-pill">STATIONARY</div>
+          <div class="status-pill" id="status-pill">STILL</div>
           <div id="lab-confirm-area" style="width:100%"></div>
         </div>
 
         <!-- Right Controller -->
         <div class="force-control-pod right-pod" id="pod-R">
           <div class="pod-header">
-            <span class="pod-title">Right Thruster [Pull →]</span>
+            <span class="pod-title">Right Rocket [Pulls Right →]</span>
             <span class="pod-value" id="rv">0 N</span>
           </div>
           <input type="range" class="cyber-range" id="sl-R" min="0" max="100" value="0" disabled>
@@ -638,13 +654,13 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
 <div class="screen hidden" id="s-video">
   <div class="vid-wrap">
     <div class="vid-eyebrow">Concept Deep-Dive</div>
-    <div class="vid-title">Balanced Forces &amp; Newton's First Law</div>
-    <div class="vid-sub">Observing how opposing force vectors produce dynamic and static equilibrium</div>
+    <div class="vid-title">Balanced Forces in Space and on Earth</div>
+    <div class="vid-sub">See how equal opposite forces create balance in everyday life</div>
     <div class="vid-player" id="vid-player">
       <canvas id="vid-canvas"></canvas>
       <div class="vid-loading" id="vid-loading">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94A3B8">Buffering vector sequence...</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94A3B8">Loading video...</div>
       </div>
       <div class="vid-caption-wrap"><span class="vid-cap" id="vid-cap"></span></div>
       <div class="vid-controls">
@@ -655,7 +671,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
         <div class="vid-time" id="vid-time">0:00 / 0:30</div>
       </div>
     </div>
-    <button class="btn-cyber-primary hidden" id="vid-continue" style="align-self:center" onclick="goQuiz()">Proceed to Assessment →</button>
+    <button class="btn-cyber-primary hidden" id="vid-continue" style="align-self:center" onclick="goQuiz()">Take Quick Quiz →</button>
   </div>
 </div>
 
@@ -667,9 +683,9 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
     <div class="cyber-card" id="q-card" style="gap:14px;display:flex;flex-direction:column">
       <h3 id="q-text"></h3>
       <p class="q-hint" id="q-hint"></p>
-      <textarea class="q-ta" id="q-ta" placeholder="Type your scientific explanation here..."></textarea>
+      <textarea class="q-ta" id="q-ta" placeholder="Type your answer here in your own words..."></textarea>
       <div style="display:flex;justify-content:flex-end">
-        <button class="btn-cyber-primary" id="q-btn" onclick="submitQ()" disabled>Submit Analysis →</button>
+        <button class="btn-cyber-primary" id="q-btn" onclick="submitQ()" disabled>Submit Answer →</button>
       </div>
     </div>
   </div>
@@ -680,7 +696,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
   <canvas id="celebration-canvas"></canvas>
   <div class="res-wrap">
     <div class="res-header">
-      <h2>MISSION EVALUATION COMPLETE</h2>
+      <h2>MISSION COMPLETE!</h2>
       <p>Module 3001: Balanced Forces &amp; Newton's First Law</p>
     </div>
     <div class="ring-wrap"><canvas id="score-ring" width="140" height="140"></canvas></div>
@@ -689,7 +705,7 @@ input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transfo
       <div class="v-dot-sm"></div>
       <p id="v-final"></p>
     </div>
-    <button class="btn-cyber-primary" style="align-self:center" onclick="exitMod()">Complete Module ✓</button>
+    <button class="btn-cyber-primary" style="align-self:center" onclick="exitMod()">Finish Space Lab ✓</button>
   </div>
 </div>
 
@@ -712,118 +728,170 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 ═══════════════════════════════════════════════════════════ */
 const G={step:0,hypothesis:'',obs:[],simMetrics:{balFL:0,balFR:0,maxVel:0},
   quizAnswers:[],simRunning:false,raf:null,iconRaf:null,vidRaf:null,celebRaf:null,
-  vidTime:0,vidDur:30,vidPlaying:false,thresholdHit1:false,thresholdHit2:false};
+  bgDustRaf:null,vidTime:0,vidDur:30,vidPlaying:false,thresholdHit1:false,thresholdHit2:false};
 const P={FL:0,FR:0,mass:50,vel:0,pos:0,dt:1/60};
 
 /* ═══════════════════════════════════════════════════════════
-   STEP NAMES FOR TRANSITIONS
+   STEP NAMES FOR TRANSITIONS (Simple & Friendly for Students)
 ═══════════════════════════════════════════════════════════ */
 const STEP_NAMES=[
-  "Step 1: Orient the Lab",
-  "Step 2: Apply Left Force",
-  "Step 3: Observe & Reflect",
-  "Step 4: Balance the Forces",
-  "Step 5: Discover Equilibrium",
-  "Step 6: Scientific Synthesis"
+  "Step 1: Get Ready",
+  "Step 2: Fire Left Rocket",
+  "Step 3: What Happened?",
+  "Step 4: Balance the Rockets",
+  "Step 5: Zero Net Force!",
+  "Step 6: What You Learned"
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   STEP TRANSITION: 70% OPACITY SILVERY-BLUE PAINT GLOB
+   AMBIENT FLOATING SPACE STARDUST
+═══════════════════════════════════════════════════════════ */
+(function initAmbientCosmos(){
+  const canvas=document.getElementById('cosmic-bg-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const particles=[];
+  for(let i=0;i<65;i++){
+    particles.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: 0.6 + Math.random()*1.8,
+      alpha: 0.15 + Math.random()*0.55,
+      vx: (Math.random()-0.5)*0.25,
+      vy: -0.15 - Math.random()*0.35,
+      color: Math.random()>0.4 ? 'rgba(56,189,248,' : 'rgba(226,232,240,'
+    });
+  }
+
+  function render(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<particles.length;i++){
+      const p=particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      if(p.y < -10) p.y = canvas.height + 10;
+      if(p.x < -10) p.x = canvas.width + 10;
+      if(p.x > canvas.width + 10) p.x = -10;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    }
+    G.bgDustRaf = requestAnimationFrame(render);
+  }
+  render();
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   INTERSTELLAR SHIMMER STEP TRANSITION
+   Apple / iPhone Liquid Glass Shimmer Wave
 ═══════════════════════════════════════════════════════════ */
 function runStepGlobTransition(stepNumber, stepTitle, onDone){
   const overlay=document.getElementById('step-glob-overlay');
   const hud=document.getElementById('glob-hud-center');
+  const titleText=document.getElementById('glob-title-text');
   const txt=document.getElementById('glob-step-name');
   const canvas=document.getElementById('glob-canvas');
   const ctx=canvas.getContext('2d');
 
   canvas.width=window.innerWidth;
   canvas.height=window.innerHeight;
-  txt.textContent=stepTitle||("Step "+stepNumber);
+
+  titleText.textContent = "STEP " + stepNumber;
+  txt.textContent = stepTitle || ("Step " + stepNumber);
 
   overlay.classList.add('active');
   hud.classList.add('show');
 
-  let startTime=performance.now();
-  const duration=1150; // ms
+  const startTime=performance.now();
+  const duration=1000; // ms
 
-  // Pre-generate organic fluid wave offsets
-  const numGlobs=22;
-  const blobs=[];
-  for(let i=0;i<numGlobs;i++){
-    blobs.push({
-      y: (canvas.height/numGlobs)*i + (Math.random()-0.5)*(canvas.height/numGlobs),
-      r: 60 + Math.random()*90,
-      lead: (Math.random()-0.5)*180,
-      colorVariant: Math.random()
+  // Pre-generate stellar glint specks
+  const glints=[];
+  for(let i=0;i<30;i++){
+    glints.push({
+      yFrac: Math.random(),
+      relOffset: (Math.random()-0.5)*180,
+      size: 1.5 + Math.random()*3,
+      alpha: 0.4 + Math.random()*0.6
     });
   }
 
   function frame(now){
-    const elapsed=now-startTime;
-    const progress=Math.min(elapsed/duration,1);
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Smooth cubic ease-in-out
+    const ease = progress < 0.5 ? 4*progress*progress*progress : 1 - Math.pow(-2*progress + 2, 3)/2;
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0,0,W,H);
 
-    // Wave position travels across screen from left to right
-    const W=canvas.width;
-    const H=canvas.height;
-    const waveX = -120 + progress*(W+260);
+    // Front edge position of interstellar wave
+    const waveFront = -250 + ease * (W + 550);
+    const waveWidth = 380;
 
-    // Layer 1: 70% opacity deep slate-silvery fluid
+    // 1. Smooth Interstellar Shimmer Ribbon (70% opacity, pure cosmic gradient)
     ctx.save();
+
+    // Curved sweeping light beam
     ctx.beginPath();
-    ctx.fillStyle='rgba(100, 116, 139, 0.70)';
-    ctx.moveTo(0,0);
-    ctx.lineTo(waveX - 40, 0);
-    for(let i=0;i<blobs.length;i++){
-      const b=blobs[i];
-      const cpX = waveX + b.lead*0.6;
-      ctx.quadraticCurveTo(cpX, b.y, waveX - 20, b.y + (H/numGlobs));
+    ctx.moveTo(waveFront - waveWidth, 0);
+
+    for(let y=0; y<=H; y+=25){
+      // Silky organic wave curvature (like iPhone cosmic fluid / aurora ribbon)
+      const curve = Math.sin((y / H) * Math.PI * 1.8 + progress * Math.PI) * 55;
+      ctx.lineTo(waveFront + curve, y);
     }
-    ctx.lineTo(0,H);
+
+    ctx.lineTo(waveFront - waveWidth - 60, H);
     ctx.closePath();
+
+    // Multilayered 70% opacity metallic silver & cosmic cyan gradient
+    const grad = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
+    grad.addColorStop(0, 'rgba(15, 23, 42, 0)');
+    grad.addColorStop(0.35, 'rgba(99, 102, 241, 0.40)');
+    grad.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)'); // 70% blue
+    grad.addColorStop(0.92, 'rgba(226, 232, 240, 0.70)'); // 70% silvery
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0.85)');
+
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#38BDF8';
+    ctx.shadowBlur = 35;
     ctx.fill();
 
-    // Layer 2: 70% opacity brilliant metallic silvery paint
-    ctx.beginPath();
-    ctx.fillStyle='rgba(226, 232, 240, 0.70)';
-    ctx.moveTo(0,0);
-    ctx.lineTo(waveX - 80, 0);
-    for(let i=0;i<blobs.length;i++){
-      const b=blobs[i];
-      const cpX = waveX - 40 + b.lead*0.8;
-      ctx.quadraticCurveTo(cpX, b.y, waveX - 60, b.y + (H/numGlobs));
-    }
-    ctx.lineTo(0,H);
-    ctx.closePath();
-    ctx.fill();
-
-    // Layer 3: 70% opacity luminous electric blue / cyan paint
-    ctx.beginPath();
-    ctx.fillStyle='rgba(14, 165, 233, 0.70)';
-    ctx.moveTo(0,0);
-    ctx.lineTo(waveX - 120, 0);
-    for(let i=0;i<blobs.length;i++){
-      const b=blobs[i];
-      const cpX = waveX - 80 + b.lead;
-      ctx.quadraticCurveTo(cpX, b.y, waveX - 100, b.y + (H/numGlobs));
-    }
-    ctx.lineTo(0,H);
-    ctx.closePath();
-    ctx.fill();
-
-    // Leading organic paint droplets
-    for(let i=0;i<blobs.length;i+=2){
-      const b=blobs[i];
-      const dropX = waveX + b.lead*0.9;
-      if(dropX > 0 && dropX < W){
+    // 2. Shimmering Starlight Glints
+    for(let i=0; i<glints.length; i++){
+      const g = glints[i];
+      const gx = waveFront - 60 + g.relOffset;
+      const gy = g.yFrac * H;
+      if(gx > 0 && gx < W){
+        // 4-point star glint
+        ctx.save();
+        ctx.translate(gx, gy);
+        ctx.fillStyle = `rgba(255, 255, 255, ${g.alpha * (1 - Math.abs(progress - 0.5)*1.8)})`;
         ctx.beginPath();
-        ctx.arc(dropX, b.y, b.r*0.25, 0, Math.PI*2);
-        ctx.fillStyle = b.colorVariant>0.5 ? 'rgba(56, 189, 248, 0.70)' : 'rgba(203, 213, 225, 0.70)';
+        ctx.arc(0, 0, g.size, 0, Math.PI*2);
         ctx.fill();
+        // Tiny cross flare
+        ctx.strokeStyle = `rgba(56, 189, 248, ${g.alpha * 0.7})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-g.size*2.8, 0); ctx.lineTo(g.size*2.8, 0);
+        ctx.moveTo(0, -g.size*2.8); ctx.lineTo(0, g.size*2.8);
+        ctx.stroke();
+        ctx.restore();
       }
     }
+
     ctx.restore();
 
     if(progress < 1){
@@ -831,7 +899,7 @@ function runStepGlobTransition(stepNumber, stepTitle, onDone){
     } else {
       hud.classList.remove('show');
       overlay.classList.remove('active');
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.clearRect(0,0,W,H);
       if(onDone) onDone();
     }
   }
@@ -853,8 +921,9 @@ window.addEventListener('resize', function(){
 
 /* ═══════════════════════════════════════════════════════════
    TYPING ANIMATION
+   (Exact User Request: Simple, Student-Friendly Briefing)
 ═══════════════════════════════════════════════════════════ */
-const STORY="INCIDENT BRIEFING: Orbital Tug-Bot 3001 is suspended on a frictionless linear rail. High-power thrusters are pulling from opposing vectors — yet sensor telemetry confirms the bot's acceleration is frozen at zero.\n\nYour mission: analyze the force interactions, establish true equilibrium, and prove Newton's First Law.";
+const STORY="INCIDENT BRIEFING: Orbital Tug-Bot 3001 is on top of a smooth track. Rockets are pulling both ways, but the robot is not moving.\n\nYour mission: figure out why it is not moving, and prove the First Law of Newton.";
 let tIdx=0;
 function typeWriter(){
   const el=document.getElementById('story-text');
@@ -885,20 +954,21 @@ function typeWriter(){
     ctx.closePath();ctx.fill();
   }
   function draw(){
-    ctx.clearRect(0,0,280,110);const cx=140,cy=55,off=Math.sin(t*.05)*10;
+    ctx.clearRect(0,0,280,110);const cx=140,cy=55,off=Math.sin(t*.04)*8;
+    const floatBob = Math.sin(t*0.05)*3.5;
     // Ambient Glow
-    const g=ctx.createRadialGradient(cx,cy,2,cx,cy,52);
-    g.addColorStop(0,'rgba(56,189,248,.18)');g.addColorStop(1,'rgba(56,189,248,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,52,0,Math.PI*2);ctx.fill();
+    const g=ctx.createRadialGradient(cx,cy+floatBob,2,cx,cy+floatBob,52);
+    g.addColorStop(0,'rgba(56,189,248,.20)');g.addColorStop(1,'rgba(56,189,248,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy+floatBob,52,0,Math.PI*2);ctx.fill();
     // Opposing Force Arrows
-    arrowI(ctx,cx-22-off,cy,cx-96-off,cy,'#38BDF8',3.5);
-    arrowI(ctx,cx+22+off,cy,cx+96+off,cy,'#F59E0B',3.5);
-    // Central Mass Block
-    ctx.fillStyle='rgba(15,23,42,.9)';ctx.strokeStyle='#38BDF8';ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(cx-20,cy-20,40,40,8);ctx.fill();ctx.stroke();
-    // Balanced Indicator (Vector style, no emoji)
+    arrowI(ctx,cx-22-off,cy+floatBob,cx-96-off,cy+floatBob,'#38BDF8',3.5);
+    arrowI(ctx,cx+22+off,cy+floatBob,cx+96+off,cy+floatBob,'#F59E0B',3.5);
+    // Floating Mass Block
+    ctx.fillStyle='rgba(15,23,42,.92)';ctx.strokeStyle='#38BDF8';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(cx-20,cy-20+floatBob,40,40,8);ctx.fill();ctx.stroke();
+    // Balanced Indicator
     ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ΣF=0',cx,cy);
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ΣF=0',cx,cy+floatBob);
     t++;G.iconRaf=requestAnimationFrame(draw);
   }
   draw();
@@ -927,9 +997,9 @@ function closeValerieModal(){
 }
 
 function exitMod(){
-  if(confirm('Exit Module 3001? Unsaved progress will be lost.')){
-    [G.iconRaf,G.raf,G.vidRaf,G.celebRaf].forEach(r=>r&&cancelAnimationFrame(r));
-    document.body.innerHTML='<div style="position:fixed;inset:0;background:#090D16;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38BDF8;font-weight:900">Module 3001 Closed</div><div style="color:#64748B;font-size:15px;font-family:\'JetBrains Mono\',monospace">Terminal session ended cleanly.</div></div>';
+  if(confirm('Exit Module 3001? Progress will not be saved.')){
+    [G.iconRaf,G.raf,G.vidRaf,G.celebRaf,G.bgDustRaf].forEach(r=>r&&cancelAnimationFrame(r));
+    document.body.innerHTML='<div style="position:fixed;inset:0;background:#080C15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38BDF8;font-weight:900">Module 3001 Closed</div><div style="color:#64748B;font-size:15px;font-family:\'JetBrains Mono\',monospace">Space Lab closed. Progress saved.</div></div>';
   }
 }
 
@@ -966,8 +1036,8 @@ function submitHyp(){
   document.getElementById('hyp-btn').disabled=true;
   document.getElementById('hyp-ta').disabled=true;
   const msgs=[
-    'Hypothesis recorded. 🤔 Let us engage thrusters and evaluate your prediction with real kinematics data.',
-    'Prediction locked into telemetry! Science requires testing ideas against empirical observation. Initializing lab...'
+    'Awesome prediction! 🤔 Let us test it in space and see what really happens.',
+    'Great thinking! Science is all about testing your ideas against real experiments. Starting space lab...'
   ];
   document.getElementById('v-hyp-txt').textContent=msgs[Math.floor(Math.random()*msgs.length)];
   document.getElementById('v-hyp-reply').classList.remove('hidden');
@@ -977,7 +1047,7 @@ function submitHyp(){
       whoosh('s-hyp','s-sim');
       setTimeout(initSim,400);
     });
-  },2000);
+  },1800);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -990,12 +1060,12 @@ function initSim(){
   G.step=0;P.FL=0;P.FR=0;P.vel=0;P.pos=0;
   G.thresholdHit1=false;G.thresholdHit2=false;
 
-  setVal(`<strong>SYSTEM INITIALIZED: Welcome to the Balanced Forces Lab.</strong><br><br>
-<span style="color:#38BDF8">[LEFT SLIDER]</span> = Thruster pulling cart LEFT (←)<br>
-<span style="color:#F59E0B">[RIGHT SLIDER]</span> = Thruster pulling cart RIGHT (→)<br>
-<span style="color:#CBD5E1">[TRACK]</span> = Frictionless linear magnetic rail<br>
-<span style="color:#38BDF8">[NET FORCE]</span> = Vector sum (ΣF = F_right − F_left)<br><br>
-Review telemetry, then click <strong>Initialize Simulation</strong> below.`);
+  setVal(`<strong>Welcome to the Space Lab!</strong><br><br>
+The <span style="color:#38BDF8"><strong>Left slider</strong></span> fires the left rocket (pulls left ←).<br>
+The <span style="color:#F59E0B"><strong>Right slider</strong></span> fires the right rocket (pulls right →).<br>
+The 50 kg robot floats on a <strong>frictionless space track</strong>.<br>
+<span style="color:#38BDF8"><strong>Total Net Force</strong></span> is the combined push or pull.<br><br>
+Click <strong>Start Experiment</strong> below to fire up the engines!`);
 
   setSteps(0);
   document.getElementById('btn-start-sim').style.display='block';
@@ -1040,7 +1110,7 @@ function updateReadouts(){
 
   // Mini Dashboard metrics
   document.getElementById('m-net').textContent = fn.toFixed(1) + ' N';
-  document.getElementById('m-acc').textContent = a.toFixed(3);
+  document.getElementById('m-acc').textContent = a.toFixed(2);
   document.getElementById('m-vel').textContent = P.vel.toFixed(2);
   document.getElementById('m-pos').textContent = P.pos.toFixed(2);
 
@@ -1048,46 +1118,46 @@ function updateReadouts(){
   const pill = document.getElementById('status-pill');
   if(Math.abs(fn) <= 1.5){
     pill.className = 'status-pill eq';
-    pill.textContent = 'EQUILIBRIUM (ΣF = 0)';
+    pill.textContent = 'BALANCED (0 N)';
   } else if(fn < 0){
     pill.className = 'status-pill acc-l';
-    pill.textContent = 'ACCEL LEFT ←';
+    pill.textContent = 'SPEEDING LEFT ←';
   } else {
     pill.className = 'status-pill acc-r';
-    pill.textContent = 'ACCEL RIGHT →';
+    pill.textContent = 'SPEEDING RIGHT →';
   }
 
   // Active Pod styling
   document.getElementById('pod-L').classList.toggle('active-left', P.FL > 0);
   document.getElementById('pod-R').classList.toggle('active-right', P.FR > 0);
 
-  // DYNAMIC TUTOR TEXT (Texts that should change live!)
+  // DYNAMIC TUTOR TEXT (Friendly, Simple, Encouraging for Students)
   if(G.step === 1 && G.simRunning){
     if(P.FL === 0){
-      setVal(`<strong>Step 2: Apply Left Force</strong><br><br>Drag the <strong>Left Force slider</strong> up to <strong>60 N</strong>.<br>Observe the blue arrow on the cart — notice how the cart begins accelerating to the left!`);
+      setVal(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Look at the robot — watch which way it starts moving!`);
     } else if(P.FL < 50){
-      setVal(`<strong>Left Force Applied: ${P.FL} N</strong><br><br>The blue vector arrow is pointing left. The net force is <strong>${P.FL} N ← left</strong>. Keep increasing to 60 N!`);
+      setVal(`<strong>Left Rocket firing at ${P.FL} N!</strong><br><br>The blue arrow points left. The total net force is <strong>${P.FL} N pulling left</strong>. Keep dragging up to 60 N!`);
     } else {
-      setVal(`<strong>Approaching Target: ${P.FL} N!</strong><br><br>The cart is accelerating to the left at ${(P.FL/50).toFixed(2)} m/s². Almost there!`);
+      setVal(`<strong>Almost there: ${P.FL} N!</strong><br><br>The robot is speeding up to the left! Get to 60 N to log your observation.`);
     }
   } else if(G.step === 3 && G.simRunning){
     const diff = Math.abs(P.FR - P.FL);
     const confirmArea = document.getElementById('lab-confirm-area');
 
     if(diff === 0 && P.FL > 0){
-      setVal(`<strong>EQUILIBRIUM ACHIEVED!</strong><br><br>Left: <strong>${P.FL} N</strong> · Right: <strong>${P.FR} N</strong> · Net Force: <strong>0.0 N</strong><br>Notice that acceleration is <strong>0.00 m/s²</strong>! The opposing forces cancel out completely.<br><br>Click <strong>Confirm Equilibrium</strong> to record your findings!`);
-      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM EQUILIBRIUM →</button>`;
+      setVal(`<strong>PERFECT BALANCE!</strong><br><br>Left = <strong>${P.FL} N</strong> · Right = <strong>${P.FR} N</strong> · Net Force = <strong>0.0 N</strong>!<br>Both rockets are blasting, but because they are equal and opposite, they cancel out! Acceleration is <strong>0.00 m/s²</strong>.<br><br>Click <strong>Confirm Balance</strong> to record what you found!`);
+      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM BALANCE →</button>`;
     } else if(diff <= 3 && P.FL > 0){
-      setVal(`<strong>Extremely Close to Balance!</strong><br><br>Left: <strong>${P.FL} N</strong> · Right: <strong>${P.FR} N</strong> (Difference: ${diff} N).<br>Fine-tune with the +1 / -1 buttons to make Net Force exactly 0!`);
-      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM EQUILIBRIUM →</button>`;
+      setVal(`<strong>Super close to balance!</strong><br><br>Left: <strong>${P.FL} N</strong> · Right: <strong>${P.FR} N</strong> (Difference: ${diff} N).<br>Use the +1 / -1 buttons to make them match exactly!`);
+      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM BALANCE →</button>`;
     } else if(P.FL === 0 && P.FR === 0){
-      setVal(`<strong>Static State (0 N &amp; 0 N)</strong><br><br>Net force is zero because neither thruster is firing. Now try increasing BOTH thrusters to equal non-zero values (e.g. 50 N &amp; 50 N) to observe active balanced forces!`);
+      setVal(`Both rockets are at 0 N! Try sliding both rockets up to matching numbers (like 50 N and 50 N) to see active balanced forces in action!`);
       confirmArea.innerHTML = '';
     } else if(P.FL > P.FR){
-      setVal(`<strong>Left Force Dominates (Net: ${(P.FL - P.FR).toFixed(1)} N ← left)</strong><br><br>The cart accelerates left. Increase Right Thruster or decrease Left Thruster to balance the forces!`);
+      setVal(`<strong>Left rocket is winning!</strong><br><br>Total Net Force is ${(P.FL - P.FR).toFixed(1)} N pulling left. Turn up the Right Rocket or lower the Left Rocket to balance them!`);
       confirmArea.innerHTML = '';
     } else {
-      setVal(`<strong>Right Force Dominates (Net: ${(P.FR - P.FL).toFixed(1)} N → right)</strong><br><br>The cart accelerates right. Increase Left Thruster or decrease Right Thruster to balance the forces!`);
+      setVal(`<strong>Right rocket is winning!</strong><br><br>Total Net Force is ${(P.FR - P.FL).toFixed(1)} N pulling right. Turn up the Left Rocket or lower the Right Rocket to balance them!`);
       confirmArea.innerHTML = '';
     }
   }
@@ -1112,7 +1182,7 @@ function startSim(){
     G.step=1; G.simRunning=true;
     document.getElementById('sl-L').disabled=false;
     setSteps(1);
-    setVal(`<strong>Lab is Live: Step 2</strong><br><br>Drag the <strong>Left Force slider</strong> up to <strong>60 N</strong>.<br>Observe the blue arrow on the cart — notice which direction it accelerates!`);
+    setVal(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Watch the robot — which way does it start moving?`);
     physicsLoop();
   });
 }
@@ -1124,9 +1194,8 @@ function triggerObs1(){
 
   runStepGlobTransition(3, STEP_NAMES[2], ()=>{
     setSteps(2);
-    // ACCURATE TEXT FIX: Left force pulls LEFT, box accelerates LEFT
-    setVal(`<strong>Observation 1: Unbalanced Force</strong><br><br>Left Thruster = <strong>${P.FL} N</strong> · Net Force = <strong>${P.FL} N ← left</strong>.<br>The cart accelerated to the left! What would happen if the right thruster matched this force exactly?`);
-    showObs('Observation 1', `Left = ${P.FL} N pulling left, Net = ${P.FL} N ← left. The cart accelerated left. Predict: what happens if the right thruster is also set to ${P.FL} N?`, afterObs1);
+    setVal(`<strong>Look at the robot zoom!</strong><br><br>Left Rocket = <strong>${P.FL} N</strong> · Net Force = <strong>${P.FL} N pulling left</strong>.<br>The robot sped up to the left! What would happen if the right rocket pulled with the exact same ${P.FL} N?`);
+    showObs('Observation 1', `The left rocket pulled with ${P.FL} N to the left. What do you think happens if the right rocket also pulls with ${P.FL} N to the right?`, afterObs1);
   });
 }
 
@@ -1135,7 +1204,7 @@ function afterObs1(){
 
   runStepGlobTransition(4, STEP_NAMES[3], ()=>{
     G.step=3; G.simRunning=true;
-    P.vel=0; P.pos=0; // Reset position cleanly to center
+    P.vel=0; P.pos=0; // Reset smoothly to center
     document.getElementById('sl-L').disabled=false;
     document.getElementById('sl-R').disabled=false;
     setSteps(3);
@@ -1144,7 +1213,7 @@ function afterObs1(){
   });
 }
 
-// Fixed Step 4: Robust confirmation function prevents any softlock!
+// Confirmation button prevents softlock
 function confirmEquilibrium(){
   G.simMetrics.balFL=P.FL;
   G.simMetrics.balFR=P.FR;
@@ -1161,8 +1230,8 @@ function triggerObs2(){
 
   runStepGlobTransition(5, STEP_NAMES[4], ()=>{
     setSteps(4);
-    setVal(`<strong>DISCOVERY LOG: EQUILIBRIUM CONFIRMED</strong><br><br>Left: <strong>${P.FL} N</strong> | Right: <strong>${P.FR} N</strong> | Net Force: <strong>0.0 N</strong><br><br>Even though both thrusters are firing, the net force is zero and acceleration stopped! Write your reflection below to synthesize.`);
-    showObs('Discovery Log', `Both thrusters are active (${P.FL} N left vs ${P.FR} N right). The cart stopped accelerating. Explain why equal opposite forces result in zero acceleration (Newton's First Law).`, goSynthesis);
+    setVal(`<strong>BALANCED FORCES FOUND!</strong><br><br>Left: <strong>${P.FL} N</strong> | Right: <strong>${P.FR} N</strong> | Net Force: <strong>0.0 N</strong><br><br>Even though both rockets are blasting, the total net force is zero and the robot doesn't speed up! Write down what you noticed below.`);
+    showObs('Discovery Log', `Both rockets are firing (${P.FL} N left vs ${P.FR} N right). The robot stopped speeding up. Explain in your own words why two equal opposite pulls cancel out (Newton's First Law).`, goSynthesis);
   });
 }
 
@@ -1171,19 +1240,18 @@ function goSynthesis(){
 
   runStepGlobTransition(6, STEP_NAMES[5], ()=>{
     G.step=5; setSteps(5);
-    const obs1 = G.obs[1] ? G.obs[1].substring(0,80)+'…' : 'Opposing forces balance to zero net acceleration.';
     document.getElementById('action-inline').innerHTML=`
       <div class="synth-card">
-        <div class="synth-label">Evidence Synthesized</div>
-        • Left Thruster: <strong>${G.simMetrics.balFL} N</strong><br>
-        • Right Thruster: <strong>${G.simMetrics.balFR} N</strong><br>
-        • Net Vector Sum ΣF: <strong>0.0 N</strong><br>
-        • Acceleration a = ΣF/m: <strong>0.00 m/s²</strong><br><br>
-        <strong>Conclusion:</strong> When opposing forces are equal in magnitude, net force equals zero. With zero net force, acceleration is zero — this is <strong>Newton's First Law</strong>!
+        <div class="synth-label">What You Discovered</div>
+        • Left Rocket: <strong>${G.simMetrics.balFL} N</strong><br>
+        • Right Rocket: <strong>${G.simMetrics.balFR} N</strong><br>
+        • Total Net Force ΣF: <strong>0.0 N</strong><br>
+        • Acceleration: <strong>0.00 m/s²</strong><br><br>
+        <strong>Big Takeaway:</strong> When opposite forces have equal strength, they cancel each other out completely. Zero net force means no acceleration — that's <strong>Newton's First Law</strong>!
       </div>`;
     document.getElementById('btn-start-sim').style.display='none';
     document.getElementById('action-area').innerHTML=`<button class="btn-cyber-primary" style="width:100%" onclick="goVideo()">Watch Concept Video →</button>`;
-    setVal(`<strong>Synthesis Complete!</strong><br><br>You proved that balanced forces cancel each other out: net force = 0, so acceleration = 0. Proceed to the real-world deep dive!`);
+    setVal(`<strong>Mission Accomplished!</strong><br><br>You proved that equal and opposite forces cancel each other out. Net force = 0 means no acceleration. That's Newton's First Law in action!`);
   });
 }
 
@@ -1195,8 +1263,8 @@ function showObs(label,prompt,cb){
     <div class="obs-wrap" id="fluid-obs">
       <div class="obs-lbl">${label}</div>
       <div class="obs-prompt">${prompt}</div>
-      <textarea class="obs-ta" id="obs-ta" placeholder="Type your observation here..."></textarea>
-      <button class="btn-cyber-primary" style="width:100%" id="obs-btn" disabled onclick="submitObs()">Submit Observation →</button>
+      <textarea class="obs-ta" id="obs-ta" placeholder="Type your thoughts here..."></textarea>
+      <button class="btn-cyber-primary" style="width:100%" id="obs-btn" disabled onclick="submitObs()">Submit Answer →</button>
     </div>`;
   document.getElementById('obs-ta').addEventListener('input',function(){
     document.getElementById('obs-btn').disabled=this.value.trim().length===0;
@@ -1229,7 +1297,7 @@ function physicsLoop(){
     G.simMetrics.maxVel=Math.max(G.simMetrics.maxVel,Math.abs(P.vel));
 
     document.getElementById('m-net').textContent=(fn>=0?'+':'')+fn.toFixed(1)+' N';
-    document.getElementById('m-acc').textContent=a.toFixed(3);
+    document.getElementById('m-acc').textContent=a.toFixed(2);
     document.getElementById('m-vel').textContent=P.vel.toFixed(2);
     document.getElementById('m-pos').textContent=P.pos.toFixed(2);
 
@@ -1241,8 +1309,19 @@ function simCtx(){ return document.getElementById('sim-canvas').getContext('2d')
 function simDims(){ const c=document.getElementById('sim-canvas'),dpr=window.devicePixelRatio||1; return [c.width/dpr,c.height/dpr]; }
 
 /* ═══════════════════════════════════════════════════════════
-   DRAW SIMULATION (NASA Dark Futuristic Canvas)
+   DRAW SIMULATION (NASA Dark Futuristic Canvas + Zero-G Float)
 ═══════════════════════════════════════════════════════════ */
+// Canvas background twinkling stars
+const CANVAS_STARS = [];
+for(let i=0;i<40;i++){
+  CANVAS_STARS.push({
+    x: Math.random(),
+    y: Math.random(),
+    r: 0.6 + Math.random()*1.6,
+    twinkleSeed: Math.random()*Math.PI*2
+  });
+}
+
 function arrow(ctx,x1,y1,x2,y2,col,w){
   const ang=Math.atan2(y2-y1,x2-x1),h=12;
   ctx.strokeStyle=ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
@@ -1257,74 +1336,89 @@ function drawSim(ctx,[W,H]){
   const dpr=window.devicePixelRatio||1; ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle='#090D16'; ctx.fillRect(0,0,W,H);
 
-  // High-Tech Cyber Grid
-  ctx.strokeStyle='rgba(56,189,248,.04)'; ctx.lineWidth=1;
+  const now = Date.now();
+
+  // Background Twinkling Space Stars
+  for(let i=0;i<CANVAS_STARS.length;i++){
+    const st = CANVAS_STARS[i];
+    const alpha = 0.25 + 0.35 * Math.sin(now * 0.002 + st.twinkleSeed);
+    ctx.beginPath();
+    ctx.arc(st.x * W, st.y * H, st.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(186, 230, 253, ${alpha})`;
+    ctx.fill();
+  }
+
+  // Cyber Grid
+  ctx.strokeStyle='rgba(56,189,248,.035)'; ctx.lineWidth=1;
   for(let x=0;x<W;x+=44){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
   for(let y=0;y<H;y+=44){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
 
-  const cx=W/2+(P.pos/8.5)*(W*.30), cy=H/2 - 6;
+  // Zero-Gravity Micro-Hover Float
+  const hoverY = Math.sin(now * 0.0026) * 3.5;
+  const cx = W/2 + (P.pos/8.5)*(W*.30);
+  const cy = H/2 - 6;
 
   // Frictionless Linear Rail Track
-  ctx.strokeStyle='rgba(56,189,248,.25)';ctx.lineWidth=3;ctx.setLineDash([8,6]);
+  ctx.strokeStyle='rgba(56,189,248,.22)';ctx.lineWidth=3;ctx.setLineDash([8,6]);
   ctx.beginPath();ctx.moveTo(54,cy);ctx.lineTo(W-54,cy);ctx.stroke();ctx.setLineDash([]);
 
-  // Rail Center Origin Marker
-  ctx.strokeStyle='rgba(56,189,248,.4)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(W/2,cy-20);ctx.lineTo(W/2,cy+20);ctx.stroke();
+  // Rail Center Marker
+  ctx.strokeStyle='rgba(56,189,248,.35)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(W/2,cy-18);ctx.lineTo(W/2,cy+18);ctx.stroke();
 
   // Winch Units (Left & Right)
   drawWinchStation(ctx,64,cy,'left',P.FL);
   drawWinchStation(ctx,W-64,cy,'right',P.FR);
 
-  // Magnetic Tether Cables
+  // Magnetic Tether Cables (Smoothly connects to hovering bot)
   ctx.strokeStyle='rgba(56,189,248,.4)';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(88,cy);ctx.lineTo(cx-30,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(88,cy);ctx.lineTo(cx-30,cy+hoverY);ctx.stroke();
   ctx.strokeStyle='rgba(245,158,11,.4)';
-  ctx.beginPath();ctx.moveTo(W-88,cy);ctx.lineTo(cx+30,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W-88,cy);ctx.lineTo(cx+30,cy+hoverY);ctx.stroke();
 
-  // Test Cart (Hovering Tug-Bot)
+  // Hovering Robot Cart
   const bw=64, bh=50;
   ctx.fillStyle='rgba(15,23,42,.92)';ctx.strokeStyle='#38BDF8';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,8);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2+hoverY,bw,bh,8);ctx.fill();ctx.stroke();
 
-  // Futuristic Cart Core Glow
+  // Core Glow
   ctx.fillStyle='rgba(56,189,248,.2)';
-  ctx.beginPath();ctx.arc(cx,cy,12,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy+hoverY,12,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('50 kg',cx,cy);
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('50 kg',cx,cy+hoverY);
 
   // Force Vector Arrows on the Cart
   const mxL=90;
   if(P.FL>0){
     const l=(P.FL/100)*mxL;
-    arrow(ctx,cx-bw/2,cy,cx-bw/2-l,cy,'#38BDF8',3.5);
+    arrow(ctx,cx-bw/2,cy+hoverY,cx-bw/2-l,cy+hoverY,'#38BDF8',3.5);
     ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText(P.FL+'N',cx-bw/2-l/2,cy-18);
+    ctx.fillText(P.FL+'N',cx-bw/2-l/2,cy+hoverY-18);
   }
   if(P.FR>0){
     const l=(P.FR/100)*mxL;
-    arrow(ctx,cx+bw/2,cy,cx+bw/2+l,cy,'#F59E0B',3.5);
+    arrow(ctx,cx+bw/2,cy+hoverY,cx+bw/2+l,cy+hoverY,'#F59E0B',3.5);
     ctx.fillStyle='#F59E0B';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText(P.FR+'N',cx+bw/2+l/2,cy-18);
+    ctx.fillText(P.FR+'N',cx+bw/2+l/2,cy+hoverY-18);
   }
 
   // Net Force Vector & Status (No Emojis!)
   const fn=P.FR-P.FL;
   if(Math.abs(fn)>1.5){
     const dir=Math.sign(fn), l=(Math.abs(fn)/100)*80;
-    arrow(ctx,cx,cy+38,cx+dir*l,cy+38,'#FFFFFF',3.5);
+    arrow(ctx,cx,cy+hoverY+38,cx+dir*l,cy+hoverY+38,'#FFFFFF',3.5);
     ctx.fillStyle='#FFFFFF';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText('ΣF = '+(fn>0?'+':'')+fn.toFixed(0)+' N',cx+dir*l/2,cy+55);
+    ctx.fillText('ΣF = '+(fn>0?'+':'')+fn.toFixed(0)+' N',cx+dir*l/2,cy+hoverY+55);
   } else if(G.step>=1){
     ctx.fillStyle='#34D399';ctx.font='bold 12px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('BALANCED (ΣF = 0)',cx,cy+48);
+    ctx.fillText('BALANCED (ΣF = 0)',cx,cy+hoverY+48);
   }
 
   // Live Velocity Tag
   if(Math.abs(P.vel)>0.04){
     ctx.fillStyle='rgba(203,213,225,.6)';ctx.font='11px "JetBrains Mono",monospace';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('v = '+P.vel.toFixed(2)+' m/s',cx,cy-38);
+    ctx.fillText('Speed = '+Math.abs(P.vel).toFixed(2)+' m/s',cx,cy+hoverY-38);
   }
 
   ctx.resetTransform();
@@ -1378,10 +1472,10 @@ function goVideo(){
 
 const CAPS=[
   {s:0,e:5,t:'What are Balanced Forces?'},
-  {s:5,e:10,t:'Two opposing forces with equal magnitude...'},
-  {s:10,e:15,t:'Net Vector Sum ΣF = 0 → Zero Acceleration!'},
-  {s:15,e:21,t:'Real-World Application: Constant velocity & resting equilibrium'},
-  {s:21,e:30,t:'Equilibrium: F_net = 0 confirms Newton\'s First Law'},
+  {s:5,e:10,t:'Two equal forces pulling in opposite directions...'},
+  {s:10,e:15,t:'They cancel out: Total Net Force = 0!'},
+  {s:15,e:21,t:'Zero Net Force means zero acceleration — no speeding up or slowing down!'},
+  {s:21,e:30,t:'That is Newton\'s First Law of Motion!'},
 ];
 
 function initVideo(){
@@ -1441,7 +1535,7 @@ function drawVidFrame(t){
     const pr=Math.min((t-5)/4,1),len=60+pr*30;
     ctx.globalAlpha=pr;ctx.strokeStyle='#38BDF8';ctx.fillStyle='rgba(15,23,42,.9)';ctx.lineWidth=2;
     ctx.beginPath();ctx.roundRect(cx-30,cy-30,60,60,8);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#fff';ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Mass',cx,cy);ctx.globalAlpha=1;
+    ctx.fillStyle='#fff';ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Robot',cx,cy);ctx.globalAlpha=1;
     arrow(ctx,cx-30,cy,cx-30-len,cy,'#38BDF8',3.5);
     arrow(ctx,cx+30,cy,cx+30+len,cy,'#F59E0B',3.5);
     if(t>=10){
@@ -1450,25 +1544,25 @@ function drawVidFrame(t){
     }
   } else {
     ctx.fillStyle='#38BDF8';ctx.font=`bold ${Math.round(W*.042)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Equilibrium State',cx,cy-18);
-    ctx.fillStyle='#CBD5E1';ctx.font=`${Math.round(W*.024)}px monospace`;ctx.fillText('ΣF = 0  ⟶  Acceleration a = 0',cx,cy+16);
+    ctx.fillText('Balanced Forces',cx,cy-18);
+    ctx.fillStyle='#CBD5E1';ctx.font=`${Math.round(W*.024)}px monospace`;ctx.fillText('Net Force = 0  ⟶  No Acceleration',cx,cy+16);
   }
   ctx.resetTransform();
 }
 function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 
 /* ═══════════════════════════════════════════════════════════
-   QUIZ ASSESSMENT
+   QUIZ ASSESSMENT (Simple, Clear Language for Students)
 ═══════════════════════════════════════════════════════════ */
 const QUIZ=[
-  {q:"In scientific terms, what does it mean for forces on an object to be 'balanced'? State the net force condition.",
-   hint:"HINT: Connect opposing vectors to the net force equation ΣF = F_right − F_left.",
+  {q:"In your own words, what does it mean for forces to be 'balanced'? What is the total net force?",
+   hint:"HINT: Think about what happened when both rockets pulled with the exact same number of Newtons.",
    kw:['equal','same','cancel','zero','balanced','no change','constant','opposite','equilibrium']},
-  {q:"An inspection cart moves at a steady 2.5 m/s without speeding up or slowing down. Are the forces on it balanced or unbalanced? Justify with Newton's First Law.",
-   hint:"HINT: If velocity is constant, what is the acceleration? What does that require for net force?",
-   kw:['balanced','zero','constant','acceleration','first law','net force','speed','velocity','equal']},
-  {q:"In the simulation, both thrusters fired at 60 N in opposite directions. What was the net force, and why did the cart experience zero acceleration?",
-   hint:"HINT: Apply a = F_net / m with F_net = 0.",
+  {q:"A book sits completely still on your desk. Are the forces on it balanced or unbalanced? How do you know?",
+   hint:"HINT: Is the book speeding up or slowing down? What does that tell you about the net force?",
+   kw:['balanced','zero','constant','acceleration','first law','net force','speed','velocity','equal','still']},
+  {q:"In the space lab, both rockets pulled with 60 N in opposite directions. What was the total net force, and why didn't the robot speed up?",
+   hint:"HINT: What is 60 minus 60? What happens to acceleration when the net force is zero?",
    kw:['zero','0','cancel','balanced','no acceleration','stopped','constant','net','equal']}
 ];
 let CQ=0;
@@ -1528,20 +1622,20 @@ function buildResults(){
 
   if(strong.length){
     const c=document.createElement('div');c.className='res-card good';
-    c.innerHTML=`<div class="res-card-lbl">[ Strong Competencies ]</div>`+strong.map(r=>`<p>• Question ${r.qi+1}: Demonstrated key concepts: <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join('');
+    c.innerHTML=`<div class="res-card-lbl">[ What You Mastered ]</div>`+strong.map(r=>`<p>• Question ${r.qi+1}: Great job explaining <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join('');
     grid.appendChild(c);
   }
   if(weak.length){
     const c=document.createElement('div');c.className='res-card weak';
-    c.innerHTML=`<div class="res-card-lbl">[ Areas for Expansion ]</div>`+weak.map(r=>`<p>• Question ${r.qi+1}: Connect to core principles: <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join('');
+    c.innerHTML=`<div class="res-card-lbl">[ Things to Remember ]</div>`+weak.map(r=>`<p>• Question ${r.qi+1}: Try connecting to: <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join('');
     grid.appendChild(c);
   }
 
   const summary = pct>=80
-    ? `Mastery Achieved: ${pct}%! You have thoroughly demonstrated that balanced forces yield zero net force and zero acceleration. Newton's First Law successfully mastered.`
+    ? `Awesome job! You scored ${pct}%! You proved that when forces are balanced, net force is zero and objects do not speed up. You mastered Newton's First Law!`
     : pct>=55
-    ? `Proficiency Verified: ${pct}%. Strong grasp of equilibrium. Remember that constant velocity motion also represents balanced forces (net force = 0).`
-    : `Foundational Level: ${pct}%. Core principle to reinforce: equal and opposite forces cancel out, making net force zero and resulting in zero acceleration.`;
+    ? `Great work! You scored ${pct}%. You understand the big idea: equal opposite forces cancel out, making net force zero!`
+    : `Good effort! You scored ${pct}%. Remember: when two opposite forces are equal in strength, they cancel out so total net force = 0.`;
 
   document.getElementById('v-final').textContent=summary;
 }
