@@ -5,1723 +5,3218 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Module 3001 — Balanced Forces | Valley Science</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════
-   RESET & COSMIC INTERSTELLAR THEME
-══════════════════════════════════════════════ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#080C15;
-  font-family:'Nunito',system-ui,-apple-system,sans-serif;color:#E2E8F0}
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* Ambient cosmic glow & interstellar depth */
-body::before{content:'';position:fixed;inset:0;
-  background:radial-gradient(circle at 50% -10%, rgba(56,189,248,0.18) 0%, rgba(15,23,42,0) 65%),
-             radial-gradient(circle at 15% 90%, rgba(99,102,241,0.10) 0%, transparent 55%),
-             radial-gradient(circle at 85% 85%, rgba(245,158,11,0.08) 0%, transparent 55%);
-  pointer-events:none;z-index:0}
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #080c15;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+}
 
-/* Background floating cosmic dust canvas */
-#cosmic-bg-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.16) 0%, rgba(15, 23, 42, 0) 65%),
+    radial-gradient(circle at 15% 90%, rgba(99, 102, 241, 0.10) 0%, transparent 55%),
+    radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.08) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* ── SCREENS ── */
-.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
-.hidden{display:none!important}
+#cosmic-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* ── REFINED FLOATING & KEYFRAME ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes floatSubtle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes spinAnim{to{transform:rotate(360deg)}}
-@keyframes cyberBlink{50%{opacity:0}}
-@keyframes pulseCyan{0%,100%{box-shadow:0 0 16px rgba(14,165,233,.3)}50%{box-shadow:0 0 30px rgba(56,189,248,.65)}}
-@keyframes pulseEmerald{0%,100%{box-shadow:0 0 16px rgba(16,185,129,.35)}50%{box-shadow:0 0 32px rgba(16,185,129,.7)}}
-@keyframes shimmerWave{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
 
-/* Version tag */
-#version-tag{position:fixed;bottom:12px;right:16px;z-index:9999;
-  font-size:10px;font-weight:700;letter-spacing:.12em;
-  color:#38BDF8;pointer-events:none;font-family:'JetBrains Mono',monospace;
-  background:rgba(11,15,25,.85);padding:4px 10px;border-radius:6px;
-  border:1px solid rgba(56,189,248,.35);box-shadow:0 0 12px rgba(56,189,248,.18)}
+.hidden {
+  display: none !important;
+}
 
-/* ══════════════════════════════════════════════
-   FUTURISTIC UI COMPONENTS & CARDS
-══════════════════════════════════════════════ */
-.cyber-card{background:rgba(15,23,42,.78);border:1px solid rgba(56,189,248,.25);
-  border-radius:18px;padding:24px;backdrop-filter:blur(16px);
-  box-shadow:0 12px 36px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);
-  animation:fadeUp .45s cubic-bezier(.16,1,.3,1) both, floatSubtle 6s ease-in-out infinite}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-/* Primary Cyan Futuristic Glow Button */
-.btn-cyber-primary{background:linear-gradient(135deg,#0284C7,#0369A1);
-  border:1px solid rgba(56,189,248,.6);color:#fff;
-  padding:12px 28px;border-radius:12px;
-  font-family:'Nunito',system-ui,sans-serif;font-size:15px;font-weight:800;
-  cursor:pointer;letter-spacing:.02em;
-  box-shadow:0 0 16px rgba(14,165,233,.35),0 4px 12px rgba(0,0,0,.3);
-  transition:all .18s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.btn-cyber-primary:hover:not(:disabled){
-  background:linear-gradient(135deg,#0EA5E9,#0284C7);
-  box-shadow:0 0 26px rgba(56,189,248,.65),0 4px 16px rgba(14,165,233,.45);
-  transform:translateY(-1px)}
-.btn-cyber-primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 0 8px rgba(14,165,233,.4)}
-.btn-cyber-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
 
-/* Secondary Outlined Button */
-.btn-cyber-secondary{background:rgba(30,41,59,.6);border:1px solid rgba(148,163,184,.3);
-  color:#CBD5E1;padding:9px 20px;border-radius:10px;font-family:'Nunito',system-ui,sans-serif;
-  font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;
-  box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.btn-cyber-secondary:hover{background:rgba(51,65,85,.8);color:#F8FAFC;border-color:rgba(56,189,248,.5);box-shadow:0 0 14px rgba(56,189,248,.25)}
-.btn-cyber-secondary:active{transform:translateY(1px)}
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 
-/* Section Label */
-.sec-lbl{font-size:11px;font-weight:800;letter-spacing:.22em;
-  text-transform:uppercase;color:#38BDF8;margin-bottom:8px;font-family:'JetBrains Mono',monospace;
-  text-shadow:0 0 8px rgba(56,189,248,.3)}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-/* ══════════════════════════════════════════════
-   INTRO SCREEN — Space Lab Launchpad
-══════════════════════════════════════════════ */
-#s-intro{flex-direction:column;background:transparent}
+@keyframes cursorBlink {
+  50% { opacity: 0; }
+}
 
-.intro-grid-bg{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);
-  background-size:52px 52px;pointer-events:none}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(14, 165, 233, 0.3); }
+  50% { box-shadow: 0 0 28px rgba(56, 189, 248, 0.6); }
+}
 
-.intro-bar{position:absolute;top:0;left:0;right:0;display:flex;
-  justify-content:space-between;align-items:center;padding:20px 28px;z-index:10}
+@keyframes pulseEmerald {
+  0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.7); }
+}
 
-.intro-badge{background:rgba(14,165,233,.12);border:1px solid rgba(56,189,248,.45);
-  color:#38BDF8;font-size:11px;font-weight:800;letter-spacing:.22em;
-  text-transform:uppercase;padding:6px 18px;border-radius:20px;
-  box-shadow:0 0 16px rgba(56,189,248,.18);font-family:'JetBrains Mono',monospace}
+#version-tag {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  z-index: 9999;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(11, 15, 25, 0.85);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  pointer-events: none;
+}
 
-.intro-title{font-size:clamp(34px,5.8vw,56px);font-weight:900;
-  color:#F8FAFC;letter-spacing:-1px;line-height:1.08;
-  text-shadow:0 0 28px rgba(56,189,248,.3)}
-.intro-title span{color:#38BDF8;text-shadow:0 0 24px rgba(56,189,248,.55)}
+.card {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: fadeUp 0.45s ease both, floatSubtle 6s ease-in-out infinite;
+}
 
-.terminal-box{background:rgba(10,15,26,.92);border:1px solid rgba(56,189,248,.3);
-  border-radius:14px;padding:20px 22px;width:100%;text-align:left;
-  box-shadow:0 8px 32px rgba(0,0,0,.5),inset 0 0 20px rgba(56,189,248,.05);
-  animation:floatSubtle 5s ease-in-out infinite}
-#story-text{font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.75;color:#94A3B8}
-.cursor-blink{display:inline-block;width:7px;height:14px;background:#38BDF8;
-  animation:cyberBlink 1s step-end infinite;vertical-align:middle;margin-left:3px;
-  box-shadow:0 0 8px #38BDF8}
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #ffffff;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.35), 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 
-.btn-launch{animation:pulseCyan 2.4s ease-in-out infinite;font-size:16px;padding:15px 44px}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.65), 0 4px 16px rgba(14, 165, 233, 0.45);
+  transform: translateY(-1px);
+}
 
-/* ── MODALS ── */
-.modal-bg{position:fixed;inset:0;background:rgba(3,7,18,.85);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;z-index:999;
-  opacity:0;pointer-events:none;transition:opacity .25s ease}
-.modal-bg.open{opacity:1;pointer-events:all}
-.modal-box{background:#0F172A;border:1px solid rgba(56,189,248,.35);border-radius:20px;
-  padding:32px;max-width:480px;width:92%;
-  box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 32px rgba(56,189,248,.2);
-  text-align:center;animation:fadeUp .3s ease, floatSubtle 5s ease-in-out infinite}
-.modal-box h2{color:#F8FAFC;font-size:22px;font-weight:900;margin-bottom:14px}
-.modal-box p,.modal-box li{color:#94A3B8;font-size:14px;line-height:1.7}
-.modal-box li{text-align:left;margin-left:18px;margin-bottom:8px}
-.std-tag{display:inline-block;background:rgba(14,165,233,.15);border:1px solid rgba(56,189,248,.4);
-  color:#38BDF8;padding:4px 14px;border-radius:10px;font-size:11px;
-  font-weight:800;letter-spacing:.12em;margin-bottom:12px;font-family:'JetBrains Mono',monospace}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+}
 
-/* ══════════════════════════════════════════════
-   HYPOTHESIS SCREEN
-══════════════════════════════════════════════ */
-#s-hyp{flex-direction:column;background:transparent;padding:40px 20px;overflow-y:auto}
-.hyp-wrap{max-width:680px;width:100%;display:flex;flex-direction:column;gap:18px}
+.btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
 
-.hyp-ta{width:100%;background:rgba(10,15,26,.85);
-  border:1px solid rgba(56,189,248,.25);border-radius:14px;color:#F8FAFC;
-  font-family:'Nunito',system-ui,sans-serif;font-size:15px;line-height:1.65;
-  padding:16px;resize:none;outline:none;height:112px;transition:all .2s;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.4)}
-.hyp-ta:focus{border-color:#38BDF8;box-shadow:0 0 16px rgba(56,189,248,.25),inset 0 2px 6px rgba(0,0,0,.4)}
-.hyp-ta::placeholder{color:#64748B;font-style:italic}
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
 
-.v-bubble{display:flex;align-items:flex-start;gap:14px;
-  background:rgba(15,23,42,.9);border:1px solid rgba(56,189,248,.3);border-radius:16px;
-  padding:18px 22px;animation:fadeUp .4s ease both, floatSubtle 5s ease-in-out infinite;
-  box-shadow:0 0 20px rgba(56,189,248,.1)}
-.v-dot-sm{width:36px;height:36px;border-radius:50%;flex-shrink:0;
-  background:radial-gradient(circle at 35% 35%,#7DD3FC,#0284C7,#0369A1);
-  box-shadow:0 0 12px rgba(14,165,233,.5)}
+.btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #f8fafc;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
 
-/* ══════════════════════════════════════════════
-   SIMULATION SCREEN — 2:3 SPLIT RATIO
-   Dashboard: 40% (2 parts) | Lab Box: 60% (3 parts)
-══════════════════════════════════════════════ */
-#s-sim{flex-direction:row;align-items:stretch;justify-content:flex-start;background:transparent;padding:0;overflow:hidden}
+.btn-secondary:active {
+  transform: translateY(1px);
+}
 
-/* Valerie overlay — inside #s-sim, dims only when frozen */
-#valerie-overlay{position:absolute;inset:0;background:rgba(9,13,22,.84);
-  backdrop-filter:blur(6px);z-index:5;opacity:0;pointer-events:none;transition:opacity .35s ease}
-#valerie-overlay.active{opacity:1;pointer-events:all}
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
 
-/* ─── DASHBOARD SIDEBAR (2 parts = 40% width) ─── */
-.sidebar{width:40%;min-width:320px;max-width:440px;flex-shrink:0;background:rgba(11,17,30,.92);
-  border-right:1px solid rgba(56,189,248,.22);
-  display:flex;flex-direction:column;height:100vh;
-  padding:0;position:relative;z-index:10;backdrop-filter:blur(16px)}
+/* Intro Screen */
+#screen-intro {
+  flex-direction: column;
+}
 
-.sidebar-scroll{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px}
-.sidebar-scroll::-webkit-scrollbar{width:4px}
-.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(56,189,248,.25);border-radius:3px}
+.intro-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
 
-/* Sticky Action Bar at bottom */
-.sidebar-action{padding:14px 16px 18px;background:rgba(11,17,30,.95);
-  border-top:1px solid rgba(56,189,248,.2);flex-shrink:0}
+.intro-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  z-index: 10;
+}
 
-/* Valerie Header Card */
-.v-header{display:flex;align-items:center;gap:12px;padding:14px 16px;
-  background:rgba(15,23,42,.65);border-bottom:1px solid rgba(56,189,248,.15)}
-.v-core{width:38px;height:38px;border-radius:50%;flex-shrink:0;
-  background:radial-gradient(circle at 35% 35%,#BAE6FD,#0284C7,#075985);
-  box-shadow:0 0 14px rgba(14,165,233,.6);animation:floatGentle 4s ease-in-out infinite}
-.v-name{font-size:14px;font-weight:900;color:#F8FAFC;letter-spacing:.02em}
-.v-role{font-size:11px;color:#94A3B8;font-family:'JetBrains Mono',monospace}
+.badge {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.18);
+  font-family: 'JetBrains Mono', monospace;
+}
 
-.btn-ask-valerie{background:rgba(14,165,233,.12);border:1px solid rgba(56,189,248,.4);
-  color:#38BDF8;padding:6px 12px;border-radius:10px;font-family:'Nunito',system-ui,sans-serif;
-  font-size:11px;font-weight:800;cursor:pointer;margin-left:auto;white-space:nowrap;
-  transition:all .18s;box-shadow:0 0 10px rgba(56,189,248,.1)}
-.btn-ask-valerie:hover{background:rgba(14,165,233,.22);box-shadow:0 0 16px rgba(56,189,248,.35)}
+.intro-title {
+  font-size: clamp(34px, 5.8vw, 56px);
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -1px;
+  line-height: 1.08;
+  text-shadow: 0 0 28px rgba(56, 189, 248, 0.3);
+}
 
-/* Valerie Message Panel */
-.v-panel{background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.25);
-  border-left:3px solid #38BDF8;border-radius:12px;padding:14px 16px;
-  font-size:13.5px;color:#CBD5E1;line-height:1.65;
-  box-shadow:0 4px 18px rgba(0,0,0,.35);transition:all .25s ease}
+.intro-title span {
+  color: #38bdf8;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.55);
+}
 
-/* Steps Pipeline */
-.steps{display:flex;flex-direction:column;gap:5px}
-.step{display:flex;align-items:center;gap:10px;padding:8px 12px;
-  border-radius:10px;border:1px solid rgba(148,163,184,.15);
-  background:rgba(15,23,42,.5);transition:all .25s ease}
-.step.active{background:rgba(14,165,233,.14);border-color:rgba(56,189,248,.5);
-  box-shadow:0 0 14px rgba(14,165,233,.2)}
-.step.done{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35)}
-.step-n{width:22px;height:22px;border-radius:50%;background:rgba(100,116,139,.3);
-  font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;color:#94A3B8;font-family:'JetBrains Mono',monospace;transition:all .25s}
-.step.active .step-n{background:#0284C7;color:#fff;box-shadow:0 0 10px #38BDF8}
-.step.done .step-n{background:#10B981;color:#fff;box-shadow:0 0 8px rgba(16,185,129,.6)}
-.step-lbl{font-size:12px;font-weight:700;color:#94A3B8;transition:color .25s}
-.step.active .step-lbl{color:#38BDF8;font-weight:800}
-.step.done .step-lbl{color:#A7F3D0}
+.terminal-box {
+  background: rgba(10, 15, 26, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
+  padding: 20px 22px;
+  width: 100%;
+  text-align: left;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.05);
+  animation: floatSubtle 5s ease-in-out infinite;
+}
 
-/* Telemetry Mini-Deck (in Dashboard) */
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.m-card{background:rgba(10,15,26,.8);border:1px solid rgba(56,189,248,.2);border-radius:10px;
-  padding:8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.m-val{font-size:16px;font-weight:900;color:#38BDF8;font-family:'JetBrains Mono',monospace}
-.m-lbl{font-size:9px;color:#64748B;text-transform:uppercase;letter-spacing:.1em;margin-top:2px;font-weight:700;font-family:'JetBrains Mono',monospace}
+#story-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #94a3b8;
+}
 
-/* Observation Box */
-.obs-wrap{display:flex;flex-direction:column;gap:8px;animation:fadeUp .35s ease both}
-.obs-lbl{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:.2em;font-family:'JetBrains Mono',monospace}
-.obs-prompt{font-size:13px;color:#CBD5E1;line-height:1.55;font-weight:600}
-.obs-ta{width:100%;background:rgba(10,15,26,.85);border:1px solid rgba(56,189,248,.3);
-  border-radius:10px;color:#F8FAFC;font-family:'Nunito',system-ui,sans-serif;font-size:13.5px;
-  line-height:1.55;padding:10px 12px;resize:none;outline:none;height:76px;transition:all .2s}
-.obs-ta:focus{border-color:#38BDF8;box-shadow:0 0 14px rgba(56,189,248,.3)}
-.obs-ta::placeholder{color:#64748B;font-style:italic}
+.cursor-blink {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: #38bdf8;
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 3px;
+  box-shadow: 0 0 8px #38bdf8;
+}
 
-/* Synthesis Card */
-.synth-card{background:rgba(15,23,42,.85);border:1px solid rgba(16,185,129,.4);border-radius:12px;
-  border-left:3px solid #10B981;padding:14px;font-size:13px;color:#E2E8F0;
-  line-height:1.65;box-shadow:0 0 20px rgba(16,185,129,.15);animation:fadeUp .4s ease both}
-.synth-label{font-size:10px;font-weight:900;letter-spacing:.2em;color:#10B981;
-  text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.btn-launch {
+  animation: pulseGlow 2.4s ease-in-out infinite;
+  font-size: 16px;
+  padding: 15px 44px;
+}
 
-/* ─── LAB BOX (3 parts = 60% width) ─── */
-.sim-main{flex:3;min-width:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:20px;overflow-y:auto;position:relative;background:#080C15}
+/* Modal Windows */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
 
-.canvas-wrap{position:relative;width:100%;max-width:920px;
-  background:#0A0E18;border:1px solid rgba(56,189,248,.35);
-  border-radius:16px;overflow:hidden;box-shadow:0 0 36px rgba(0,0,0,.6),inset 0 0 24px rgba(56,189,248,.04);
-  transition:border-color .3s,box-shadow .3s}
-.canvas-wrap.glow{border-color:#10B981;box-shadow:0 0 44px rgba(16,185,129,.4)}
-#sim-canvas{display:block;width:100%;height:auto}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
 
-.canvas-overlay{position:absolute;inset:0;background:rgba(8,12,20,.85);
-  backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;border-radius:16px;transition:opacity .45s ease}
-.canvas-overlay.gone{opacity:0;pointer-events:none}
-.ov-text{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#94A3B8;letter-spacing:1px}
+.modal-dialog {
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 480px;
+  width: 92%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 32px rgba(56, 189, 248, 0.2);
+  text-align: center;
+  animation: fadeUp 0.3s ease, floatSubtle 5s ease-in-out infinite;
+}
 
-/* ─── LAB CONTROL DECK (IN-BOX SLIDERS) ─── */
-.lab-controls-deck{width:100%;max-width:920px;margin-top:14px;
-  background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.25);
-  border-radius:16px;padding:16px 20px;backdrop-filter:blur(14px);
-  display:flex;flex-direction:column;gap:14px;
-  box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.modal-dialog.chat-mode {
+  max-width: 540px;
+  text-align: left;
+  padding: 24px;
+}
 
-.lab-controllers-grid{display:grid;grid-template-columns:1fr 180px 1fr;gap:16px;align-items:center}
+.tutor-dialog-body {
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-.force-control-pod{background:rgba(10,15,26,.8);border:1px solid rgba(148,163,184,.2);
-  border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;
-  transition:border-color .2s,box-shadow .2s}
-.force-control-pod.left-pod{border-left:3px solid #38BDF8}
-.force-control-pod.right-pod{border-right:3px solid #F59E0B}
-.force-control-pod.active-left{border-color:rgba(56,189,248,.5);box-shadow:0 0 16px rgba(56,189,248,.2)}
-.force-control-pod.active-right{border-color:rgba(245,158,11,.5);box-shadow:0 0 16px rgba(245,158,11,.2)}
+.tutor-chat-log {
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-.pod-header{display:flex;justify-content:space-between;align-items:center}
-.pod-title{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  font-family:'JetBrains Mono',monospace}
-.left-pod .pod-title{color:#38BDF8}
-.right-pod .pod-title{color:#F59E0B}
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
 
-.pod-value{font-size:19px;font-weight:900;font-family:'JetBrains Mono',monospace}
-.left-pod .pod-value{color:#38BDF8;text-shadow:0 0 10px rgba(56,189,248,.4)}
-.right-pod .pod-value{color:#F59E0B;text-shadow:0 0 10px rgba(245,158,11,.4)}
+.chat-bubble.tutor {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #e2e8f0;
+  align-self: flex-start;
+}
 
-/* Intuitive Range Slider */
-input[type=range].cyber-range{-webkit-appearance:none;appearance:none;width:100%;height:8px;
-  border-radius:4px;background:rgba(30,41,59,.9);outline:none;transition:all .15s}
-input[type=range].cyber-range:disabled{opacity:.28;cursor:not-allowed}
-.left-pod input[type=range].cyber-range::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;
-  border-radius:50%;background:#0284C7;cursor:pointer;border:2px solid #BAE6FD;
-  box-shadow:0 0 12px rgba(56,189,248,.6);transition:transform .12s,box-shadow .12s}
-.right-pod input[type=range].cyber-range::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;
-  border-radius:50%;background:#D97706;cursor:pointer;border:2px solid #FDE68A;
-  box-shadow:0 0 12px rgba(245,158,11,.6);transition:transform .12s,box-shadow .12s}
-input[type=range].cyber-range:not(:disabled)::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.chat-bubble.student {
+  background: rgba(2, 132, 199, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #f8fafc;
+  align-self: flex-end;
+}
 
-/* Quick Adjust Buttons */
-.quick-buttons{display:flex;gap:6px;justify-content:center}
-.btn-quick{background:rgba(30,41,59,.8);border:1px solid rgba(148,163,184,.25);
-  color:#CBD5E1;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-  padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .15s}
-.btn-quick:hover:not(:disabled){background:rgba(51,65,85,.9);color:#F8FAFC;border-color:rgba(56,189,248,.4)}
-.btn-quick:disabled{opacity:.25;cursor:not-allowed}
+.tutor-chat-input-row {
+  display: flex;
+  gap: 8px;
+}
 
-/* Center Net Force Telemetry Pod */
-.center-telemetry-pod{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;text-align:center;padding:8px 6px;background:rgba(10,15,26,.8);
-  border:1px solid rgba(56,189,248,.2);border-radius:12px}
-.net-chip-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#94A3B8;
-  text-transform:uppercase;letter-spacing:.12em}
-.net-chip-val{font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#38BDF8}
+.tutor-chat-input {
+  flex: 1;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  outline: none;
+}
 
-/* Equilibrium Status Badge */
-.status-pill{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  padding:3px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;
-  background:rgba(30,41,59,.8);color:#94A3B8;border:1px solid rgba(148,163,184,.3)}
-.status-pill.eq{background:rgba(16,185,129,.15);color:#34D399;border-color:#10B981;
-  box-shadow:0 0 12px rgba(16,185,129,.35);animation:pulseEmerald 2s infinite}
-.status-pill.acc-l{background:rgba(14,165,233,.15);color:#38BDF8;border-color:#38BDF8}
-.status-pill.acc-r{background:rgba(245,158,11,.15);color:#FBBF24;border-color:#F59E0B}
+.tutor-chat-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
 
-/* In-Lab Lock-in Button */
-.btn-lock-equilibrium{background:linear-gradient(135deg,#059669,#047857);
-  border:1px solid rgba(52,211,153,.6);color:#fff;
-  padding:8px 14px;border-radius:10px;font-family:'Nunito',system-ui,sans-serif;
-  font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.02em;
-  box-shadow:0 0 16px rgba(16,185,129,.4);animation:pulseEmerald 1.8s infinite;
-  transition:all .18s;width:100%;margin-top:2px}
-.btn-lock-equilibrium:hover{background:linear-gradient(135deg,#10B981,#059669);
-  box-shadow:0 0 24px rgba(52,211,153,.7);transform:scale(1.02)}
+.tutor-status-note {
+  font-size: 11px;
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
 
-/* ══════════════════════════════════════════════
-   INTERSTELLAR SHIMMER WAVE TRANSITION LAYER
-   Smooth Liquid Glass / iPhone Shimmer Wave
-══════════════════════════════════════════════ */
-#step-glob-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;
-  opacity:0;transition:opacity .2s ease}
-#step-glob-overlay.active{opacity:1;pointer-events:all}
-#glob-canvas{position:absolute;inset:0;width:100%;height:100%}
+.modal-dialog h2 {
+  color: #f8fafc;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
 
-/* Centered Apple / Frosted Glass HUD Card */
-.glob-hud-center{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:10;gap:12px;pointer-events:none;
-  opacity:0;transform:scale(.92);transition:all .35s cubic-bezier(.16,1,.3,1)}
-.glob-hud-center.show{opacity:1;transform:scale(1)}
+.modal-dialog p,
+.modal-dialog li {
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.7;
+}
 
-.glob-card-box{background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.45);
-  border-radius:24px;padding:26px 48px;backdrop-filter:blur(24px);
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-  box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 40px rgba(56,189,248,.25);
-  animation:floatSubtle 4s ease-in-out infinite}
+.modal-dialog li {
+  text-align: left;
+  margin-left: 18px;
+  margin-bottom: 8px;
+}
 
-.glob-badge{background:rgba(14,165,233,.18);border:1px solid rgba(56,189,248,.6);
-  color:#38BDF8;padding:5px 18px;border-radius:30px;font-size:11px;font-weight:800;
-  letter-spacing:.25em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;
-  box-shadow:0 0 16px rgba(56,189,248,.3)}
+/* Hypothesis Screen */
+#screen-hypothesis {
+  flex-direction: column;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
 
-.glob-title{font-size:32px;font-weight:900;color:#F8FAFC;letter-spacing:.02em;
-  text-shadow:0 0 24px rgba(56,189,248,.6);text-transform:uppercase}
+.hypothesis-container {
+  max-width: 680px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
-.glob-step-name{font-size:15px;color:#CBD5E1;font-weight:700;letter-spacing:.02em;
-  font-family:'Nunito',system-ui,sans-serif}
+.text-input {
+  width: 100%;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 16px;
+  resize: none;
+  outline: none;
+  height: 112px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
 
-/* ══════════════════════════════════════════════
-   VIDEO SCREEN
-══════════════════════════════════════════════ */
-#s-video{flex-direction:column;background:transparent;padding:36px 20px;overflow-y:auto}
-.vid-wrap{max-width:760px;width:100%;display:flex;flex-direction:column;gap:18px}
-.vid-eyebrow{font-size:11px;font-weight:800;letter-spacing:.22em;color:#38BDF8;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
-.vid-title{font-size:26px;font-weight:900;color:#F8FAFC}
-.vid-sub{font-size:14px;color:#94A3B8;font-weight:600}
+.text-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
 
-.vid-player{position:relative;width:100%;aspect-ratio:16/9;background:#0A0E18;
-  border-radius:16px;overflow:hidden;border:1px solid rgba(56,189,248,.3);
-  box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 24px rgba(56,189,248,.1)}
-#vid-canvas{width:100%;height:auto;display:block}
-.vid-loading{position:absolute;inset:0;background:#0A0E18;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:14px;transition:opacity .6s,visibility .6s}
-.vid-loading.gone{opacity:0;visibility:hidden}
-.spinner{width:48px;height:48px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.08);border-top-color:#38BDF8;animation:spinAnim .75s linear infinite;
-  box-shadow:0 0 16px rgba(56,189,248,.3)}
-.vid-caption-wrap{position:absolute;bottom:60px;left:0;right:0;text-align:center;
-  padding:0 36px;pointer-events:none}
-.vid-cap{display:inline-block;background:rgba(3,7,18,.9);border-bottom:2px solid #38BDF8;
-  color:#fff;font-size:15px;font-weight:700;padding:6px 20px;border-radius:4px;
-  opacity:0;transform:translateY(8px);transition:all .3s ease;
-  box-shadow:0 4px 16px rgba(0,0,0,.5)}
-.vid-cap.show{opacity:1;transform:translateY(0)}
-.vid-controls{position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(3,7,18,.92));
-  padding:18px 18px 12px;display:flex;align-items:center;gap:12px;opacity:0;transition:opacity .3s}
-.vid-player:hover .vid-controls{opacity:1}
-.vid-play{width:36px;height:36px;border-radius:50%;background:#0284C7;border:1px solid #38BDF8;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:13px;flex-shrink:0;transition:transform .15s;
-  box-shadow:0 0 12px rgba(14,165,233,.4)}
-.vid-play:hover{transform:scale(1.1)}
-.vid-prog-bar{flex:1;height:5px;background:rgba(255,255,255,.15);border-radius:3px;cursor:pointer;position:relative}
-.vid-prog{height:100%;background:#38BDF8;border-radius:3px;width:0%;box-shadow:0 0 8px #38BDF8}
-.vid-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:#94A3B8}
+.text-input::placeholder {
+  color: #64748b;
+  font-style: italic;
+}
 
-/* ══════════════════════════════════════════════
-   QUIZ SCREEN
-══════════════════════════════════════════════ */
-#s-quiz{flex-direction:column;background:transparent;padding:40px 20px;overflow-y:auto}
-.quiz-wrap{max-width:660px;width:100%;display:flex;flex-direction:column;gap:20px}
-.q-prog-bar{width:100%;height:6px;background:rgba(30,41,59,.8);border-radius:3px;overflow:hidden}
-.q-prog{height:100%;background:#38BDF8;border-radius:3px;transition:width .4s ease;box-shadow:0 0 10px #38BDF8}
-.q-num{font-size:11px;font-weight:800;color:#38BDF8;letter-spacing:.2em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
-.q-card h3{font-size:18px;font-weight:900;color:#F8FAFC;line-height:1.45;margin-bottom:8px}
-.q-hint{font-size:13px;color:#94A3B8;font-style:italic;font-weight:600}
-.q-ta{width:100%;background:rgba(10,15,26,.85);border:1px solid rgba(56,189,248,.28);
-  border-radius:12px;color:#F8FAFC;font-family:'Nunito',system-ui,sans-serif;font-size:14.5px;
-  line-height:1.65;padding:14px;resize:none;outline:none;height:120px;transition:all .2s}
-.q-ta:focus{border-color:#38BDF8;box-shadow:0 0 16px rgba(56,189,248,.3)}
-.q-ta::placeholder{color:#64748B;font-style:italic}
+.tutor-speech-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: 18px 22px;
+  animation: fadeUp 0.4s ease both, floatSubtle 5s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
+}
 
-/* ══════════════════════════════════════════════
-   RESULTS SCREEN & CELEBRATION
-══════════════════════════════════════════════ */
-#s-results{flex-direction:column;background:transparent;padding:40px 20px;overflow-y:auto;
-  align-items:center;justify-content:flex-start}
+.avatar-orb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, #7dd3fc, #0284c7, #0369a1);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
+}
 
-#celebration-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+/* Simulation Screen */
+#screen-simulation {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+}
 
-.res-wrap{max-width:700px;width:100%;display:flex;flex-direction:column;gap:20px;padding:20px 0 40px;position:relative;z-index:3}
-.res-header{text-align:center;animation:fadeUp .45s ease both}
-.res-header h2{font-size:32px;font-weight:900;color:#F8FAFC;letter-spacing:-.5px;
-  text-shadow:0 0 24px rgba(56,189,248,.35)}
-.res-header p{color:#94A3B8;font-size:14.5px;margin-top:4px;font-weight:600}
+#valerie-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 13, 22, 0.84);
+  backdrop-filter: blur(6px);
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
 
-.ring-wrap{display:flex;justify-content:center}
-#score-ring{display:block}
+#valerie-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
 
-.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.res-card{background:rgba(15,23,42,.8);border:1px solid rgba(56,189,248,.2);border-radius:14px;
-  padding:18px;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(0,0,0,.4)}
-.res-card.good{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.06);box-shadow:0 0 18px rgba(16,185,129,.12)}
-.res-card.weak{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.06);box-shadow:0 0 18px rgba(245,158,11,.12)}
-.res-card-lbl{font-size:10.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
-.res-card.good .res-card-lbl{color:#34D399}
-.res-card.weak .res-card-lbl{color:#FBBF24}
-.res-card p{font-size:13px;color:#CBD5E1;line-height:1.65;margin-bottom:4px;font-weight:600}
+/* Dashboard Sidebar (40%) */
+.sidebar {
+  width: 40%;
+  min-width: 320px;
+  max-width: 440px;
+  flex-shrink: 0;
+  background: rgba(11, 17, 30, 0.92);
+  border-right: 1px solid rgba(56, 189, 248, 0.22);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(16px);
+}
 
-.v-summary{background:rgba(15,23,42,.85);border:1px solid rgba(56,189,248,.3);border-radius:16px;
-  padding:18px 22px;display:flex;align-items:flex-start;gap:14px;
-  box-shadow:0 0 20px rgba(56,189,248,.1)}
-.v-summary p{font-size:14px;color:#E2E8F0;line-height:1.7;font-weight:600}
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-/* ── RESPONSIVE ── */
-@media screen and (max-width:1050px){
-  #s-sim{flex-direction:column}
-  .sidebar{width:100%;max-width:100%;height:auto;max-height:38vh;border-right:none;border-bottom:1px solid rgba(56,189,248,.2)}
-  .sim-main{flex:1;min-height:62vh;padding:12px}
-  .lab-controllers-grid{grid-template-columns:1fr;gap:10px}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 3px;
+}
+
+.sidebar-action {
+  padding: 14px 16px 18px;
+  background: rgba(11, 17, 30, 0.95);
+  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
+}
+
+.tutor-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.65);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.tutor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, #bae6fd, #0284c7, #075985);
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.6);
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+.tutor-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tutor-role {
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-ask-tutor {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.btn-ask-tutor:hover {
+  background: rgba(14, 165, 233, 0.22);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+}
+
+.tutor-message-panel {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-left: 3px solid #38bdf8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13.5px;
+  color: #cbd5e1;
+  line-height: 1.65;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.5);
+  transition: all 0.25s ease;
+}
+
+.step-item.active {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.2);
+}
+
+.step-item.done {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.step-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.3);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.25s ease;
+}
+
+.step-item.active .step-badge {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+.step-item.done .step-badge {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  transition: color 0.25s ease;
+}
+
+.step-item.active .step-title {
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.step-item.done .step-title {
+  color: #a7f3d0;
+}
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.metric-card {
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-label {
+  font-size: 9px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.observation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.observation-prompt {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.observation-textarea {
+  width: 100%;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  height: 76px;
+  transition: all 0.2s ease;
+}
+
+.observation-textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+.summary-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 12px;
+  border-left: 3px solid #10b981;
+  padding: 14px;
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.65;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  animation: fadeUp 0.4s ease both;
+}
+
+.summary-heading {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #10b981;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Lab Area (60%) */
+.lab-stage {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+  background: #080c15;
+}
+
+.canvas-frame {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  background: #0a0e18;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 36px rgba(0, 0, 0, 0.6), inset 0 0 24px rgba(56, 189, 248, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.canvas-frame.glow {
+  border-color: #10b981;
+  box-shadow: 0 0 44px rgba(16, 185, 129, 0.4);
+}
+
+#sim-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.canvas-standby-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 20, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 16px;
+  transition: opacity 0.45s ease;
+}
+
+.canvas-standby-overlay.dismissed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.standby-tag {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  letter-spacing: 0.15em;
+}
+
+.standby-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+/* Controls Under Canvas */
+.lab-controls-panel {
+  width: 100%;
+  max-width: 920px;
+  margin-top: 14px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 16px;
+  padding: 16px 20px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.controllers-layout {
+  display: grid;
+  grid-template-columns: 1fr 180px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.thruster-card {
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.thruster-card.left {
+  border-left: 3px solid #38bdf8;
+}
+
+.thruster-card.right {
+  border-right: 3px solid #f59e0b;
+}
+
+.thruster-card.left.active {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+}
+
+.thruster-card.right.active {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
+}
+
+.thruster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.thruster-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.thruster-card.left .thruster-title { color: #38bdf8; }
+.thruster-card.right .thruster-title { color: #f59e0b; }
+
+.thruster-readout {
+  font-size: 19px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.thruster-card.left .thruster-readout {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.thruster-card.right .thruster-readout {
+  color: #f59e0b;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+input[type=range].slider-control {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(30, 41, 59, 0.9);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+input[type=range].slider-control:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.thruster-card.left input[type=range].slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0284c7;
+  cursor: pointer;
+  border: 2px solid #bae6fd;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+  transition: transform 0.12s ease;
+}
+
+.thruster-card.right input[type=range].slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #d97706;
+  cursor: pointer;
+  border: 2px solid #fde68a;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+  transition: transform 0.12s ease;
+}
+
+input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.nudge-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.btn-nudge {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-nudge:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.9);
+  color: #f8fafc;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.btn-nudge:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.net-force-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 8px 6px;
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+}
+
+.net-force-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.net-force-value {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #38bdf8;
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-pill.balanced {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+  animation: pulseEmerald 2s infinite;
+}
+
+.status-pill.left-pull {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.status-pill.right-pull {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: #f59e0b;
+}
+
+.btn-confirm-equilibrium {
+  background: linear-gradient(135deg, #059669, #047857);
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+  animation: pulseEmerald 1.8s infinite;
+  transition: all 0.18s ease;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.btn-confirm-equilibrium:hover {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 0 24px rgba(52, 211, 153, 0.7);
+  transform: scale(1.02);
+}
+
+/* Interstellar Wave Transition */
+#step-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#step-transition-layer.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#transition-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.transition-hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transition-hud.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.transition-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 24px;
+  padding: 26px 48px;
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(56, 189, 248, 0.25);
+  animation: floatSubtle 4s ease-in-out infinite;
+}
+
+.transition-step-number {
+  font-size: 32px;
+  font-weight: 900;
+  color: #f8fafc;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.6);
+  text-transform: uppercase;
+}
+
+.transition-step-label {
+  font-size: 15px;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+/* Video Deep Dive */
+#screen-video {
+  flex-direction: column;
+  padding: 36px 20px;
+  overflow-y: auto;
+}
+
+.video-container {
+  max-width: 760px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.video-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0e18;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.1);
+}
+
+#video-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.video-loading-screen {
+  position: absolute;
+  inset: 0;
+  background: #0a0e18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.video-loading-screen.dismissed {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-top-color: #38bdf8;
+  animation: spin 0.75s linear infinite;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+}
+
+.caption-overlay {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0 36px;
+  pointer-events: none;
+}
+
+.caption-bubble {
+  display: inline-block;
+  background: rgba(3, 7, 18, 0.9);
+  border-bottom: 2px solid #38bdf8;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.caption-bubble.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(3, 7, 18, 0.92));
+  padding: 18px 18px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-player:hover .video-controls {
+  opacity: 1;
+}
+
+.btn-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0284c7;
+  border: 1px solid #38bdf8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+}
+
+.btn-play:hover {
+  transform: scale(1.1);
+}
+
+.progress-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #38bdf8;
+  border-radius: 3px;
+  width: 0%;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.timestamp {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Quiz Screen */
+#screen-quiz {
+  flex-direction: column;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.quiz-container {
+  max-width: 660px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quiz-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: #38bdf8;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+.quiz-card h3 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.quiz-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* Results Screen */
+#screen-results {
+  flex-direction: column;
+  padding: 40px 20px;
+  overflow-y: auto;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+#celebration-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.results-container {
+  max-width: 700px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 0 40px;
+  position: relative;
+  z-index: 3;
+}
+
+.results-header {
+  text-align: center;
+  animation: fadeUp 0.45s ease both;
+}
+
+.results-header h2 {
+  font-size: 32px;
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+}
+
+.score-ring-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.results-breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.feedback-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 14px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.feedback-card.success {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.06);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.12);
+}
+
+.feedback-card.review {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.06);
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.12);
+}
+
+.feedback-card-heading {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.feedback-card.success .feedback-card-heading { color: #34d399; }
+.feedback-card.review .feedback-card-heading { color: #fbbf24; }
+
+.feedback-card p {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.65;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media screen and (max-width: 1050px) {
+  #screen-simulation {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 38vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  }
+  .lab-stage {
+    flex: 1;
+    min-height: 62vh;
+    padding: 12px;
+  }
+  .controllers-layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
 </style>
 </head>
 <body>
 
-<!-- Ambient cosmic floating starfield background -->
 <canvas id="cosmic-bg-canvas"></canvas>
 
-<!-- ═══════════════ INTERSTELLAR SHIMMER STEP TRANSITION OVERLAY ═══════════════ -->
-<div id="step-glob-overlay">
-  <canvas id="glob-canvas"></canvas>
-  <div class="glob-hud-center" id="glob-hud-center">
-    <div class="glob-card-box">
-      <div class="glob-badge">NEXT STEP</div>
-      <div class="glob-title" id="glob-title-text">STEP 2</div>
-      <div class="glob-step-name" id="glob-step-name">Fire Left Rocket</div>
+<!-- Interstellar Wave Transition Overlay -->
+<div id="step-transition-layer">
+  <canvas id="transition-canvas"></canvas>
+  <div class="transition-hud" id="transition-hud">
+    <div class="transition-card">
+      <div class="badge">NEXT STEP</div>
+      <div class="transition-step-number" id="transition-step-number">STEP 2</div>
+      <div class="transition-step-label" id="transition-step-label">Fire Left Rocket</div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════ INTRO ═══════════════ -->
-<div class="screen" id="s-intro">
-  <div class="intro-grid-bg"></div>
-  <div class="intro-bar">
-    <button class="btn-cyber-secondary" onclick="exitMod()">✕ Exit</button>
-    <button class="btn-cyber-secondary" onclick="toggleModal()">ⓘ What You'll Learn</button>
+<!-- Intro Screen -->
+<div class="screen" id="screen-intro">
+  <div class="intro-grid"></div>
+  <div class="intro-topbar">
+    <button class="btn-secondary" id="btn-exit-intro">✕ Exit</button>
+    <button class="btn-secondary" id="btn-open-standards">ⓘ What You'll Learn</button>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:70px 20px 20px;z-index:5;max-width:640px;animation:fadeUp .6s ease both">
-    <div class="intro-badge">MS-PS2-1 · Grade 8 · Module 3001</div>
+    <div class="badge">MS-PS2-1 · Grade 8 · Module 3001</div>
     <h1 class="intro-title">Balanced<br><span>Forces</span></h1>
     <canvas id="icon-canvas" width="280" height="110"></canvas>
     <div class="terminal-box">
       <span id="story-text"></span><span class="cursor-blink" id="cursor-blink"></span>
     </div>
     <div style="margin-top:6px">
-      <button class="btn-cyber-primary btn-launch" id="start-btn" onclick="goHyp()" style="opacity:0;pointer-events:none;transform:translateY(8px)">
+      <button class="btn-primary btn-launch" id="btn-start-intro" style="opacity:0;pointer-events:none;transform:translateY(8px)">
         Launch Space Lab →
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════ STANDARDS MODAL ═══════════════ -->
-<div class="modal-bg" id="modal">
-  <div class="modal-box">
-    <span class="std-tag">MS-PS2-1</span>
+<!-- Standards Modal -->
+<div class="modal-overlay" id="modal-standards">
+  <div class="modal-dialog">
+    <span class="badge" style="margin-bottom:12px;display:inline-block">MS-PS2-1</span>
     <h2>What You'll Learn in This Lab</h2>
     <ul>
       <li><strong>Balanced Forces:</strong> What happens when two opposite pushes or pulls have equal strength.</li>
       <li><strong>Total Net Force:</strong> Why equal opposite forces cancel each other out to zero (0 N).</li>
       <li><strong>Newton's First Law:</strong> When the total net force is zero, an object will not speed up or slow down!</li>
     </ul>
-    <p style="color:#64748B;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science standards.</p>
-    <button class="btn-cyber-primary" style="margin-top:18px" onclick="toggleModal()">Got it!</button>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science standards.</p>
+    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Got it!</button>
   </div>
 </div>
 
-<!-- ═══════════════ VALERIE SLEEP MODAL ═══════════════ -->
-<div class="modal-bg" id="valerie-sleep-modal">
-  <div class="modal-box">
-    <div style="font-size:52px;margin-bottom:8px;animation:floatGentle 3s ease-in-out infinite">😴</div>
-    <h2 style="color:#38BDF8">Valerie is Sleeping</h2>
-    <p>She's resting her neural network right now.<br>She'll be right back as you move to the next step!</p>
-    <p style="font-size:12px;color:#64748B;margin-top:10px;font-family:'JetBrains Mono',monospace" id="sleep-timer">Closing in 3s...</p>
-    <button class="btn-cyber-secondary" style="margin-top:14px" onclick="closeValerieModal()">Back to Lab</button>
-  </div>
-</div>
-
-<!-- ═══════════════ HYPOTHESIS ═══════════════ -->
-<div class="screen hidden" id="s-hyp">
-  <div class="hyp-wrap">
-    <div class="cyber-card">
-      <div class="sec-lbl">The Mystery</div>
-      <h3 style="font-size:20px;font-weight:900;color:#F8FAFC;margin-bottom:8px">Why Isn't the Robot Moving?</h3>
-      <p style="color:#94A3B8;font-size:14.5px;line-height:1.7;font-weight:600">Two space rockets are hooked up to a 50 kg robot on a super smooth, frictionless track. Sometimes the robot zooms across space — other times it sits completely still even when both rockets fire at full blast! Let's find out why.</p>
+<!-- Valerie Socratic AI Modal -->
+<div class="modal-overlay" id="modal-valerie-dialog">
+  <div class="modal-dialog chat-mode">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tutor-avatar" style="width:32px;height:32px"></div>
+        <div>
+          <h3 style="color:#f8fafc;font-size:16px;font-weight:900">Ask Valerie</h3>
+          <span style="color:#38bdf8;font-size:11px;font-family:'JetBrains Mono',monospace" id="tutor-connection-status">Online (Socratic Mode)</span>
+        </div>
+      </div>
+      <button class="btn-secondary" id="btn-close-tutor-modal" style="padding:4px 10px;font-size:12px">✕</button>
     </div>
-    <div class="cyber-card">
-      <div class="sec-lbl">Your Prediction</div>
-      <p style="color:#CBD5E1;font-size:14.5px;margin-bottom:12px;font-weight:600">
+
+    <div class="tutor-dialog-body">
+      <div class="tutor-chat-log" id="tutor-chat-history">
+        <div class="chat-bubble tutor">
+          Hi! I am Valerie, your science guide. What questions do you have about the forces on the robot right now?
+        </div>
+      </div>
+      <div class="tutor-chat-input-row">
+        <input type="text" class="tutor-chat-input" id="tutor-user-input" placeholder="Ask Valerie a question about this experiment..." autocomplete="off">
+        <button class="btn-primary" id="btn-send-tutor-message" style="padding:8px 18px;font-size:13px">Ask</button>
+      </div>
+      <div class="tutor-status-note" id="tutor-api-status-note">Valerie AI API endpoint ready. Custom API integration pending.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Hypothesis Screen -->
+<div class="screen hidden" id="screen-hypothesis">
+  <div class="hypothesis-container">
+    <div class="card">
+      <div class="section-label">The Mystery</div>
+      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Why Isn't the Robot Moving?</h3>
+      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">Two space rockets are hooked up to a 50 kg robot on a super smooth, frictionless track. Sometimes the robot zooms across space — other times it sits completely still even when both rockets fire at full blast! Let's find out why.</p>
+    </div>
+    <div class="card">
+      <div class="section-label">Your Prediction</div>
+      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">
         What will happen to the robot when both rockets pull with the <em>exact same strength</em>?
       </p>
-      <textarea class="hyp-ta" id="hyp-ta" placeholder="I think the robot will... because..."></textarea>
+      <textarea class="text-input" id="hypothesis-input" placeholder="I think the robot will... because..."></textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-cyber-primary" id="hyp-btn" onclick="submitHyp()" disabled>Lock In Guess →</button>
+        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Guess →</button>
       </div>
     </div>
-    <div class="v-bubble hidden" id="v-hyp-reply">
-      <div class="v-dot-sm"></div>
-      <p id="v-hyp-txt" style="color:#CBD5E1;font-size:14px;line-height:1.65;font-weight:600"></p>
+    <div class="tutor-speech-bubble hidden" id="tutor-hypothesis-reply">
+      <div class="avatar-orb"></div>
+      <p id="tutor-hypothesis-text" style="color:#cbd5e1;font-size:14px;line-height:1.65;font-weight:600"></p>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════ SIMULATION SCREEN (2:3 Ratio) ═══════════════ -->
-<div id="version-tag">v6.2 · INTERSTELLAR HYBRID</div>
-<div class="screen hidden" id="s-sim">
+<!-- Simulation Screen -->
+<div id="version-tag">v6.3 · INTERSTELLAR HYBRID</div>
+<div class="screen hidden" id="screen-simulation">
   <div id="valerie-overlay"></div>
 
-  <!-- ── DASHBOARD SIDEBAR (40% width) ── -->
-  <div class="sidebar">
-    <div class="v-header">
-      <div class="v-core"></div>
+  <!-- Dashboard Sidebar (40%) -->
+  <aside class="sidebar">
+    <div class="tutor-header">
+      <div class="tutor-avatar"></div>
       <div>
-        <div class="v-name">Valerie</div>
-        <div class="v-role">Your Science Guide</div>
+        <div class="tutor-name">Valerie</div>
+        <div class="tutor-role">Your Science Guide</div>
       </div>
-      <button class="btn-ask-valerie" onclick="askValerie()">Ask Valerie</button>
+      <button class="btn-ask-tutor" id="btn-ask-valerie">Ask Valerie</button>
     </div>
 
     <div class="sidebar-scroll">
-      <div class="v-panel" id="v-panel">Getting lab ready...</div>
+      <div class="tutor-message-panel" id="tutor-panel">Getting lab ready...</div>
 
-      <div class="steps">
-        <div class="step active" id="st-0"><div class="step-n">1</div><div class="step-lbl">Get Ready</div></div>
-        <div class="step" id="st-1"><div class="step-n">2</div><div class="step-lbl">Fire Left Rocket</div></div>
-        <div class="step" id="st-2"><div class="step-n">3</div><div class="step-lbl">What Happened?</div></div>
-        <div class="step" id="st-3"><div class="step-n">4</div><div class="step-lbl">Balance the Rockets</div></div>
-        <div class="step" id="st-4"><div class="step-n">5</div><div class="step-lbl">Zero Net Force!</div></div>
-        <div class="step" id="st-5"><div class="step-n">6</div><div class="step-lbl">What You Learned</div></div>
+      <nav class="steps-list">
+        <div class="step-item active" id="step-item-0"><div class="step-badge">1</div><div class="step-title">Get Ready</div></div>
+        <div class="step-item" id="step-item-1"><div class="step-badge">2</div><div class="step-title">Fire Left Rocket</div></div>
+        <div class="step-item" id="step-item-2"><div class="step-badge">3</div><div class="step-title">What Happened?</div></div>
+        <div class="step-item" id="step-item-3"><div class="step-badge">4</div><div class="step-title">Balance the Rockets</div></div>
+        <div class="step-item" id="step-item-4"><div class="step-badge">5</div><div class="step-title">Zero Net Force!</div></div>
+        <div class="step-item" id="step-item-5"><div class="step-badge">6</div><div class="step-title">What You Learned</div></div>
+      </nav>
+
+      <div class="telemetry-grid">
+        <div class="metric-card"><div class="metric-value" id="metric-net-force">0.0 N</div><div class="metric-label">Total Net Force</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-acceleration">0.00</div><div class="metric-label">Acceleration m/s²</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-velocity">0.00</div><div class="metric-label">Speed m/s</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-position">0.00</div><div class="metric-label">Position m</div></div>
       </div>
 
-      <div class="metrics">
-        <div class="m-card"><div class="m-val" id="m-net">0.0 N</div><div class="m-lbl">Total Net Force</div></div>
-        <div class="m-card"><div class="m-val" id="m-acc">0.00</div><div class="m-lbl">Acceleration m/s²</div></div>
-        <div class="m-card"><div class="m-val" id="m-vel">0.00</div><div class="m-lbl">Speed m/s</div></div>
-        <div class="m-card"><div class="m-val" id="m-pos">0.00</div><div class="m-lbl">Position m</div></div>
-      </div>
-
-      <div id="action-inline"></div>
+      <div id="observation-container"></div>
     </div>
 
-    <!-- Sticky Bottom Action Bar -->
     <div class="sidebar-action">
       <div id="action-area">
-        <button class="btn-cyber-primary" style="width:100%" id="btn-start-sim" onclick="startSim()">Start Experiment →</button>
+        <button class="btn-primary" style="width:100%" id="btn-initialize-sim">Start Experiment →</button>
       </div>
     </div>
-  </div>
+  </aside>
 
-  <!-- ── LAB BOX (60% width) ── -->
-  <div class="sim-main">
-    <div class="canvas-wrap" id="canvas-wrap">
+  <!-- Lab Stage (60%) -->
+  <main class="lab-stage">
+    <div class="canvas-frame" id="canvas-frame">
       <canvas id="sim-canvas"></canvas>
-      <div class="canvas-overlay" id="canvas-ov">
-        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#38BDF8;letter-spacing:.15em">[ SPACE LAB STANDBY ]</div>
-        <div class="ov-text">Read Valerie's tips, then hit Start Experiment!</div>
+      <div class="canvas-standby-overlay" id="canvas-standby">
+        <div class="standby-tag">[ SPACE LAB STANDBY ]</div>
+        <div class="standby-text">Read Valerie's tips, then hit Start Experiment!</div>
       </div>
     </div>
 
-    <!-- Intuitive Sliders Inside the Lab Box -->
-    <div class="lab-controls-deck">
-      <div class="lab-controllers-grid">
-        <!-- Left Controller -->
-        <div class="force-control-pod left-pod" id="pod-L">
-          <div class="pod-header">
-            <span class="pod-title">Left Rocket [Pulls Left ←]</span>
-            <span class="pod-value" id="lv">0 N</span>
+    <div class="lab-controls-panel">
+      <div class="controllers-layout">
+        <!-- Left Thruster Controller -->
+        <div class="thruster-card left" id="card-thruster-left">
+          <div class="thruster-header">
+            <span class="thruster-title">Left Rocket [Pulls Left ←]</span>
+            <span class="thruster-readout" id="readout-left-force">0 N</span>
           </div>
-          <input type="range" class="cyber-range" id="sl-L" min="0" max="100" value="0" disabled>
-          <div class="quick-buttons">
-            <button class="btn-quick" onclick="adjustSlider('L', -10)">-10</button>
-            <button class="btn-quick" onclick="adjustSlider('L', -1)">-1</button>
-            <button class="btn-quick" onclick="adjustSlider('L', +1)">+1</button>
-            <button class="btn-quick" onclick="adjustSlider('L', +10)">+10</button>
+          <input type="range" class="slider-control" id="slider-left" min="0" max="100" value="0" disabled>
+          <div class="nudge-buttons">
+            <button class="btn-nudge" data-thruster="left" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-thruster="left" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-thruster="left" data-delta="1">+1</button>
+            <button class="btn-nudge" data-thruster="left" data-delta="10">+10</button>
           </div>
         </div>
 
-        <!-- Center Telemetry & Balance Confirmation -->
-        <div class="center-telemetry-pod">
-          <div class="net-chip-lbl">Total Net Force ΣF</div>
-          <div class="net-chip-val" id="c-FN">0.0 N</div>
-          <div class="status-pill" id="status-pill">STILL</div>
-          <div id="lab-confirm-area" style="width:100%"></div>
+        <!-- Center Net Force Readout -->
+        <div class="net-force-display">
+          <div class="net-force-label">Total Net Force ΣF</div>
+          <div class="net-force-value" id="chip-net-force">0.0 N</div>
+          <div class="status-pill" id="status-motion-pill">STILL</div>
+          <div id="balance-confirmation-container" style="width:100%"></div>
         </div>
 
-        <!-- Right Controller -->
-        <div class="force-control-pod right-pod" id="pod-R">
-          <div class="pod-header">
-            <span class="pod-title">Right Rocket [Pulls Right →]</span>
-            <span class="pod-value" id="rv">0 N</span>
+        <!-- Right Thruster Controller -->
+        <div class="thruster-card right" id="card-thruster-right">
+          <div class="thruster-header">
+            <span class="thruster-title">Right Rocket [Pulls Right →]</span>
+            <span class="thruster-readout" id="readout-right-force">0 N</span>
           </div>
-          <input type="range" class="cyber-range" id="sl-R" min="0" max="100" value="0" disabled>
-          <div class="quick-buttons">
-            <button class="btn-quick" onclick="adjustSlider('R', -10)">-10</button>
-            <button class="btn-quick" onclick="adjustSlider('R', -1)">-1</button>
-            <button class="btn-quick" onclick="adjustSlider('R', +1)">+1</button>
-            <button class="btn-quick" onclick="adjustSlider('R', +10)">+10</button>
+          <input type="range" class="slider-control" id="slider-right" min="0" max="100" value="0" disabled>
+          <div class="nudge-buttons">
+            <button class="btn-nudge" data-thruster="right" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-thruster="right" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-thruster="right" data-delta="1">+1</button>
+            <button class="btn-nudge" data-thruster="right" data-delta="10">+10</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>
 
-<!-- ═══════════════ VIDEO SCREEN ═══════════════ -->
-<div class="screen hidden" id="s-video">
-  <div class="vid-wrap">
-    <div class="vid-eyebrow">Concept Deep-Dive</div>
-    <div class="vid-title">Balanced Forces in Space and on Earth</div>
-    <div class="vid-sub">See how equal opposite forces create balance in everyday life</div>
-    <div class="vid-player" id="vid-player">
-      <canvas id="vid-canvas"></canvas>
-      <div class="vid-loading" id="vid-loading">
+<!-- Video Screen -->
+<div class="screen hidden" id="screen-video">
+  <div class="video-container">
+    <div class="section-label">Concept Deep-Dive</div>
+    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">Balanced Forces in Space and on Earth</h2>
+    <p style="font-size:14px;color:#94a3b8;font-weight:600">See how equal opposite forces create balance in everyday life</p>
+    <div class="video-player" id="video-player">
+      <canvas id="video-canvas"></canvas>
+      <div class="video-loading-screen" id="video-loading">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94A3B8">Loading video...</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94a3b8">Loading video...</div>
       </div>
-      <div class="vid-caption-wrap"><span class="vid-cap" id="vid-cap"></span></div>
-      <div class="vid-controls">
-        <button class="vid-play" id="vid-play-btn" onclick="toggleVid()">▶</button>
-        <div class="vid-prog-bar" onclick="seekVid(event)">
-          <div class="vid-prog" id="vid-prog"></div>
+      <div class="caption-overlay"><span class="caption-bubble" id="caption-text"></span></div>
+      <div class="video-controls">
+        <button class="btn-play" id="btn-toggle-video">▶</button>
+        <div class="progress-track" id="video-progress-track">
+          <div class="progress-fill" id="video-progress-fill"></div>
         </div>
-        <div class="vid-time" id="vid-time">0:00 / 0:30</div>
+        <div class="timestamp" id="video-timestamp">0:00 / 0:30</div>
       </div>
     </div>
-    <button class="btn-cyber-primary hidden" id="vid-continue" style="align-self:center" onclick="goQuiz()">Take Quick Quiz →</button>
+    <button class="btn-primary hidden" id="btn-continue-to-quiz" style="align-self:center">Take Quick Quiz →</button>
   </div>
 </div>
 
-<!-- ═══════════════ QUIZ SCREEN ═══════════════ -->
-<div class="screen hidden" id="s-quiz">
-  <div class="quiz-wrap">
-    <div class="q-prog-bar"><div class="q-prog" id="q-prog" style="width:0%"></div></div>
-    <div class="q-num" id="q-num">Question 1 of 3</div>
-    <div class="cyber-card" id="q-card" style="gap:14px;display:flex;flex-direction:column">
-      <h3 id="q-text"></h3>
-      <p class="q-hint" id="q-hint"></p>
-      <textarea class="q-ta" id="q-ta" placeholder="Type your answer here in your own words..."></textarea>
+<!-- Quiz Screen -->
+<div class="screen hidden" id="screen-quiz">
+  <div class="quiz-container">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div></div>
+    <div class="section-label" id="quiz-counter-label">Question 1 of 3</div>
+    <div class="card quiz-card" id="card-quiz-question" style="gap:14px;display:flex;flex-direction:column">
+      <h3 id="quiz-question-text"></h3>
+      <p class="quiz-hint" id="quiz-hint-text"></p>
+      <textarea class="text-input" id="quiz-answer-input" placeholder="Type your answer here in your own words..."></textarea>
       <div style="display:flex;justify-content:flex-end">
-        <button class="btn-cyber-primary" id="q-btn" onclick="submitQ()" disabled>Submit Answer →</button>
+        <button class="btn-primary" id="btn-submit-quiz-answer" disabled>Submit Answer →</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════ RESULTS SCREEN & CELEBRATION ═══════════════ -->
-<div class="screen hidden" id="s-results">
+<!-- Results Screen -->
+<div class="screen hidden" id="screen-results">
   <canvas id="celebration-canvas"></canvas>
-  <div class="res-wrap">
-    <div class="res-header">
+  <div class="results-container">
+    <div class="results-header">
       <h2>MISSION COMPLETE!</h2>
       <p>Module 3001: Balanced Forces &amp; Newton's First Law</p>
     </div>
-    <div class="ring-wrap"><canvas id="score-ring" width="140" height="140"></canvas></div>
-    <div class="res-grid" id="res-grid"></div>
-    <div class="v-summary">
-      <div class="v-dot-sm"></div>
-      <p id="v-final"></p>
+    <div class="score-ring-wrapper"><canvas id="score-ring-canvas" width="140" height="140"></canvas></div>
+    <div class="results-breakdown-grid" id="results-feedback-grid"></div>
+    <div class="tutor-speech-bubble">
+      <div class="avatar-orb"></div>
+      <p id="tutor-final-summary" style="color:#e2e8f0;font-size:14px;line-height:1.7;font-weight:600"></p>
     </div>
-    <button class="btn-cyber-primary" style="align-self:center" onclick="exitMod()">Finish Space Lab ✓</button>
+    <button class="btn-primary" id="btn-finish-module" style="align-self:center">Finish Space Lab ✓</button>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   POLYFILL
-═══════════════════════════════════════════════════════════ */
+// Polyfill for roundRect on older browser engines
 if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-    r=Math.min(r,w/2,h/2);
-    this.moveTo(x+r,y); this.lineTo(x+w-r,y); this.quadraticCurveTo(x+w,y,x+w,y+r);
-    this.lineTo(x+w,y+h-r); this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    this.lineTo(x+r,y+h); this.quadraticCurveTo(x,y+h,x,y+h-r);
-    this.lineTo(x,y+r); this.quadraticCurveTo(x,y,x+r,y); this.closePath();
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radius) {
+    const r = Math.min(radius, w / 2, h / 2);
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.quadraticCurveTo(x + w, y, x + w, y + r);
+    this.lineTo(x + w, y + h - r);
+    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    this.lineTo(x + r, y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - r);
+    this.lineTo(x, y + r);
+    this.quadraticCurveTo(x, y, x + r, y);
+    this.closePath();
+    return this;
   };
 }
 
-/* ═══════════════════════════════════════════════════════════
-   GLOBAL STATE
-═══════════════════════════════════════════════════════════ */
-const G={step:0,hypothesis:'',obs:[],simMetrics:{balFL:0,balFR:0,maxVel:0},
-  quizAnswers:[],simRunning:false,raf:null,iconRaf:null,vidRaf:null,celebRaf:null,
-  bgDustRaf:null,vidTime:0,vidDur:30,vidPlaying:false,thresholdHit1:false,thresholdHit2:false};
-const P={FL:0,FR:0,mass:50,vel:0,pos:0,dt:1/60};
+// Module State
+const labState = {
+  currentStep: 0,
+  hypothesisText: '',
+  observations: [],
+  balancedLeftForce: 0,
+  balancedRightForce: 0,
+  quizAnswers: [],
+  isSimRunning: false,
+  simAnimationId: null,
+  introIconAnimationId: null,
+  videoAnimationId: null,
+  celebrationAnimationId: null,
+  backgroundDustAnimationId: null,
+  videoCurrentTime: 0,
+  videoDuration: 30,
+  isVideoPlaying: false,
+  hasReachedFirstThreshold: false,
+  hasReachedSecondThreshold: false
+};
 
-/* ═══════════════════════════════════════════════════════════
-   STEP NAMES FOR TRANSITIONS (Simple & Friendly for Students)
-═══════════════════════════════════════════════════════════ */
-const STEP_NAMES=[
-  "Step 1: Get Ready",
-  "Step 2: Fire Left Rocket",
-  "Step 3: What Happened?",
-  "Step 4: Balance the Rockets",
-  "Step 5: Zero Net Force!",
-  "Step 6: What You Learned"
+const physicsState = {
+  leftForce: 0,
+  rightForce: 0,
+  mass: 50,
+  velocity: 0,
+  position: 0,
+  dt: 1 / 60
+};
+
+const STEP_LABELS = [
+  'Step 1: Get Ready',
+  'Step 2: Fire Left Rocket',
+  'Step 3: What Happened?',
+  'Step 4: Balance the Rockets',
+  'Step 5: Zero Net Force!',
+  'Step 6: What You Learned'
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   AMBIENT FLOATING SPACE STARDUST
-═══════════════════════════════════════════════════════════ */
-(function initAmbientCosmos(){
-  const canvas=document.getElementById('cosmic-bg-canvas');
-  if(!canvas) return;
-  const ctx=canvas.getContext('2d');
-  function resize(){
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+const VIDEO_CAPTIONS = [
+  { start: 0, end: 5, text: 'What are Balanced Forces?' },
+  { start: 5, end: 10, text: 'Two equal forces pulling in opposite directions...' },
+  { start: 10, end: 15, text: 'They cancel out: Total Net Force = 0!' },
+  { start: 15, end: 21, text: 'Zero Net Force means zero acceleration — no speeding up or slowing down!' },
+  { start: 21, end: 30, text: "That is Newton's First Law of Motion!" }
+];
+
+const QUIZ_ITEMS = [
+  {
+    question: "In your own words, what does it mean for forces to be 'balanced'? What is the total net force?",
+    hint: 'Think about what happened when both rockets pulled with the exact same number of Newtons.',
+    keywords: ['equal', 'same', 'cancel', 'zero', 'balanced', 'no change', 'constant', 'opposite', 'equilibrium']
+  },
+  {
+    question: 'A book sits completely still on your desk. Are the forces on it balanced or unbalanced? How do you know?',
+    hint: 'Is the book speeding up or slowing down? What does that tell you about the net force?',
+    keywords: ['balanced', 'zero', 'constant', 'acceleration', 'first law', 'net force', 'speed', 'velocity', 'equal', 'still']
+  },
+  {
+    question: "In the space lab, both rockets pulled with 60 N in opposite directions. What was the total net force, and why didn't the robot speed up?",
+    hint: 'What is 60 minus 60? What happens to acceleration when the net force is zero?',
+    keywords: ['zero', '0', 'cancel', 'balanced', 'no acceleration', 'stopped', 'constant', 'net', 'equal']
+  }
+];
+
+let activeQuizIndex = 0;
+let observationCallback = null;
+let valerieSleepTimer = null;
+
+// Ambient Background Star Dust
+function initCosmicBackground() {
+  const canvas = document.getElementById('cosmic-bg-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
   window.addEventListener('resize', resize);
   resize();
 
-  const particles=[];
-  for(let i=0;i<65;i++){
+  const particleCount = 65;
+  const particles = [];
+  for (let i = 0; i < particleCount; i++) {
     particles.push({
-      x: Math.random()*canvas.width,
-      y: Math.random()*canvas.height,
-      r: 0.6 + Math.random()*1.8,
-      alpha: 0.15 + Math.random()*0.55,
-      vx: (Math.random()-0.5)*0.25,
-      vy: -0.15 - Math.random()*0.35,
-      color: Math.random()>0.4 ? 'rgba(56,189,248,' : 'rgba(226,232,240,'
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: 0.6 + Math.random() * 1.8,
+      alpha: 0.15 + Math.random() * 0.55,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: -0.15 - Math.random() * 0.35,
+      baseColor: Math.random() > 0.4 ? 'rgba(56,189,248,' : 'rgba(226,232,240,'
     });
   }
 
-  function render(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let i=0;i<particles.length;i++){
-      const p=particles[i];
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
       p.x += p.vx;
       p.y += p.vy;
-      if(p.y < -10) p.y = canvas.height + 10;
-      if(p.x < -10) p.x = canvas.width + 10;
-      if(p.x > canvas.width + 10) p.x = -10;
+      if (p.y < -10) p.y = canvas.height + 10;
+      if (p.x < -10) p.x = canvas.width + 10;
+      if (p.x > canvas.width + 10) p.x = -10;
 
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.baseColor + p.alpha + ')';
       ctx.fill();
     }
-    G.bgDustRaf = requestAnimationFrame(render);
+    labState.backgroundDustAnimationId = requestAnimationFrame(render);
   }
   render();
-})();
+}
 
-/* ═══════════════════════════════════════════════════════════
-   INTERSTELLAR SHIMMER STEP TRANSITION
-   Apple / iPhone Liquid Glass Shimmer Wave
-═══════════════════════════════════════════════════════════ */
-function runStepGlobTransition(stepNumber, stepTitle, onDone){
-  const overlay=document.getElementById('step-glob-overlay');
-  const hud=document.getElementById('glob-hud-center');
-  const titleText=document.getElementById('glob-title-text');
-  const txt=document.getElementById('glob-step-name');
-  const canvas=document.getElementById('glob-canvas');
-  const ctx=canvas.getContext('2d');
+// Interstellar Liquid Glass Step Wave Transition
+function playStepTransition(stepNumber, stepTitle, onComplete) {
+  const overlay = document.getElementById('step-transition-layer');
+  const hud = document.getElementById('transition-hud');
+  const numberText = document.getElementById('transition-step-number');
+  const labelText = document.getElementById('transition-step-label');
+  const canvas = document.getElementById('transition-canvas');
+  const ctx = canvas.getContext('2d');
 
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-  titleText.textContent = "STEP " + stepNumber;
-  txt.textContent = stepTitle || ("Step " + stepNumber);
+  numberText.textContent = `STEP ${stepNumber}`;
+  labelText.textContent = stepTitle || `Step ${stepNumber}`;
 
   overlay.classList.add('active');
   hud.classList.add('show');
 
-  const startTime=performance.now();
-  const duration=1000; // ms
+  const startTime = performance.now();
+  const duration = 1000;
 
-  // Pre-generate stellar glint specks
-  const glints=[];
-  for(let i=0;i<30;i++){
+  const glintCount = 30;
+  const glints = [];
+  for (let i = 0; i < glintCount; i++) {
     glints.push({
-      yFrac: Math.random(),
-      relOffset: (Math.random()-0.5)*180,
-      size: 1.5 + Math.random()*3,
-      alpha: 0.4 + Math.random()*0.6
+      yRatio: Math.random(),
+      relOffset: (Math.random() - 0.5) * 180,
+      size: 1.5 + Math.random() * 3,
+      alpha: 0.4 + Math.random() * 0.6
     });
   }
 
-  function frame(now){
+  function renderFrame(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    // Smooth cubic ease-in-out
-    const ease = progress < 0.5 ? 4*progress*progress*progress : 1 - Math.pow(-2*progress + 2, 3)/2;
+    const ease = progress < 0.5
+      ? 4 * progress * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
-    const W = canvas.width;
-    const H = canvas.height;
-    ctx.clearRect(0,0,W,H);
+    const width = canvas.width;
+    const height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
 
-    // Front edge position of interstellar wave
-    const waveFront = -250 + ease * (W + 550);
+    const waveFront = -250 + ease * (width + 550);
     const waveWidth = 380;
 
-    // 1. Smooth Interstellar Shimmer Ribbon (70% opacity, pure cosmic gradient)
     ctx.save();
-
-    // Curved sweeping light beam
     ctx.beginPath();
     ctx.moveTo(waveFront - waveWidth, 0);
 
-    for(let y=0; y<=H; y+=25){
-      // Silky organic wave curvature (like iPhone cosmic fluid / aurora ribbon)
-      const curve = Math.sin((y / H) * Math.PI * 1.8 + progress * Math.PI) * 55;
+    for (let y = 0; y <= height; y += 25) {
+      const curve = Math.sin((y / height) * Math.PI * 1.8 + progress * Math.PI) * 55;
       ctx.lineTo(waveFront + curve, y);
     }
 
-    ctx.lineTo(waveFront - waveWidth - 60, H);
+    ctx.lineTo(waveFront - waveWidth - 60, height);
     ctx.closePath();
 
-    // Multilayered 70% opacity metallic silver & cosmic cyan gradient
-    const grad = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
-    grad.addColorStop(0, 'rgba(15, 23, 42, 0)');
-    grad.addColorStop(0.35, 'rgba(99, 102, 241, 0.40)');
-    grad.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)'); // 70% blue
-    grad.addColorStop(0.92, 'rgba(226, 232, 240, 0.70)'); // 70% silvery
-    grad.addColorStop(1, 'rgba(255, 255, 255, 0.85)');
+    const gradient = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
+    gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
+    gradient.addColorStop(0.35, 'rgba(99, 102, 241, 0.40)');
+    gradient.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)');
+    gradient.addColorStop(0.92, 'rgba(226, 232, 240, 0.70)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.85)');
 
-    ctx.fillStyle = grad;
-    ctx.shadowColor = '#38BDF8';
+    ctx.fillStyle = gradient;
+    ctx.shadowColor = '#38bdf8';
     ctx.shadowBlur = 35;
     ctx.fill();
 
-    // 2. Shimmering Starlight Glints
-    for(let i=0; i<glints.length; i++){
+    for (let i = 0; i < glints.length; i++) {
       const g = glints[i];
       const gx = waveFront - 60 + g.relOffset;
-      const gy = g.yFrac * H;
-      if(gx > 0 && gx < W){
-        // 4-point star glint
+      const gy = g.yRatio * height;
+      if (gx > 0 && gx < width) {
         ctx.save();
         ctx.translate(gx, gy);
-        ctx.fillStyle = `rgba(255, 255, 255, ${g.alpha * (1 - Math.abs(progress - 0.5)*1.8)})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${g.alpha * (1 - Math.abs(progress - 0.5) * 1.8)})`;
         ctx.beginPath();
-        ctx.arc(0, 0, g.size, 0, Math.PI*2);
+        ctx.arc(0, 0, g.size, 0, Math.PI * 2);
         ctx.fill();
-        // Tiny cross flare
+
         ctx.strokeStyle = `rgba(56, 189, 248, ${g.alpha * 0.7})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(-g.size*2.8, 0); ctx.lineTo(g.size*2.8, 0);
-        ctx.moveTo(0, -g.size*2.8); ctx.lineTo(0, g.size*2.8);
+        ctx.moveTo(-g.size * 2.8, 0);
+        ctx.lineTo(g.size * 2.8, 0);
+        ctx.moveTo(0, -g.size * 2.8);
+        ctx.lineTo(0, g.size * 2.8);
         ctx.stroke();
         ctx.restore();
       }
     }
-
     ctx.restore();
 
-    if(progress < 1){
-      requestAnimationFrame(frame);
+    if (progress < 1) {
+      requestAnimationFrame(renderFrame);
     } else {
       hud.classList.remove('show');
       overlay.classList.remove('active');
-      ctx.clearRect(0,0,W,H);
-      if(onDone) onDone();
+      ctx.clearRect(0, 0, width, height);
+      if (onComplete) onComplete();
     }
   }
 
-  requestAnimationFrame(frame);
+  requestAnimationFrame(renderFrame);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESIZE LISTENER
-═══════════════════════════════════════════════════════════ */
-window.addEventListener('resize', function(){
-  const sc=document.getElementById('sim-canvas'), wr=document.getElementById('canvas-wrap');
-  if(sc&&wr&&wr.clientWidth>0){
-    const W=wr.clientWidth,H=Math.round(W*.50),dpr=window.devicePixelRatio||1;
-    sc.width=W*dpr; sc.height=H*dpr;
-    if(!G.simRunning) drawSim(sc.getContext('2d'),[W,H]);
-  }
-});
+// Typing Animation for Incident Story
+const STORY_TEXT = "INCIDENT BRIEFING: Orbital Tug-Bot 3001 is on top of a smooth track. Rockets are pulling both ways, but the robot is not moving.\n\nYour mission: figure out why it is not moving, and prove the First Law of Newton.";
+let storyCharIndex = 0;
 
-/* ═══════════════════════════════════════════════════════════
-   TYPING ANIMATION
-   (Exact User Request: Simple, Student-Friendly Briefing)
-═══════════════════════════════════════════════════════════ */
-const STORY="INCIDENT BRIEFING: Orbital Tug-Bot 3001 is on top of a smooth track. Rockets are pulling both ways, but the robot is not moving.\n\nYour mission: figure out why it is not moving, and prove the First Law of Newton.";
-let tIdx=0;
-function typeWriter(){
-  const el=document.getElementById('story-text');
-  if(tIdx<STORY.length){
-    el.innerHTML+=STORY.charAt(tIdx)==='\n'?'<br>':STORY.charAt(tIdx);
-    tIdx++; setTimeout(typeWriter,14);
+function runTypewriter() {
+  const container = document.getElementById('story-text');
+  if (!container) return;
+
+  if (storyCharIndex < STORY_TEXT.length) {
+    const char = STORY_TEXT.charAt(storyCharIndex);
+    container.innerHTML += char === '\n' ? '<br>' : char;
+    storyCharIndex++;
+    setTimeout(runTypewriter, 14);
   } else {
-    setTimeout(()=>{
-      const b=document.getElementById('start-btn');
-      b.style.opacity='1'; b.style.pointerEvents='all'; b.style.transform='translateY(0)';
-      document.getElementById('cursor-blink').style.display='none';
-    },300);
+    setTimeout(() => {
+      const launchButton = document.getElementById('btn-start-intro');
+      launchButton.style.opacity = '1';
+      launchButton.style.pointerEvents = 'all';
+      launchButton.style.transform = 'translateY(0)';
+      document.getElementById('cursor-blink').style.display = 'none';
+    }, 300);
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   INTRO ICON ANIMATION (Vector Clean, No Emojis)
-═══════════════════════════════════════════════════════════ */
-(function(){
-  const c=document.getElementById('icon-canvas'),ctx=c.getContext('2d');let t=0;
-  function arrowI(ctx,x1,y1,x2,y2,col,w){
-    const ang=Math.atan2(y2-y1,x2-x1),h=11;
-    ctx.strokeStyle=ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x2,y2);
-    ctx.lineTo(x2-h*Math.cos(ang-.42),y2-h*Math.sin(ang-.42));
-    ctx.lineTo(x2-h*Math.cos(ang+.42),y2-h*Math.sin(ang+.42));
-    ctx.closePath();ctx.fill();
+// Intro Icon Animation
+function initIntroIcon() {
+  const canvas = document.getElementById('icon-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let frame = 0;
+
+  function drawVectorArrow(x1, y1, x2, y2, color, lineWidth) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLength = 11;
+    ctx.strokeStyle = ctx.fillStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
+    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
+    ctx.closePath();
+    ctx.fill();
   }
-  function draw(){
-    ctx.clearRect(0,0,280,110);const cx=140,cy=55,off=Math.sin(t*.04)*8;
-    const floatBob = Math.sin(t*0.05)*3.5;
-    // Ambient Glow
-    const g=ctx.createRadialGradient(cx,cy+floatBob,2,cx,cy+floatBob,52);
-    g.addColorStop(0,'rgba(56,189,248,.20)');g.addColorStop(1,'rgba(56,189,248,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy+floatBob,52,0,Math.PI*2);ctx.fill();
-    // Opposing Force Arrows
-    arrowI(ctx,cx-22-off,cy+floatBob,cx-96-off,cy+floatBob,'#38BDF8',3.5);
-    arrowI(ctx,cx+22+off,cy+floatBob,cx+96+off,cy+floatBob,'#F59E0B',3.5);
-    // Floating Mass Block
-    ctx.fillStyle='rgba(15,23,42,.92)';ctx.strokeStyle='#38BDF8';ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(cx-20,cy-20+floatBob,40,40,8);ctx.fill();ctx.stroke();
-    // Balanced Indicator
-    ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ΣF=0',cx,cy+floatBob);
-    t++;G.iconRaf=requestAnimationFrame(draw);
+
+  function render() {
+    ctx.clearRect(0, 0, 280, 110);
+    const cx = 140;
+    const cy = 55;
+    const horizontalOffset = Math.sin(frame * 0.04) * 8;
+    const floatBob = Math.sin(frame * 0.05) * 3.5;
+
+    const glow = ctx.createRadialGradient(cx, cy + floatBob, 2, cx, cy + floatBob, 52);
+    glow.addColorStop(0, 'rgba(56, 189, 248, 0.20)');
+    glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy + floatBob, 52, 0, Math.PI * 2);
+    ctx.fill();
+
+    drawVectorArrow(cx - 22 - horizontalOffset, cy + floatBob, cx - 96 - horizontalOffset, cy + floatBob, '#38bdf8', 3.5);
+    drawVectorArrow(cx + 22 + horizontalOffset, cy + floatBob, cx + 96 + horizontalOffset, cy + floatBob, '#f59e0b', 3.5);
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cx - 20, cy - 20 + floatBob, 40, 40, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ΣF=0', cx, cy + floatBob);
+
+    frame++;
+    labState.introIconAnimationId = requestAnimationFrame(render);
   }
-  draw();
-  setTimeout(typeWriter,400);
-})();
 
-/* ═══════════════════════════════════════════════════════════
-   MODALS & EXIT & WHOOSH
-═══════════════════════════════════════════════════════════ */
-function toggleModal(){ document.getElementById('modal').classList.toggle('open'); }
-
-let _sleepTimer=null;
-function askValerie(){
-  document.getElementById('valerie-sleep-modal').classList.add('open');
-  let s=3;
-  document.getElementById('sleep-timer').textContent='Closing in '+s+'s...';
-  _sleepTimer=setInterval(()=>{
-    s--;
-    if(s>0){ document.getElementById('sleep-timer').textContent='Closing in '+s+'s...'; }
-    else { clearInterval(_sleepTimer); closeValerieModal(); }
-  },1000);
-}
-function closeValerieModal(){
-  if(_sleepTimer){ clearInterval(_sleepTimer); _sleepTimer=null; }
-  document.getElementById('valerie-sleep-modal').classList.remove('open');
+  render();
+  setTimeout(runTypewriter, 400);
 }
 
-function exitMod(){
-  if(confirm('Exit Module 3001? Progress will not be saved.')){
-    [G.iconRaf,G.raf,G.vidRaf,G.celebRaf,G.bgDustRaf].forEach(r=>r&&cancelAnimationFrame(r));
-    document.body.innerHTML='<div style="position:fixed;inset:0;background:#080C15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38BDF8;font-weight:900">Module 3001 Closed</div><div style="color:#64748B;font-size:15px;font-family:\'JetBrains Mono\',monospace">Space Lab closed. Progress saved.</div></div>';
-  }
-}
+// Screen Transition Helper
+function transitionScreen(fromScreenId, toScreenId) {
+  const fromScreen = document.getElementById(fromScreenId);
+  const toScreen = document.getElementById(toScreenId);
 
-function whoosh(fromId,toId){
-  const from=document.getElementById(fromId),to=document.getElementById(toId);
-  from.style.transition='opacity .3s ease,transform .3s ease';
-  from.style.opacity='0';from.style.transform='translateX(-30px)';
-  setTimeout(()=>{
-    from.classList.add('hidden');
-    from.style.cssText='';
-    to.classList.remove('hidden');
-    to.style.opacity='0';to.style.transform='translateX(30px)';
-    to.style.transition='opacity .35s ease,transform .35s ease';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      to.style.opacity='1';to.style.transform='translateX(0)';
-      setTimeout(()=>{ to.style.cssText=''; },400);
-    }));
-  },300);
-}
+  fromScreen.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  fromScreen.style.opacity = '0';
+  fromScreen.style.transform = 'translateX(-30px)';
 
-/* ═══════════════════════════════════════════════════════════
-   HYPOTHESIS
-═══════════════════════════════════════════════════════════ */
-function goHyp(){
-  cancelAnimationFrame(G.iconRaf);
-  whoosh('s-intro','s-hyp');
-  setTimeout(()=>document.getElementById('hyp-ta').focus(),450);
-}
-document.getElementById('hyp-ta').addEventListener('input',function(){
-  document.getElementById('hyp-btn').disabled=this.value.trim().length===0;
-});
-function submitHyp(){
-  G.hypothesis=document.getElementById('hyp-ta').value.trim();
-  document.getElementById('hyp-btn').disabled=true;
-  document.getElementById('hyp-ta').disabled=true;
-  const msgs=[
-    'Awesome prediction! 🤔 Let us test it in space and see what really happens.',
-    'Great thinking! Science is all about testing your ideas against real experiments. Starting space lab...'
-  ];
-  document.getElementById('v-hyp-txt').textContent=msgs[Math.floor(Math.random()*msgs.length)];
-  document.getElementById('v-hyp-reply').classList.remove('hidden');
+  setTimeout(() => {
+    fromScreen.classList.add('hidden');
+    fromScreen.style.cssText = '';
 
-  setTimeout(()=>{
-    runStepGlobTransition(1, STEP_NAMES[0], ()=>{
-      whoosh('s-hyp','s-sim');
-      setTimeout(initSim,400);
+    toScreen.classList.remove('hidden');
+    toScreen.style.opacity = '0';
+    toScreen.style.transform = 'translateX(30px)';
+    toScreen.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toScreen.style.opacity = '1';
+        toScreen.style.transform = 'translateX(0)';
+        setTimeout(() => {
+          toScreen.style.cssText = '';
+        }, 400);
+      });
     });
-  },1800);
+  }, 300);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SIMULATION INITIALIZATION
-═══════════════════════════════════════════════════════════ */
-function initSim(){
-  const c=document.getElementById('sim-canvas'),wr=document.getElementById('canvas-wrap');
-  const W=wr.clientWidth,H=Math.round(W*.50),dpr=window.devicePixelRatio||1;
-  c.width=W*dpr; c.height=H*dpr;
-  G.step=0;P.FL=0;P.FR=0;P.vel=0;P.pos=0;
-  G.thresholdHit1=false;G.thresholdHit2=false;
-
-  setVal(`<strong>Welcome to the Space Lab!</strong><br><br>
-The <span style="color:#38BDF8"><strong>Left slider</strong></span> fires the left rocket (pulls left ←).<br>
-The <span style="color:#F59E0B"><strong>Right slider</strong></span> fires the right rocket (pulls right →).<br>
-The 50 kg robot floats on a <strong>frictionless space track</strong>.<br>
-<span style="color:#38BDF8"><strong>Total Net Force</strong></span> is the combined push or pull.<br><br>
-Click <strong>Start Experiment</strong> below to fire up the engines!`);
-
-  setSteps(0);
-  document.getElementById('btn-start-sim').style.display='block';
-  drawSim(simCtx(),simDims());
-  showOverlay();
-  updateReadouts();
+// Tutor Guidance Update
+function setTutorMessage(htmlContent) {
+  const panel = document.getElementById('tutor-panel');
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(4px)';
+  panel.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+  setTimeout(() => {
+    panel.innerHTML = htmlContent;
+    panel.style.opacity = '1';
+    panel.style.transform = 'translateY(0)';
+  }, 180);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SLIDERS & INTUITIVE IN-LAB CONTROLS
-═══════════════════════════════════════════════════════════ */
-function adjustSlider(side, delta){
-  const id = side==='L' ? 'sl-L' : 'sl-R';
-  const el = document.getElementById(id);
-  if(el.disabled) return;
-  const newVal = Math.max(0, Math.min(100, (+el.value) + delta));
-  el.value = newVal;
-  if(side==='L') P.FL = newVal; else P.FR = newVal;
-  updateReadouts();
-  checkThresholds();
-}
-
-document.getElementById('sl-L').addEventListener('input',function(){
-  P.FL=+this.value; updateReadouts(); checkThresholds();
-});
-document.getElementById('sl-R').addEventListener('input',function(){
-  P.FR=+this.value; updateReadouts(); checkThresholds();
-});
-
-function updateReadouts(){
-  const fn = P.FR - P.FL;
-  const a = fn / P.mass;
-
-  document.getElementById('lv').textContent = P.FL + ' N';
-  document.getElementById('rv').textContent = P.FR + ' N';
-  document.getElementById('sl-L').value = P.FL;
-  document.getElementById('sl-R').value = P.FR;
-
-  const fnEl = document.getElementById('c-FN');
-  fnEl.textContent = (fn >= 0 ? '+' : '') + fn.toFixed(1) + ' N';
-  fnEl.style.color = Math.abs(fn) < 2 ? '#34D399' : (fn < 0 ? '#38BDF8' : '#F59E0B');
-
-  // Mini Dashboard metrics
-  document.getElementById('m-net').textContent = fn.toFixed(1) + ' N';
-  document.getElementById('m-acc').textContent = a.toFixed(2);
-  document.getElementById('m-vel').textContent = P.vel.toFixed(2);
-  document.getElementById('m-pos').textContent = P.pos.toFixed(2);
-
-  // Status pill
-  const pill = document.getElementById('status-pill');
-  if(Math.abs(fn) <= 1.5){
-    pill.className = 'status-pill eq';
-    pill.textContent = 'BALANCED (0 N)';
-  } else if(fn < 0){
-    pill.className = 'status-pill acc-l';
-    pill.textContent = 'SPEEDING LEFT ←';
-  } else {
-    pill.className = 'status-pill acc-r';
-    pill.textContent = 'SPEEDING RIGHT →';
-  }
-
-  // Active Pod styling
-  document.getElementById('pod-L').classList.toggle('active-left', P.FL > 0);
-  document.getElementById('pod-R').classList.toggle('active-right', P.FR > 0);
-
-  // DYNAMIC TUTOR TEXT (Friendly, Simple, Encouraging for Students)
-  if(G.step === 1 && G.simRunning){
-    if(P.FL === 0){
-      setVal(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Look at the robot — watch which way it starts moving!`);
-    } else if(P.FL < 50){
-      setVal(`<strong>Left Rocket firing at ${P.FL} N!</strong><br><br>The blue arrow points left. The total net force is <strong>${P.FL} N pulling left</strong>. Keep dragging up to 60 N!`);
-    } else {
-      setVal(`<strong>Almost there: ${P.FL} N!</strong><br><br>The robot is speeding up to the left! Get to 60 N to log your observation.`);
-    }
-  } else if(G.step === 3 && G.simRunning){
-    const diff = Math.abs(P.FR - P.FL);
-    const confirmArea = document.getElementById('lab-confirm-area');
-
-    if(diff === 0 && P.FL > 0){
-      setVal(`<strong>PERFECT BALANCE!</strong><br><br>Left = <strong>${P.FL} N</strong> · Right = <strong>${P.FR} N</strong> · Net Force = <strong>0.0 N</strong>!<br>Both rockets are blasting, but because they are equal and opposite, they cancel out! Acceleration is <strong>0.00 m/s²</strong>.<br><br>Click <strong>Confirm Balance</strong> to record what you found!`);
-      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM BALANCE →</button>`;
-    } else if(diff <= 3 && P.FL > 0){
-      setVal(`<strong>Super close to balance!</strong><br><br>Left: <strong>${P.FL} N</strong> · Right: <strong>${P.FR} N</strong> (Difference: ${diff} N).<br>Use the +1 / -1 buttons to make them match exactly!`);
-      confirmArea.innerHTML = `<button class="btn-lock-equilibrium" onclick="confirmEquilibrium()">CONFIRM BALANCE →</button>`;
-    } else if(P.FL === 0 && P.FR === 0){
-      setVal(`Both rockets are at 0 N! Try sliding both rockets up to matching numbers (like 50 N and 50 N) to see active balanced forces in action!`);
-      confirmArea.innerHTML = '';
-    } else if(P.FL > P.FR){
-      setVal(`<strong>Left rocket is winning!</strong><br><br>Total Net Force is ${(P.FL - P.FR).toFixed(1)} N pulling left. Turn up the Right Rocket or lower the Left Rocket to balance them!`);
-      confirmArea.innerHTML = '';
-    } else {
-      setVal(`<strong>Right rocket is winning!</strong><br><br>Total Net Force is ${(P.FR - P.FL).toFixed(1)} N pulling right. Turn up the Left Rocket or lower the Right Rocket to balance them!`);
-      confirmArea.innerHTML = '';
+function updateStepNavigation(activeStepIndex) {
+  for (let i = 0; i <= 5; i++) {
+    const item = document.getElementById(`step-item-${i}`);
+    if (!item) continue;
+    item.classList.remove('active', 'done');
+    if (i < activeStepIndex) {
+      item.classList.add('done');
+    } else if (i === activeStepIndex) {
+      item.classList.add('active');
     }
   }
 }
 
-function checkThresholds(){
-  if(G.step===1 && !G.thresholdHit1 && P.FL>=58){
-    G.thresholdHit1=true;
-    triggerObs1();
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   STATE MACHINE
-═══════════════════════════════════════════════════════════ */
-function startSim(){
-  hideOverlay();
-  document.getElementById('btn-start-sim').style.display='none';
-  document.getElementById('canvas-ov').classList.add('gone');
-
-  runStepGlobTransition(2, STEP_NAMES[1], ()=>{
-    G.step=1; G.simRunning=true;
-    document.getElementById('sl-L').disabled=false;
-    setSteps(1);
-    setVal(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Watch the robot — which way does it start moving?`);
-    physicsLoop();
-  });
-}
-
-function triggerObs1(){
-  G.simRunning=false;
-  document.getElementById('sl-L').disabled=true;
-  glowCanvas(true); showOverlay();
-
-  runStepGlobTransition(3, STEP_NAMES[2], ()=>{
-    setSteps(2);
-    setVal(`<strong>Look at the robot zoom!</strong><br><br>Left Rocket = <strong>${P.FL} N</strong> · Net Force = <strong>${P.FL} N pulling left</strong>.<br>The robot sped up to the left! What would happen if the right rocket pulled with the exact same ${P.FL} N?`);
-    showObs('Observation 1', `The left rocket pulled with ${P.FL} N to the left. What do you think happens if the right rocket also pulls with ${P.FL} N to the right?`, afterObs1);
-  });
-}
-
-function afterObs1(){
-  hideObs(); hideOverlay(); glowCanvas(false);
-
-  runStepGlobTransition(4, STEP_NAMES[3], ()=>{
-    G.step=3; G.simRunning=true;
-    P.vel=0; P.pos=0; // Reset smoothly to center
-    document.getElementById('sl-L').disabled=false;
-    document.getElementById('sl-R').disabled=false;
-    setSteps(3);
-    updateReadouts();
-    physicsLoop();
-  });
-}
-
-// Confirmation button prevents softlock
-function confirmEquilibrium(){
-  G.simMetrics.balFL=P.FL;
-  G.simMetrics.balFR=P.FR;
-  G.thresholdHit2=true;
-  triggerObs2();
-}
-
-function triggerObs2(){
-  G.simRunning=false;
-  document.getElementById('sl-L').disabled=true;
-  document.getElementById('sl-R').disabled=true;
-  document.getElementById('lab-confirm-area').innerHTML='';
-  glowCanvas(true); showOverlay();
-
-  runStepGlobTransition(5, STEP_NAMES[4], ()=>{
-    setSteps(4);
-    setVal(`<strong>BALANCED FORCES FOUND!</strong><br><br>Left: <strong>${P.FL} N</strong> | Right: <strong>${P.FR} N</strong> | Net Force: <strong>0.0 N</strong><br><br>Even though both rockets are blasting, the total net force is zero and the robot doesn't speed up! Write down what you noticed below.`);
-    showObs('Discovery Log', `Both rockets are firing (${P.FL} N left vs ${P.FR} N right). The robot stopped speeding up. Explain in your own words why two equal opposite pulls cancel out (Newton's First Law).`, goSynthesis);
-  });
-}
-
-function goSynthesis(){
-  hideObs(); hideOverlay(); glowCanvas(false);
-
-  runStepGlobTransition(6, STEP_NAMES[5], ()=>{
-    G.step=5; setSteps(5);
-    document.getElementById('action-inline').innerHTML=`
-      <div class="synth-card">
-        <div class="synth-label">What You Discovered</div>
-        • Left Rocket: <strong>${G.simMetrics.balFL} N</strong><br>
-        • Right Rocket: <strong>${G.simMetrics.balFR} N</strong><br>
-        • Total Net Force ΣF: <strong>0.0 N</strong><br>
-        • Acceleration: <strong>0.00 m/s²</strong><br><br>
-        <strong>Big Takeaway:</strong> When opposite forces have equal strength, they cancel each other out completely. Zero net force means no acceleration — that's <strong>Newton's First Law</strong>!
-      </div>`;
-    document.getElementById('btn-start-sim').style.display='none';
-    document.getElementById('action-area').innerHTML=`<button class="btn-cyber-primary" style="width:100%" onclick="goVideo()">Watch Concept Video →</button>`;
-    setVal(`<strong>Mission Accomplished!</strong><br><br>You proved that equal and opposite forces cancel each other out. Net force = 0 means no acceleration. That's Newton's First Law in action!`);
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════
-   OBSERVATION BOX
-═══════════════════════════════════════════════════════════ */
-function showObs(label,prompt,cb){
-  document.getElementById('action-inline').innerHTML=`
-    <div class="obs-wrap" id="fluid-obs">
-      <div class="obs-lbl">${label}</div>
-      <div class="obs-prompt">${prompt}</div>
-      <textarea class="obs-ta" id="obs-ta" placeholder="Type your thoughts here..."></textarea>
-      <button class="btn-cyber-primary" style="width:100%" id="obs-btn" disabled onclick="submitObs()">Submit Answer →</button>
-    </div>`;
-  document.getElementById('obs-ta').addEventListener('input',function(){
-    document.getElementById('obs-btn').disabled=this.value.trim().length===0;
-  });
-  document.getElementById('btn-start-sim').style.display='none';
-  document.getElementById('action-area').innerHTML='';
-  window._obsCallback=cb;
-}
-function hideObs(){
-  document.getElementById('action-inline').innerHTML='';
-  document.getElementById('action-area').innerHTML='';
-}
-function submitObs(){
-  document.getElementById('obs-btn').disabled=true;
-  G.obs.push(document.getElementById('obs-ta').value.trim());
-  if(window._obsCallback) window._obsCallback();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   PHYSICS LOOP
-═══════════════════════════════════════════════════════════ */
-function physicsLoop(){
-  if(G.raf) cancelAnimationFrame(G.raf);
-  const [ctx,W,H]=[simCtx(),...simDims()];
-  function loop(){
-    if(!G.simRunning){ drawSim(ctx,[W,H]); return; }
-    const fn=P.FR-P.FL, a=fn/P.mass;
-    P.vel+=a*P.dt; P.vel*=.988; P.pos+=P.vel*P.dt;
-    P.pos=Math.max(-8.5,Math.min(8.5,P.pos));
-    G.simMetrics.maxVel=Math.max(G.simMetrics.maxVel,Math.abs(P.vel));
-
-    document.getElementById('m-net').textContent=(fn>=0?'+':'')+fn.toFixed(1)+' N';
-    document.getElementById('m-acc').textContent=a.toFixed(2);
-    document.getElementById('m-vel').textContent=P.vel.toFixed(2);
-    document.getElementById('m-pos').textContent=P.pos.toFixed(2);
-
-    drawSim(ctx,[W,H]); G.raf=requestAnimationFrame(loop);
-  }
-  loop();
-}
-function simCtx(){ return document.getElementById('sim-canvas').getContext('2d'); }
-function simDims(){ const c=document.getElementById('sim-canvas'),dpr=window.devicePixelRatio||1; return [c.width/dpr,c.height/dpr]; }
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW SIMULATION (NASA Dark Futuristic Canvas + Zero-G Float)
-═══════════════════════════════════════════════════════════ */
-// Canvas background twinkling stars
-const CANVAS_STARS = [];
-for(let i=0;i<40;i++){
-  CANVAS_STARS.push({
+// Simulation Canvas Rendering
+const CANVAS_STARFIELD = [];
+for (let i = 0; i < 40; i++) {
+  CANVAS_STARFIELD.push({
     x: Math.random(),
     y: Math.random(),
-    r: 0.6 + Math.random()*1.6,
-    twinkleSeed: Math.random()*Math.PI*2
+    radius: 0.6 + Math.random() * 1.6,
+    seed: Math.random() * Math.PI * 2
   });
 }
 
-function arrow(ctx,x1,y1,x2,y2,col,w){
-  const ang=Math.atan2(y2-y1,x2-x1),h=12;
-  ctx.strokeStyle=ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(x2,y2);
-  ctx.lineTo(x2-h*Math.cos(ang-.42),y2-h*Math.sin(ang-.42));
-  ctx.lineTo(x2-h*Math.cos(ang+.42),y2-h*Math.sin(ang+.42));
-  ctx.closePath();ctx.fill();
+function getSimCanvasDimensions() {
+  const canvas = document.getElementById('sim-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  return [canvas.width / dpr, canvas.height / dpr];
 }
 
-function drawSim(ctx,[W,H]){
-  const dpr=window.devicePixelRatio||1; ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.fillStyle='#090D16'; ctx.fillRect(0,0,W,H);
+function drawSimCanvas(ctx, [width, height]) {
+  const dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, width, height);
 
   const now = Date.now();
 
-  // Background Twinkling Space Stars
-  for(let i=0;i<CANVAS_STARS.length;i++){
-    const st = CANVAS_STARS[i];
-    const alpha = 0.25 + 0.35 * Math.sin(now * 0.002 + st.twinkleSeed);
+  for (let i = 0; i < CANVAS_STARFIELD.length; i++) {
+    const star = CANVAS_STARFIELD[i];
+    const alpha = 0.25 + 0.35 * Math.sin(now * 0.002 + star.seed);
     ctx.beginPath();
-    ctx.arc(st.x * W, st.y * H, st.r, 0, Math.PI*2);
+    ctx.arc(star.x * width, star.y * height, star.radius, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(186, 230, 253, ${alpha})`;
     ctx.fill();
   }
 
-  // Cyber Grid
-  ctx.strokeStyle='rgba(56,189,248,.035)'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=44){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
-  for(let y=0;y<H;y+=44){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.035)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < width; x += 44) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+  for (let y = 0; y < height; y += 44) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
 
-  // Zero-Gravity Micro-Hover Float
   const hoverY = Math.sin(now * 0.0026) * 3.5;
-  const cx = W/2 + (P.pos/8.5)*(W*.30);
-  const cy = H/2 - 6;
+  const cx = width / 2 + (physicsState.position / 8.5) * (width * 0.30);
+  const cy = height / 2 - 6;
 
-  // Frictionless Linear Rail Track
-  ctx.strokeStyle='rgba(56,189,248,.22)';ctx.lineWidth=3;ctx.setLineDash([8,6]);
-  ctx.beginPath();ctx.moveTo(54,cy);ctx.lineTo(W-54,cy);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(54, cy);
+  ctx.lineTo(width - 54, cy);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Rail Center Marker
-  ctx.strokeStyle='rgba(56,189,248,.35)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(W/2,cy-18);ctx.lineTo(W/2,cy+18);ctx.stroke();
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(width / 2, cy - 18);
+  ctx.lineTo(width / 2, cy + 18);
+  ctx.stroke();
 
-  // Winch Units (Left & Right)
-  drawWinchStation(ctx,64,cy,'left',P.FL);
-  drawWinchStation(ctx,W-64,cy,'right',P.FR);
-
-  // Magnetic Tether Cables (Smoothly connects to hovering bot)
-  ctx.strokeStyle='rgba(56,189,248,.4)';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(88,cy);ctx.lineTo(cx-30,cy+hoverY);ctx.stroke();
-  ctx.strokeStyle='rgba(245,158,11,.4)';
-  ctx.beginPath();ctx.moveTo(W-88,cy);ctx.lineTo(cx+30,cy+hoverY);ctx.stroke();
-
-  // Hovering Robot Cart
-  const bw=64, bh=50;
-  ctx.fillStyle='rgba(15,23,42,.92)';ctx.strokeStyle='#38BDF8';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2+hoverY,bw,bh,8);ctx.fill();ctx.stroke();
-
-  // Core Glow
-  ctx.fillStyle='rgba(56,189,248,.2)';
-  ctx.beginPath();ctx.arc(cx,cy+hoverY,12,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('50 kg',cx,cy+hoverY);
-
-  // Force Vector Arrows on the Cart
-  const mxL=90;
-  if(P.FL>0){
-    const l=(P.FL/100)*mxL;
-    arrow(ctx,cx-bw/2,cy+hoverY,cx-bw/2-l,cy+hoverY,'#38BDF8',3.5);
-    ctx.fillStyle='#38BDF8';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText(P.FL+'N',cx-bw/2-l/2,cy+hoverY-18);
-  }
-  if(P.FR>0){
-    const l=(P.FR/100)*mxL;
-    arrow(ctx,cx+bw/2,cy+hoverY,cx+bw/2+l,cy+hoverY,'#F59E0B',3.5);
-    ctx.fillStyle='#F59E0B';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText(P.FR+'N',cx+bw/2+l/2,cy+hoverY-18);
+  function drawWinch(x, side, force) {
+    const color = side === 'left' ? '#38bdf8' : '#f59e0b';
+    const alpha = Math.min(0.35 + (force / 100) * 0.65, 1);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 14, cy - 20, 28, 40);
+    ctx.beginPath();
+    ctx.arc(x, cy, 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, cy, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
-  // Net Force Vector & Status (No Emojis!)
-  const fn=P.FR-P.FL;
-  if(Math.abs(fn)>1.5){
-    const dir=Math.sign(fn), l=(Math.abs(fn)/100)*80;
-    arrow(ctx,cx,cy+hoverY+38,cx+dir*l,cy+hoverY+38,'#FFFFFF',3.5);
-    ctx.fillStyle='#FFFFFF';ctx.font='bold 11px "JetBrains Mono",monospace';ctx.textAlign='center';
-    ctx.fillText('ΣF = '+(fn>0?'+':'')+fn.toFixed(0)+' N',cx+dir*l/2,cy+hoverY+55);
-  } else if(G.step>=1){
-    ctx.fillStyle='#34D399';ctx.font='bold 12px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('BALANCED (ΣF = 0)',cx,cy+hoverY+48);
+  drawWinch(64, 'left', physicsState.leftForce);
+  drawWinch(width - 64, 'right', physicsState.rightForce);
+
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(88, cy);
+  ctx.lineTo(cx - 30, cy + hoverY);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+  ctx.beginPath();
+  ctx.moveTo(width - 88, cy);
+  ctx.lineTo(cx + 30, cy + hoverY);
+  ctx.stroke();
+
+  const cartWidth = 64;
+  const cartHeight = 50;
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(cx - cartWidth / 2, cy - cartHeight / 2 + hoverY, cartWidth, cartHeight, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+  ctx.beginPath();
+  ctx.arc(cx, cy + hoverY, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 11px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('50 kg', cx, cy + hoverY);
+
+  function drawForceArrow(x1, y1, x2, y2, color, lineWidth) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLength = 12;
+    ctx.strokeStyle = ctx.fillStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
+    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
+    ctx.closePath();
+    ctx.fill();
   }
 
-  // Live Velocity Tag
-  if(Math.abs(P.vel)>0.04){
-    ctx.fillStyle='rgba(203,213,225,.6)';ctx.font='11px "JetBrains Mono",monospace';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Speed = '+Math.abs(P.vel).toFixed(2)+' m/s',cx,cy+hoverY-38);
+  const maxArrowLength = 90;
+  if (physicsState.leftForce > 0) {
+    const len = (physicsState.leftForce / 100) * maxArrowLength;
+    drawForceArrow(cx - cartWidth / 2, cy + hoverY, cx - cartWidth / 2 - len, cy + hoverY, '#38bdf8', 3.5);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${physicsState.leftForce}N`, cx - cartWidth / 2 - len / 2, cy + hoverY - 18);
+  }
+
+  if (physicsState.rightForce > 0) {
+    const len = (physicsState.rightForce / 100) * maxArrowLength;
+    drawForceArrow(cx + cartWidth / 2, cy + hoverY, cx + cartWidth / 2 + len, cy + hoverY, '#f59e0b', 3.5);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${physicsState.rightForce}N`, cx + cartWidth / 2 + len / 2, cy + hoverY - 18);
+  }
+
+  const netForce = physicsState.rightForce - physicsState.leftForce;
+  if (Math.abs(netForce) > 1.5) {
+    const dir = Math.sign(netForce);
+    const len = (Math.abs(netForce) / 100) * 80;
+    drawForceArrow(cx, cy + hoverY + 38, cx + dir * len, cy + hoverY + 38, '#ffffff', 3.5);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`ΣF = ${netForce > 0 ? '+' : ''}${netForce.toFixed(0)} N`, cx + dir * len / 2, cy + hoverY + 55);
+  } else if (labState.currentStep >= 1) {
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 12px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('BALANCED (ΣF = 0)', cx, cy + hoverY + 48);
+  }
+
+  if (Math.abs(physicsState.velocity) > 0.04) {
+    ctx.fillStyle = 'rgba(203, 213, 225, 0.6)';
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`Speed = ${Math.abs(physicsState.velocity).toFixed(2)} m/s`, cx, cy + hoverY - 38);
   }
 
   ctx.resetTransform();
 }
 
-function drawWinchStation(ctx,x,cy,side,force){
-  const col=side==='left'?'#38BDF8':'#F59E0B';
-  const alpha=Math.min(.35+(force/100)*.65,1);
-  ctx.save();
-  ctx.globalAlpha=alpha;
-  ctx.strokeStyle=col;ctx.lineWidth=2;
-  // Winch Housing
-  ctx.strokeRect(x-14,cy-20,28,40);
-  // Winch Spool
-  ctx.beginPath();ctx.arc(x,cy,10,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,cy,4,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-}
+function updateTelemetryDisplay() {
+  const netForce = physicsState.rightForce - physicsState.leftForce;
+  const acceleration = netForce / physicsState.mass;
 
-/* ═══════════════════════════════════════════════════════════
-   UI HELPERS
-═══════════════════════════════════════════════════════════ */
-function setSteps(a){
-  for(let i=0;i<=5;i++){
-    const el=document.getElementById('st-'+i);
-    if(!el)continue;
-    el.classList.remove('active','done');
-    if(i<a) el.classList.add('done');
-    else if(i===a) el.classList.add('active');
+  document.getElementById('readout-left-force').textContent = `${physicsState.leftForce} N`;
+  document.getElementById('readout-right-force').textContent = `${physicsState.rightForce} N`;
+  document.getElementById('slider-left').value = physicsState.leftForce;
+  document.getElementById('slider-right').value = physicsState.rightForce;
+
+  const chip = document.getElementById('chip-net-force');
+  chip.textContent = `${netForce >= 0 ? '+' : ''}${netForce.toFixed(1)} N`;
+  chip.style.color = Math.abs(netForce) < 2 ? '#34d399' : (netForce < 0 ? '#38bdf8' : '#f59e0b');
+
+  document.getElementById('metric-net-force').textContent = `${netForce.toFixed(1)} N`;
+  document.getElementById('metric-acceleration').textContent = acceleration.toFixed(2);
+  document.getElementById('metric-velocity').textContent = physicsState.velocity.toFixed(2);
+  document.getElementById('metric-position').textContent = physicsState.position.toFixed(2);
+
+  const statusPill = document.getElementById('status-motion-pill');
+  if (Math.abs(netForce) <= 1.5) {
+    statusPill.className = 'status-pill balanced';
+    statusPill.textContent = 'BALANCED (0 N)';
+  } else if (netForce < 0) {
+    statusPill.className = 'status-pill left-pull';
+    statusPill.textContent = 'SPEEDING LEFT ←';
+  } else {
+    statusPill.className = 'status-pill right-pull';
+    statusPill.textContent = 'SPEEDING RIGHT →';
+  }
+
+  document.getElementById('card-thruster-left').classList.toggle('active', physicsState.leftForce > 0);
+  document.getElementById('card-thruster-right').classList.toggle('active', physicsState.rightForce > 0);
+
+  // Dynamic Tutor Messages based on current student actions
+  if (labState.currentStep === 1 && labState.isSimRunning) {
+    if (physicsState.leftForce === 0) {
+      setTutorMessage(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Look at the robot — watch which way it starts moving!`);
+    } else if (physicsState.leftForce < 50) {
+      setTutorMessage(`<strong>Left Rocket firing at ${physicsState.leftForce} N!</strong><br><br>The blue arrow points left. The total net force is <strong>${physicsState.leftForce} N pulling left</strong>. Keep dragging up to 60 N!`);
+    } else {
+      setTutorMessage(`<strong>Almost there: ${physicsState.leftForce} N!</strong><br><br>The robot is speeding up to the left! Get to 60 N to log your observation.`);
+    }
+  } else if (labState.currentStep === 3 && labState.isSimRunning) {
+    const diff = Math.abs(physicsState.rightForce - physicsState.leftForce);
+    const confirmContainer = document.getElementById('balance-confirmation-container');
+
+    if (diff === 0 && physicsState.leftForce > 0) {
+      setTutorMessage(`<strong>PERFECT BALANCE!</strong><br><br>Left = <strong>${physicsState.leftForce} N</strong> · Right = <strong>${physicsState.rightForce} N</strong> · Net Force = <strong>0.0 N</strong>!<br>Both rockets are blasting, but because they are equal and opposite, they cancel out! Acceleration is <strong>0.00 m/s²</strong>.<br><br>Click <strong>Confirm Balance</strong> to record what you found!`);
+      confirmContainer.innerHTML = `<button class="btn-confirm-equilibrium" id="btn-confirm-balance">CONFIRM BALANCE →</button>`;
+      document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmEquilibrium);
+    } else if (diff <= 3 && physicsState.leftForce > 0) {
+      setTutorMessage(`<strong>Super close to balance!</strong><br><br>Left: <strong>${physicsState.leftForce} N</strong> · Right: <strong>${physicsState.rightForce} N</strong> (Difference: ${diff} N).<br>Use the +1 / -1 buttons to make them match exactly!`);
+      confirmContainer.innerHTML = `<button class="btn-confirm-equilibrium" id="btn-confirm-balance">CONFIRM BALANCE →</button>`;
+      document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmEquilibrium);
+    } else if (physicsState.leftForce === 0 && physicsState.rightForce === 0) {
+      setTutorMessage(`Both rockets are at 0 N! Try sliding both rockets up to matching numbers (like 50 N and 50 N) to see active balanced forces in action!`);
+      confirmContainer.innerHTML = '';
+    } else if (physicsState.leftForce > physicsState.rightForce) {
+      setTutorMessage(`<strong>Left rocket is winning!</strong><br><br>Total Net Force is ${(physicsState.leftForce - physicsState.rightForce).toFixed(1)} N pulling left. Turn up the Right Rocket or lower the Left Rocket to balance them!`);
+      confirmContainer.innerHTML = '';
+    } else {
+      setTutorMessage(`<strong>Right rocket is winning!</strong><br><br>Total Net Force is ${(physicsState.rightForce - physicsState.leftForce).toFixed(1)} N pulling right. Turn up the Left Rocket or lower the Right Rocket to balance them!`);
+      confirmContainer.innerHTML = '';
+    }
   }
 }
-function setVal(html){
-  const el=document.getElementById('v-panel');
-  el.style.opacity='0';el.style.transform='translateY(4px)';el.style.transition='opacity .2s,transform .2s';
-  setTimeout(()=>{ el.innerHTML=html;el.style.opacity='1';el.style.transform='translateY(0)'; },180);
-}
-function glowCanvas(on){ document.getElementById('canvas-wrap').classList.toggle('glow',on); }
-function showOverlay(){ document.getElementById('valerie-overlay').classList.add('active'); }
-function hideOverlay(){ document.getElementById('valerie-overlay').classList.remove('active'); }
 
-/* ═══════════════════════════════════════════════════════════
-   VIDEO SECTION
-═══════════════════════════════════════════════════════════ */
-function goVideo(){
-  if(G.raf) cancelAnimationFrame(G.raf);
-  runStepGlobTransition(6, "Concept Deep-Dive", ()=>{
-    whoosh('s-sim','s-video');
-    setTimeout(initVideo,450);
+function runPhysicsTick() {
+  if (!labState.isSimRunning) return;
+
+  const netForce = physicsState.rightForce - physicsState.leftForce;
+  const acceleration = netForce / physicsState.mass;
+
+  physicsState.velocity += acceleration * physicsState.dt;
+  physicsState.velocity *= 0.988;
+  physicsState.position += physicsState.velocity * physicsState.dt;
+  physicsState.position = Math.max(-8.5, Math.min(8.5, physicsState.position));
+
+  document.getElementById('metric-net-force').textContent = `${netForce >= 0 ? '+' : ''}${netForce.toFixed(1)} N`;
+  document.getElementById('metric-acceleration').textContent = acceleration.toFixed(2);
+  document.getElementById('metric-velocity').textContent = physicsState.velocity.toFixed(2);
+  document.getElementById('metric-position').textContent = physicsState.position.toFixed(2);
+
+  const canvas = document.getElementById('sim-canvas');
+  const ctx = canvas.getContext('2d');
+  drawSimCanvas(ctx, getSimCanvasDimensions());
+
+  labState.simAnimationId = requestAnimationFrame(runPhysicsTick);
+}
+
+function initSimulationLab() {
+  const canvas = document.getElementById('sim-canvas');
+  const frame = document.getElementById('canvas-frame');
+  const width = frame.clientWidth;
+  const height = Math.round(width * 0.50);
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  labState.currentStep = 0;
+  physicsState.leftForce = 0;
+  physicsState.rightForce = 0;
+  physicsState.velocity = 0;
+  physicsState.position = 0;
+  labState.hasReachedFirstThreshold = false;
+  labState.hasReachedSecondThreshold = false;
+
+  setTutorMessage(`<strong>Welcome to the Space Lab!</strong><br><br>
+The <span style="color:#38bdf8"><strong>Left slider</strong></span> fires the left rocket (pulls left ←).<br>
+The <span style="color:#f59e0b"><strong>Right slider</strong></span> fires the right rocket (pulls right →).<br>
+The 50 kg robot floats on a <strong>frictionless space track</strong>.<br>
+<span style="color:#38bdf8"><strong>Total Net Force</strong></span> is the combined push or pull.<br><br>
+Click <strong>Start Experiment</strong> below to fire up the engines!`);
+
+  updateStepNavigation(0);
+  document.getElementById('btn-initialize-sim').style.display = 'block';
+  document.getElementById('valerie-overlay').classList.add('active');
+
+  const ctx = canvas.getContext('2d');
+  drawSimCanvas(ctx, getSimCanvasDimensions());
+  updateTelemetryDisplay();
+}
+
+function showObservationPrompt(label, promptText, onSubmitCallback) {
+  const container = document.getElementById('observation-container');
+  container.innerHTML = `
+    <div class="observation-panel">
+      <div class="section-label">${label}</div>
+      <div class="observation-prompt">${promptText}</div>
+      <textarea class="observation-textarea" id="observation-input" placeholder="Type your thoughts here..."></textarea>
+      <button class="btn-primary" style="width:100%" id="btn-submit-observation" disabled>Submit Answer →</button>
+    </div>
+  `;
+
+  const input = document.getElementById('observation-input');
+  const submitBtn = document.getElementById('btn-submit-observation');
+
+  input.addEventListener('input', () => {
+    submitBtn.disabled = input.value.trim().length === 0;
+  });
+
+  submitBtn.addEventListener('click', () => {
+    submitBtn.disabled = true;
+    labState.observations.push(input.value.trim());
+    if (observationCallback) observationCallback();
+  });
+
+  document.getElementById('btn-initialize-sim').style.display = 'none';
+  document.getElementById('action-area').innerHTML = '';
+  observationCallback = onSubmitCallback;
+}
+
+function clearObservationPrompt() {
+  document.getElementById('observation-container').innerHTML = '';
+  document.getElementById('action-area').innerHTML = '';
+}
+
+// Step Flow Functions
+function onStartExperiment() {
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('btn-initialize-sim').style.display = 'none';
+  document.getElementById('canvas-standby').classList.add('dismissed');
+
+  playStepTransition(2, STEP_LABELS[1], () => {
+    labState.currentStep = 1;
+    labState.isSimRunning = true;
+    document.getElementById('slider-left').disabled = false;
+    updateStepNavigation(1);
+    setTutorMessage(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Watch the robot — which way does it start moving?`);
+    runPhysicsTick();
   });
 }
 
-const CAPS=[
-  {s:0,e:5,t:'What are Balanced Forces?'},
-  {s:5,e:10,t:'Two equal forces pulling in opposite directions...'},
-  {s:10,e:15,t:'They cancel out: Total Net Force = 0!'},
-  {s:15,e:21,t:'Zero Net Force means zero acceleration — no speeding up or slowing down!'},
-  {s:21,e:30,t:'That is Newton\'s First Law of Motion!'},
-];
+function onTriggerObservation1() {
+  labState.isSimRunning = false;
+  document.getElementById('slider-left').disabled = true;
+  document.getElementById('canvas-frame').classList.add('glow');
+  document.getElementById('valerie-overlay').classList.add('active');
 
-function initVideo(){
-  const p=document.getElementById('vid-player'),c=document.getElementById('vid-canvas');
-  const W=p.clientWidth,H=p.clientHeight||Math.round(W*9/16),dpr=window.devicePixelRatio||1;
-  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
-  G.vidTime=0;G.vidPlaying=false;
-  setTimeout(()=>{ document.getElementById('vid-loading').classList.add('gone'); drawVidFrame(0); },1400);
+  playStepTransition(3, STEP_LABELS[2], () => {
+    updateStepNavigation(2);
+    setTutorMessage(`<strong>Look at the robot zoom!</strong><br><br>Left Rocket = <strong>${physicsState.leftForce} N</strong> · Net Force = <strong>${physicsState.leftForce} N pulling left</strong>.<br>The robot sped up to the left! What would happen if the right rocket pulled with the exact same ${physicsState.leftForce} N?`);
+    showObservationPrompt(
+      'Observation 1',
+      `The left rocket pulled with ${physicsState.leftForce} N to the left. What do you think happens if the right rocket also pulls with ${physicsState.leftForce} N to the right?`,
+      onObservation1Submitted
+    );
+  });
 }
 
-function toggleVid(){
-  G.vidPlaying=!G.vidPlaying;
-  document.getElementById('vid-play-btn').textContent=G.vidPlaying?'⏸':'▶';
-  if(G.vidPlaying) runVid(); else cancelAnimationFrame(G.vidRaf);
+function onObservation1Submitted() {
+  clearObservationPrompt();
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('canvas-frame').classList.remove('glow');
+
+  playStepTransition(4, STEP_LABELS[3], () => {
+    labState.currentStep = 3;
+    labState.isSimRunning = true;
+    physicsState.velocity = 0;
+    physicsState.position = 0;
+    document.getElementById('slider-left').disabled = false;
+    document.getElementById('slider-right').disabled = false;
+    updateStepNavigation(3);
+    updateTelemetryDisplay();
+    runPhysicsTick();
+  });
 }
 
-function runVid(){
-  let last=performance.now();
-  function loop(now){
-    const dt=(now-last)/1000;last=now;G.vidTime=Math.min(G.vidTime+dt,G.vidDur);
-    const pct=(G.vidTime/G.vidDur)*100;
-    document.getElementById('vid-prog').style.width=pct+'%';
-    document.getElementById('vid-time').textContent=fmt(G.vidTime)+' / '+fmt(G.vidDur);
-    drawVidFrame(G.vidTime);updateCap(G.vidTime);
-    if(G.vidTime>=G.vidDur){
-      G.vidPlaying=false;document.getElementById('vid-play-btn').textContent='▶';
-      document.getElementById('vid-continue').classList.remove('hidden');return;
+function onConfirmEquilibrium() {
+  labState.balancedLeftForce = physicsState.leftForce;
+  labState.balancedRightForce = physicsState.rightForce;
+  labState.hasReachedSecondThreshold = true;
+
+  labState.isSimRunning = false;
+  document.getElementById('slider-left').disabled = true;
+  document.getElementById('slider-right').disabled = true;
+  document.getElementById('balance-confirmation-container').innerHTML = '';
+  document.getElementById('canvas-frame').classList.add('glow');
+  document.getElementById('valerie-overlay').classList.add('active');
+
+  playStepTransition(5, STEP_LABELS[4], () => {
+    updateStepNavigation(4);
+    setTutorMessage(`<strong>BALANCED FORCES FOUND!</strong><br><br>Left: <strong>${physicsState.leftForce} N</strong> | Right: <strong>${physicsState.rightForce} N</strong> | Net Force: <strong>0.0 N</strong><br><br>Even though both rockets are blasting, the total net force is zero and the robot doesn't speed up! Write down what you noticed below.`);
+    showObservationPrompt(
+      'Discovery Log',
+      `Both rockets are firing (${physicsState.leftForce} N left vs ${physicsState.rightForce} N right). The robot stopped speeding up. Explain in your own words why two equal opposite pulls cancel out (Newton's First Law).`,
+      onObservation2Submitted
+    );
+  });
+}
+
+function onObservation2Submitted() {
+  clearObservationPrompt();
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('canvas-frame').classList.remove('glow');
+
+  playStepTransition(6, STEP_LABELS[5], () => {
+    labState.currentStep = 5;
+    updateStepNavigation(5);
+
+    document.getElementById('observation-container').innerHTML = `
+      <div class="summary-card">
+        <div class="summary-heading">What You Discovered</div>
+        • Left Rocket: <strong>${labState.balancedLeftForce} N</strong><br>
+        • Right Rocket: <strong>${labState.balancedRightForce} N</strong><br>
+        • Total Net Force ΣF: <strong>0.0 N</strong><br>
+        • Acceleration: <strong>0.00 m/s²</strong><br><br>
+        <strong>Big Takeaway:</strong> When opposite forces have equal strength, they cancel each other out completely. Zero net force means no acceleration — that's <strong>Newton's First Law</strong>!
+      </div>
+    `;
+
+    document.getElementById('btn-initialize-sim').style.display = 'none';
+    const actionArea = document.getElementById('action-area');
+    actionArea.innerHTML = `<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>`;
+    document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
+
+    setTutorMessage(`<strong>Mission Accomplished!</strong><br><br>You proved that equal and opposite forces cancel each other out. Net force = 0 means no acceleration. That's Newton's First Law in action!`);
+  });
+}
+
+function onProceedToVideo() {
+  if (labState.simAnimationId) cancelAnimationFrame(labState.simAnimationId);
+  playStepTransition(6, 'Concept Deep-Dive', () => {
+    transitionScreen('screen-simulation', 'screen-video');
+    setTimeout(initConceptVideo, 450);
+  });
+}
+
+// Concept Video Player Logic
+function formatTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+  return `${mins}:${secs}`;
+}
+
+function initConceptVideo() {
+  const player = document.getElementById('video-player');
+  const canvas = document.getElementById('video-canvas');
+  const width = player.clientWidth;
+  const height = player.clientHeight || Math.round(width * 9 / 16);
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  labState.videoCurrentTime = 0;
+  labState.isVideoPlaying = false;
+
+  setTimeout(() => {
+    document.getElementById('video-loading').classList.add('dismissed');
+    drawVideoFrame(0);
+  }, 1400);
+}
+
+function toggleVideoPlayback() {
+  labState.isVideoPlaying = !labState.isVideoPlaying;
+  document.getElementById('btn-toggle-video').textContent = labState.isVideoPlaying ? '⏸' : '▶';
+
+  if (labState.isVideoPlaying) {
+    let lastTimestamp = performance.now();
+    function runLoop(now) {
+      const delta = (now - lastTimestamp) / 1000;
+      lastTimestamp = now;
+      labState.videoCurrentTime = Math.min(labState.videoCurrentTime + delta, labState.videoDuration);
+
+      const percent = (labState.videoCurrentTime / labState.videoDuration) * 100;
+      document.getElementById('video-progress-fill').style.width = `${percent}%`;
+      document.getElementById('video-timestamp').textContent = `${formatTime(labState.videoCurrentTime)} / ${formatTime(labState.videoDuration)}`;
+
+      drawVideoFrame(labState.videoCurrentTime);
+      updateVideoCaption(labState.videoCurrentTime);
+
+      if (labState.videoCurrentTime >= labState.videoDuration) {
+        labState.isVideoPlaying = false;
+        document.getElementById('btn-toggle-video').textContent = '▶';
+        document.getElementById('btn-continue-to-quiz').classList.remove('hidden');
+        return;
+      }
+      labState.videoAnimationId = requestAnimationFrame(runLoop);
     }
-    G.vidRaf=requestAnimationFrame(loop);
+    labState.videoAnimationId = requestAnimationFrame(runLoop);
+  } else {
+    cancelAnimationFrame(labState.videoAnimationId);
   }
-  G.vidRaf=requestAnimationFrame(loop);
 }
 
-function seekVid(e){
-  const b=e.currentTarget;G.vidTime=(e.offsetX/b.clientWidth)*G.vidDur;
-  drawVidFrame(G.vidTime);updateCap(G.vidTime);
-  document.getElementById('vid-prog').style.width=((G.vidTime/G.vidDur)*100)+'%';
-}
-function updateCap(t){
-  const cap=CAPS.find(c=>t>=c.s&&t<c.e);
-  const el=document.getElementById('vid-cap');
-  if(cap){el.textContent=cap.t;el.classList.add('show');}
-  else el.classList.remove('show');
+function updateVideoCaption(time) {
+  const currentCaption = VIDEO_CAPTIONS.find(c => time >= c.start && time < c.end);
+  const captionEl = document.getElementById('caption-text');
+  if (currentCaption) {
+    captionEl.textContent = currentCaption.text;
+    captionEl.classList.add('active');
+  } else {
+    captionEl.classList.remove('active');
+  }
 }
 
-function drawVidFrame(t){
-  const c=document.getElementById('vid-canvas'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1;
-  const W=c.width/dpr,H=c.height/dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.fillStyle='#090D16';ctx.fillRect(0,0,W,H);const cx=W/2,cy=H/2;
+function drawVideoFrame(time) {
+  const canvas = document.getElementById('video-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.width / dpr;
+  const height = canvas.height / dpr;
 
-  if(t<5){
-    const p=Math.min(t,1);ctx.globalAlpha=p;
-    ctx.fillStyle='#38BDF8';ctx.font=`bold ${Math.round(W*.048)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Balanced Forces',cx,cy-18);
-    ctx.fillStyle='#94A3B8';ctx.font=`${Math.round(W*.026)}px monospace`;ctx.fillText("Newton's First Law of Motion",cx,cy+18);ctx.globalAlpha=1;
-  } else if(t<15){
-    const pr=Math.min((t-5)/4,1),len=60+pr*30;
-    ctx.globalAlpha=pr;ctx.strokeStyle='#38BDF8';ctx.fillStyle='rgba(15,23,42,.9)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(cx-30,cy-30,60,60,8);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#fff';ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Robot',cx,cy);ctx.globalAlpha=1;
-    arrow(ctx,cx-30,cy,cx-30-len,cy,'#38BDF8',3.5);
-    arrow(ctx,cx+30,cy,cx+30+len,cy,'#F59E0B',3.5);
-    if(t>=10){
-      ctx.globalAlpha=Math.min((t-10)/2,1);ctx.fillStyle='#34D399';ctx.font=`bold ${Math.round(W*.032)}px monospace`;
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('NET FORCE ΣF = 0',cx,cy+H*.32);ctx.globalAlpha=1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, width, height);
+  const cx = width / 2;
+  const cy = height / 2;
+
+  function drawArrow(x1, y1, x2, y2, color) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLength = 12;
+    ctx.strokeStyle = ctx.fillStyle = color;
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
+    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  if (time < 5) {
+    const opacity = Math.min(time, 1);
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = `bold ${Math.round(width * 0.048)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Balanced Forces', cx, cy - 18);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = `${Math.round(width * 0.026)}px monospace`;
+    ctx.fillText("Newton's First Law of Motion", cx, cy + 18);
+    ctx.globalAlpha = 1;
+  } else if (time < 15) {
+    const opacity = Math.min((time - 5) / 4, 1);
+    const length = 60 + opacity * 30;
+    ctx.globalAlpha = opacity;
+    ctx.strokeStyle = '#38bdf8';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cx - 30, cy - 30, 60, 60, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Robot', cx, cy);
+    ctx.globalAlpha = 1;
+
+    drawArrow(cx - 30, cy, cx - 30 - length, cy, '#38bdf8');
+    drawArrow(cx + 30, cy, cx + 30 + length, cy, '#f59e0b');
+
+    if (time >= 10) {
+      ctx.globalAlpha = Math.min((time - 10) / 2, 1);
+      ctx.fillStyle = '#34d399';
+      ctx.font = `bold ${Math.round(width * 0.032)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('NET FORCE ΣF = 0', cx, cy + height * 0.32);
+      ctx.globalAlpha = 1;
     }
   } else {
-    ctx.fillStyle='#38BDF8';ctx.font=`bold ${Math.round(W*.042)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Balanced Forces',cx,cy-18);
-    ctx.fillStyle='#CBD5E1';ctx.font=`${Math.round(W*.024)}px monospace`;ctx.fillText('Net Force = 0  ⟶  No Acceleration',cx,cy+16);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = `bold ${Math.round(width * 0.042)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Balanced Forces', cx, cy - 18);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = `${Math.round(width * 0.024)}px monospace`;
+    ctx.fillText('Net Force = 0  ⟶  No Acceleration', cx, cy + 16);
   }
   ctx.resetTransform();
 }
-function fmt(s){ return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 
-/* ═══════════════════════════════════════════════════════════
-   QUIZ ASSESSMENT (Simple, Clear Language for Students)
-═══════════════════════════════════════════════════════════ */
-const QUIZ=[
-  {q:"In your own words, what does it mean for forces to be 'balanced'? What is the total net force?",
-   hint:"HINT: Think about what happened when both rockets pulled with the exact same number of Newtons.",
-   kw:['equal','same','cancel','zero','balanced','no change','constant','opposite','equilibrium']},
-  {q:"A book sits completely still on your desk. Are the forces on it balanced or unbalanced? How do you know?",
-   hint:"HINT: Is the book speeding up or slowing down? What does that tell you about the net force?",
-   kw:['balanced','zero','constant','acceleration','first law','net force','speed','velocity','equal','still']},
-  {q:"In the space lab, both rockets pulled with 60 N in opposite directions. What was the total net force, and why didn't the robot speed up?",
-   hint:"HINT: What is 60 minus 60? What happens to acceleration when the net force is zero?",
-   kw:['zero','0','cancel','balanced','no acceleration','stopped','constant','net','equal']}
-];
-let CQ=0;
+// Quiz Assessment Logic
+function showQuizQuestion(index) {
+  activeQuizIndex = index;
+  const item = QUIZ_ITEMS[index];
+  const progressPercent = (index / QUIZ_ITEMS.length) * 100;
 
-function goQuiz(){
-  if(G.vidRaf) cancelAnimationFrame(G.vidRaf);
-  whoosh('s-video','s-quiz');
-  setTimeout(()=>showQ(0),350);
+  document.getElementById('quiz-progress-fill').style.width = `${progressPercent}%`;
+  document.getElementById('quiz-counter-label').textContent = `Question ${index + 1} of ${QUIZ_ITEMS.length}`;
+
+  const questionCard = document.getElementById('card-quiz-question');
+  questionCard.style.opacity = '0';
+  questionCard.style.transform = 'translateX(24px)';
+  questionCard.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+
+  setTimeout(() => {
+    document.getElementById('quiz-question-text').textContent = item.question;
+    document.getElementById('quiz-hint-text').textContent = item.hint;
+    document.getElementById('quiz-answer-input').value = '';
+    document.getElementById('btn-submit-quiz-answer').disabled = true;
+    questionCard.style.opacity = '1';
+    questionCard.style.transform = 'translateX(0)';
+  }, 180);
 }
-function showQ(idx){
-  CQ=idx;const q=QUIZ[idx];
-  document.getElementById('q-prog').style.width=((idx/QUIZ.length)*100)+'%';
-  document.getElementById('q-num').textContent=`Question ${idx+1} of ${QUIZ.length}`;
-  const card=document.getElementById('q-card');
-  card.style.opacity='0';card.style.transform='translateX(24px)';card.style.transition='opacity .25s,transform .25s';
-  setTimeout(()=>{
-    document.getElementById('q-text').textContent=q.q;
-    document.getElementById('q-hint').textContent=q.hint;
-    document.getElementById('q-ta').value='';
-    document.getElementById('q-btn').disabled=true;
-    card.style.opacity='1';card.style.transform='translateX(0)';
-  },180);
-}
-document.getElementById('q-ta').addEventListener('input',function(){
-  document.getElementById('q-btn').disabled=this.value.trim().length===0;
-});
-function submitQ(){
-  G.quizAnswers.push({qi:CQ,ans:document.getElementById('q-ta').value.trim()});
-  if(CQ<QUIZ.length-1) showQ(CQ+1);
-  else{
-    document.getElementById('q-prog').style.width='100%';
-    setTimeout(goResults,350);
+
+function onQuizAnswerSubmitted() {
+  const text = document.getElementById('quiz-answer-input').value.trim();
+  labState.quizAnswers.push({ index: activeQuizIndex, answer: text });
+
+  if (activeQuizIndex < QUIZ_ITEMS.length - 1) {
+    showQuizQuestion(activeQuizIndex + 1);
+  } else {
+    document.getElementById('quiz-progress-fill').style.width = '100%';
+    setTimeout(() => {
+      transitionScreen('screen-quiz', 'screen-results');
+      setTimeout(buildResultsSummary, 400);
+    }, 350);
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESULTS & COLOR CELEBRATION (NO EMOJIS)
-═══════════════════════════════════════════════════════════ */
-function goResults(){
-  whoosh('s-quiz','s-results');
-  setTimeout(buildResults,400);
-}
-
-function buildResults(){
-  const results=G.quizAnswers.map(a=>{
-    const kw=QUIZ[a.qi].kw, hits=kw.filter(k=>a.ans.toLowerCase().includes(k));
-    const score=Math.min(hits.length/Math.max(kw.length*.45,2),1);
-    return {score,hits,ans:a.ans,qi:a.qi};
+// Results Evaluation & Particle Celebration
+function buildResultsSummary() {
+  const evaluations = labState.quizAnswers.map(item => {
+    const keywords = QUIZ_ITEMS[item.index].keywords;
+    const matches = keywords.filter(word => item.answer.toLowerCase().includes(word));
+    const score = Math.min(matches.length / Math.max(keywords.length * 0.45, 2), 1);
+    return { score, matches, answer: item.answer, index: item.index };
   });
-  const avg=results.reduce((s,r)=>s+r.score,0)/results.length, pct=Math.round(avg*100);
 
-  animRing(pct);
-  startCelebrationColors();
+  const averageScore = evaluations.reduce((sum, item) => sum + item.score, 0) / evaluations.length;
+  const scorePercentage = Math.round(averageScore * 100);
 
-  const grid=document.getElementById('res-grid'); grid.innerHTML='';
-  const strong=results.filter(r=>r.score>=.55), weak=results.filter(r=>r.score<.55);
+  renderScoreRing(scorePercentage);
+  launchCelebrationParticles();
 
-  if(strong.length){
-    const c=document.createElement('div');c.className='res-card good';
-    c.innerHTML=`<div class="res-card-lbl">[ What You Mastered ]</div>`+strong.map(r=>`<p>• Question ${r.qi+1}: Great job explaining <em>${r.hits.slice(0,3).join(', ')}</em></p>`).join('');
-    grid.appendChild(c);
+  const grid = document.getElementById('results-feedback-grid');
+  grid.innerHTML = '';
+
+  const strengths = evaluations.filter(e => e.score >= 0.55);
+  const reviewAreas = evaluations.filter(e => e.score < 0.55);
+
+  if (strengths.length > 0) {
+    const card = document.createElement('div');
+    card.className = 'feedback-card success';
+    card.innerHTML = `<div class="feedback-card-heading">[ What You Mastered ]</div>` +
+      strengths.map(s => `<p>• Question ${s.index + 1}: Great job explaining <em>${s.matches.slice(0, 3).join(', ')}</em></p>`).join('');
+    grid.appendChild(card);
   }
-  if(weak.length){
-    const c=document.createElement('div');c.className='res-card weak';
-    c.innerHTML=`<div class="res-card-lbl">[ Things to Remember ]</div>`+weak.map(r=>`<p>• Question ${r.qi+1}: Try connecting to: <em>${QUIZ[r.qi].kw.slice(0,3).join(', ')}</em></p>`).join('');
-    grid.appendChild(c);
+
+  if (reviewAreas.length > 0) {
+    const card = document.createElement('div');
+    card.className = 'feedback-card review';
+    card.innerHTML = `<div class="feedback-card-heading">[ Things to Remember ]</div>` +
+      reviewAreas.map(r => `<p>• Question ${r.index + 1}: Try connecting to: <em>${QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ')}</em></p>`).join('');
+    grid.appendChild(card);
   }
 
-  const summary = pct>=80
-    ? `Awesome job! You scored ${pct}%! You proved that when forces are balanced, net force is zero and objects do not speed up. You mastered Newton's First Law!`
-    : pct>=55
-    ? `Great work! You scored ${pct}%. You understand the big idea: equal opposite forces cancel out, making net force zero!`
-    : `Good effort! You scored ${pct}%. Remember: when two opposite forces are equal in strength, they cancel out so total net force = 0.`;
+  const finalSummaryText = scorePercentage >= 80
+    ? `Awesome job! You scored ${scorePercentage}%! You proved that when forces are balanced, net force is zero and objects do not speed up. You mastered Newton's First Law!`
+    : scorePercentage >= 55
+    ? `Great work! You scored ${scorePercentage}%. You understand the big idea: equal opposite forces cancel out, making net force zero!`
+    : `Good effort! You scored ${scorePercentage}%. Remember: when two opposite forces are equal in strength, they cancel out so total net force = 0.`;
 
-  document.getElementById('v-final').textContent=summary;
+  document.getElementById('tutor-final-summary').textContent = finalSummaryText;
 }
 
-function animRing(pct){
-  const c=document.getElementById('score-ring'),ctx=c.getContext('2d');
-  const sz=140,cx=70,cy=70,r=50;
-  const col=pct>=80?'#10B981':pct>=55?'#38BDF8':'#F59E0B';
-  let frame=0,total=60;
-  function draw(){
-    ctx.clearRect(0,0,sz,sz);const p=Math.min(frame/total,1);
-    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(56,189,248,.15)';ctx.lineWidth=10;ctx.stroke();
-    ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(pct/100)*2*Math.PI*p);
-    ctx.strokeStyle=col;ctx.lineWidth=10;ctx.lineCap='round';ctx.stroke();
-    ctx.fillStyle='#F8FAFC';ctx.font='bold 24px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(Math.round(pct*p)+'%',cx,cy);
-    frame++;if(frame<=total) requestAnimationFrame(draw);
+function renderScoreRing(percentage) {
+  const canvas = document.getElementById('score-ring-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 140;
+  const center = 70;
+  const radius = 50;
+  const color = percentage >= 80 ? '#10b981' : (percentage >= 55 ? '#38bdf8' : '#f59e0b');
+
+  let currentFrame = 0;
+  const totalFrames = 60;
+
+  function animate() {
+    ctx.clearRect(0, 0, size, size);
+    const progress = Math.min(currentFrame / totalFrames, 1);
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+    ctx.lineWidth = 10;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, -Math.PI / 2, -Math.PI / 2 + (percentage / 100) * 2 * Math.PI * progress);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 24px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${Math.round(percentage * progress)}%`, center, center);
+
+    currentFrame++;
+    if (currentFrame <= totalFrames) {
+      requestAnimationFrame(animate);
+    }
   }
-  draw();
+  animate();
 }
 
-/* Full-Screen Color Celebration (Physics Particles, NO Emojis) */
-function startCelebrationColors(){
-  const canvas=document.getElementById('celebration-canvas');
-  const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
+function launchCelebrationParticles() {
+  const canvas = document.getElementById('celebration-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-  const colors=['#38BDF8','#00F0FF','#10B981','#34D399','#F59E0B','#FBBF24','#EC4899','#8B5CF6','#E2E8F0'];
-  const particles=[];
-  const numParticles=180;
+  const particleColors = ['#38bdf8', '#00f0ff', '#10b981', '#34d399', '#f59e0b', '#fbbf24', '#ec4899', '#8b5cf6', '#e2e8f0'];
+  const particles = [];
+  const particleCount = 180;
 
-  for(let i=0;i<numParticles;i++){
+  for (let i = 0; i < particleCount; i++) {
     particles.push({
-      x: canvas.width * 0.5 + (Math.random()-0.5)*120,
-      y: canvas.height * 0.45 + (Math.random()-0.5)*80,
-      vx: (Math.random()-0.5)*18,
-      vy: -12 - Math.random()*14,
-      size: 4 + Math.random()*7,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      rotation: Math.random()*Math.PI*2,
-      vRot: (Math.random()-0.5)*0.2,
-      shape: Math.random()>0.5 ? 'rect' : 'circle',
+      x: canvas.width * 0.5 + (Math.random() - 0.5) * 120,
+      y: canvas.height * 0.45 + (Math.random() - 0.5) * 80,
+      vx: (Math.random() - 0.5) * 18,
+      vy: -12 - Math.random() * 14,
+      size: 4 + Math.random() * 7,
+      color: particleColors[Math.floor(Math.random() * particleColors.length)],
+      rotation: Math.random() * Math.PI * 2,
+      angularVelocity: (Math.random() - 0.5) * 0.2,
+      isRectangle: Math.random() > 0.5,
       opacity: 1,
-      gravity: 0.38 + Math.random()*0.15
+      gravity: 0.38 + Math.random() * 0.15
     });
   }
 
-  function render(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for(let i=0;i<particles.length;i++){
-      const p=particles[i];
-      p.x+=p.vx;
-      p.y+=p.vy;
-      p.vy+=p.gravity;
-      p.vx*=0.985;
-      p.rotation+=p.vRot;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.985;
+      p.rotation += p.angularVelocity;
 
-      if(p.y > canvas.height * 0.7){
-        p.opacity-=0.012;
+      if (p.y > canvas.height * 0.7) {
+        p.opacity -= 0.012;
       }
 
-      if(p.opacity>0){
+      if (p.opacity > 0) {
         ctx.save();
-        ctx.globalAlpha=Math.max(0,p.opacity);
-        ctx.fillStyle=p.color;
-        ctx.translate(p.x,p.y);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y);
         ctx.rotate(p.rotation);
 
-        if(p.shape==='rect'){
-          ctx.fillRect(-p.size,-p.size*0.6,p.size*2,p.size*1.2);
+        if (p.isRectangle) {
+          ctx.fillRect(-p.size, -p.size * 0.6, p.size * 2, p.size * 1.2);
         } else {
           ctx.beginPath();
-          ctx.arc(0,0,p.size*0.7,0,Math.PI*2);
+          ctx.arc(0, 0, p.size * 0.7, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.restore();
       }
     }
 
-    G.celebRaf=requestAnimationFrame(render);
+    labState.celebrationAnimationId = requestAnimationFrame(render);
   }
-
   render();
 }
+
+// Valerie AI Tutor API Configuration & State
+const valerieAI = {
+  isEnabled: false,
+  apiEndpoint: '/api/chat',
+  apiKey: '',
+  chatHistory: [],
+
+  async callTutorAPI(userMessage, contextData) {
+    if (!this.isEnabled) {
+      return {
+        success: false,
+        status: 'dormant',
+        message: "Valerie AI API connection is currently dormant. Waiting for API key and activation."
+      };
+    }
+
+    try {
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {})
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          history: this.chatHistory,
+          moduleContext: JSON.stringify({
+            module: '3001 - Balanced Forces',
+            standard: 'MS-PS2-1',
+            leftForce: physicsState.leftForce,
+            rightForce: physicsState.rightForce,
+            netForce: physicsState.rightForce - physicsState.leftForce,
+            velocity: physicsState.velocity,
+            step: labState.currentStep,
+            hypothesis: labState.hypothesisText,
+            ...contextData
+          })
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        reply: data.response || data.reply || data.message || "I observed your experiment! What do you notice about the forces?"
+      };
+    } catch (error) {
+      console.warn("Valerie AI API call error:", error);
+      return {
+        success: false,
+        error: error.message,
+        reply: "I am having trouble reaching my science core right now. Let's look closely at your force sliders!"
+      };
+    }
+  }
+};
+
+// Event Listeners Wire-up
+document.addEventListener('DOMContentLoaded', () => {
+  initCosmicBackground();
+  initIntroIcon();
+
+  // Intro Screen Buttons
+  document.getElementById('btn-exit-intro').addEventListener('click', () => {
+    if (confirm('Exit Module 3001? Progress will not be saved.')) {
+      [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
+        .forEach(id => id && cancelAnimationFrame(id));
+      document.body.innerHTML = `
+        <div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif">
+          <div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3001 Closed</div>
+          <div style="color:#64748b;font-size:15px;font-family:'JetBrains Mono',monospace">Space Lab closed. Progress saved.</div>
+        </div>
+      `;
+    }
+  });
+
+  document.getElementById('btn-open-standards').addEventListener('click', () => {
+    document.getElementById('modal-standards').classList.add('open');
+  });
+
+  document.getElementById('btn-close-standards').addEventListener('click', () => {
+    document.getElementById('modal-standards').classList.remove('open');
+  });
+
+  document.getElementById('btn-start-intro').addEventListener('click', () => {
+    cancelAnimationFrame(labState.introIconAnimationId);
+    transitionScreen('screen-intro', 'screen-hypothesis');
+    setTimeout(() => {
+      document.getElementById('hypothesis-input').focus();
+    }, 450);
+  });
+
+  // Valerie Tutor Modal & AI Hook Handlers
+  const tutorModal = document.getElementById('modal-valerie-dialog');
+  const tutorChatHistory = document.getElementById('tutor-chat-history');
+  const tutorUserInput = document.getElementById('tutor-user-input');
+  const btnSendTutor = document.getElementById('btn-send-tutor-message');
+  const tutorApiStatusNote = document.getElementById('tutor-api-status-note');
+
+  function openTutorDialog() {
+    tutorModal.classList.add('open');
+    tutorUserInput.focus();
+
+    if (!valerieAI.isEnabled) {
+      tutorApiStatusNote.textContent = 'Valerie AI API endpoint ready (/api/chat). Activation toggle is dormant until configured.';
+    } else {
+      tutorApiStatusNote.textContent = `Connected to ${valerieAI.apiEndpoint}`;
+    }
+  }
+
+  function closeTutorDialog() {
+    tutorModal.classList.remove('open');
+  }
+
+  function appendChatMessage(sender, text) {
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${sender}`;
+    bubble.textContent = text;
+    tutorChatHistory.appendChild(bubble);
+    tutorChatHistory.scrollTop = tutorChatHistory.scrollHeight;
+  }
+
+  async function handleSendTutorMessage() {
+    const query = tutorUserInput.value.trim();
+    if (!query) return;
+
+    appendChatMessage('student', query);
+    valerieAI.chatHistory.push({ role: 'user', text: query });
+    tutorUserInput.value = '';
+    btnSendTutor.disabled = true;
+
+    if (!valerieAI.isEnabled) {
+      setTimeout(() => {
+        const fallbackReplies = [
+          "I'm listening! My direct AI neural net is standing by to be activated. In the meantime: check your net force readout — does it equal 0 N?",
+          "Great question! Once my live API key is connected, I will guide you with live Socratic answers. For now, observe whether the cart is speeding up or staying steady!"
+        ];
+        const reply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
+        appendChatMessage('tutor', reply);
+        valerieAI.chatHistory.push({ role: 'model', text: reply });
+        btnSendTutor.disabled = false;
+      }, 500);
+      return;
+    }
+
+    const result = await valerieAI.callTutorAPI(query);
+    appendChatMessage('tutor', result.reply || "Let's review the force arrows on your cart.");
+    valerieAI.chatHistory.push({ role: 'model', text: result.reply || '' });
+    btnSendTutor.disabled = false;
+  }
+
+  document.getElementById('btn-ask-valerie').addEventListener('click', openTutorDialog);
+  document.getElementById('btn-close-tutor-modal').addEventListener('click', closeTutorDialog);
+  btnSendTutor.addEventListener('click', handleSendTutorMessage);
+  tutorUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSendTutorMessage();
+  });
+
+  // Hypothesis Input & Submit
+  const hypothesisInput = document.getElementById('hypothesis-input');
+  const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
+
+  hypothesisInput.addEventListener('input', () => {
+    hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+  });
+
+  hypothesisSubmitBtn.addEventListener('click', () => {
+    labState.hypothesisText = hypothesisInput.value.trim();
+    hypothesisSubmitBtn.disabled = true;
+    hypothesisInput.disabled = true;
+
+    const replies = [
+      'Awesome prediction! 🤔 Let us test it in space and see what really happens.',
+      'Great thinking! Science is all about testing your ideas against real experiments. Starting space lab...'
+    ];
+    document.getElementById('tutor-hypothesis-text').textContent = replies[Math.floor(Math.random() * replies.length)];
+    document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
+
+    setTimeout(() => {
+      playStepTransition(1, STEP_LABELS[0], () => {
+        transitionScreen('screen-hypothesis', 'screen-simulation');
+        setTimeout(initSimulationLab, 400);
+      });
+    }, 1800);
+  });
+
+  // Sliders and Nudge Buttons
+  function onAdjustForce(thruster, delta) {
+    if (thruster === 'left') {
+      const slider = document.getElementById('slider-left');
+      if (slider.disabled) return;
+      physicsState.leftForce = Math.max(0, Math.min(100, physicsState.leftForce + delta));
+    } else {
+      const slider = document.getElementById('slider-right');
+      if (slider.disabled) return;
+      physicsState.rightForce = Math.max(0, Math.min(100, physicsState.rightForce + delta));
+    }
+    updateTelemetryDisplay();
+
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+      labState.hasReachedFirstThreshold = true;
+      onTriggerObservation1();
+    }
+  }
+
+  document.querySelectorAll('.btn-nudge').forEach(button => {
+    button.addEventListener('click', e => {
+      const side = e.currentTarget.getAttribute('data-thruster');
+      const delta = parseInt(e.currentTarget.getAttribute('data-delta'), 10);
+      onAdjustForce(side, delta);
+    });
+  });
+
+  document.getElementById('slider-left').addEventListener('input', e => {
+    physicsState.leftForce = parseInt(e.target.value, 10);
+    updateTelemetryDisplay();
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+      labState.hasReachedFirstThreshold = true;
+      onTriggerObservation1();
+    }
+  });
+
+  document.getElementById('slider-right').addEventListener('input', e => {
+    physicsState.rightForce = parseInt(e.target.value, 10);
+    updateTelemetryDisplay();
+  });
+
+  // Action Button to Start Simulation
+  document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
+
+  // Resize Listener for Canvas
+  window.addEventListener('resize', () => {
+    const canvas = document.getElementById('sim-canvas');
+    const frame = document.getElementById('canvas-frame');
+    if (canvas && frame && frame.clientWidth > 0) {
+      const width = frame.clientWidth;
+      const height = Math.round(width * 0.50);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+
+      if (!labState.isSimRunning) {
+        drawSimCanvas(canvas.getContext('2d'), [width, height]);
+      }
+    }
+  });
+
+  // Video Controls
+  document.getElementById('btn-toggle-video').addEventListener('click', toggleVideoPlayback);
+
+  document.getElementById('video-progress-track').addEventListener('click', e => {
+    const track = e.currentTarget;
+    labState.videoCurrentTime = (e.offsetX / track.clientWidth) * labState.videoDuration;
+    drawVideoFrame(labState.videoCurrentTime);
+    updateVideoCaption(labState.videoCurrentTime);
+    document.getElementById('video-progress-fill').style.width = `${(labState.videoCurrentTime / labState.videoDuration) * 100}%`;
+  });
+
+  document.getElementById('btn-continue-to-quiz').addEventListener('click', () => {
+    if (labState.videoAnimationId) cancelAnimationFrame(labState.videoAnimationId);
+    transitionScreen('screen-video', 'screen-quiz');
+    setTimeout(() => {
+      showQuizQuestion(0);
+    }, 350);
+  });
+
+  // Quiz Event Listeners
+  const quizInput = document.getElementById('quiz-answer-input');
+  const quizSubmitBtn = document.getElementById('btn-submit-quiz-answer');
+
+  quizInput.addEventListener('input', () => {
+    quizSubmitBtn.disabled = quizInput.value.trim().length === 0;
+  });
+
+  quizSubmitBtn.addEventListener('click', onQuizAnswerSubmitted);
+
+  // Finish Module Button
+  document.getElementById('btn-finish-module').addEventListener('click', () => {
+    [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
+      .forEach(id => id && cancelAnimationFrame(id));
+    document.body.innerHTML = `
+      <div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif">
+        <div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3001 Complete!</div>
+        <div style="color:#94a3b8;font-size:16px;font-family:'JetBrains Mono',monospace">Great work mastering Newton's First Law.</div>
+      </div>
+    `;
+  });
+});
 </script>
 </body>
 </html>
