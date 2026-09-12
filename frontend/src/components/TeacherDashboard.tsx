@@ -10,6 +10,7 @@ import { BACK_LINK_CLASS, GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 import { formatLearningTime } from '../lib/learningStats';
 import { computeOpenAndClosedGaps } from '../lib/learningContext';
 import { parseRosterCsv } from '../lib/rosterCsv';
+import { LinkParentCard } from './LinkParentCard';
 
 interface TeacherDashboardProps {
   students: StudentOverview[];
@@ -42,7 +43,7 @@ export function TeacherDashboard({
 
   const exportClassCsv = () => {
     const header = [
-      'Name', 'Email', 'Username', 'Grade', 'Tests', 'Avg Score', 'Best Score',
+      'Name', 'Email', 'Username', 'Grade', 'Parent Name', 'Parent Email', 'Tests', 'Avg Score', 'Best Score',
       'Points', 'Time Learning (seconds)', 'Time Learning', 'Open Gaps', 'Open Gap List', 'Last Active',
     ];
     const rows = students.map(s => {
@@ -64,6 +65,8 @@ export function TeacherDashboard({
         profile.email,
         profile.username,
         profile.grade || '',
+        s.linkedParent?.name || '',
+        s.linkedParent?.email || profile.parentEmail || '',
         s.results.length,
         avg,
         best,
@@ -206,6 +209,18 @@ export function TeacherDashboard({
           {message && <p className="mt-3 text-sm font-bold text-sage-green">{message}</p>}
         </div>
 
+        <LinkParentCard
+          studentUid={uid}
+          studentName={selectedOverview.studentProfile.name}
+          studentGrade={selectedOverview.studentProfile.grade}
+          districtId={selectedOverview.studentProfile.districtId}
+          linkedParent={selectedOverview.linkedParent}
+          requesterUid={teacherUid || ''}
+          requesterRole="teacher"
+          onLinked={onRefresh}
+          description="Link one parent or guardian for this student. If the student already linked a parent in their settings, it appears here too."
+        />
+
         <ParentDashboard
           overview={selectedOverview}
           loading={false}
@@ -285,10 +300,10 @@ export function TeacherDashboard({
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden" data-tour="teacher-class-table">
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[900px]">
+            <table className="w-full text-left min-w-[1000px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700">
-                  {['Student', 'Grade', 'Username', 'Password', 'Avg Score', 'Tests', 'Points', 'Time', 'Open Gaps', 'Last Active', ''].map(h => (
+                  {['Student', 'Grade', 'Parent', 'Username', 'Password', 'Avg Score', 'Tests', 'Points', 'Time', 'Open Gaps', 'Last Active', ''].map(h => (
                     <th key={h} className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
                   ))}
                 </tr>
@@ -320,6 +335,18 @@ export function TeacherDashboard({
                         <p className="text-xs text-slate-400 font-medium truncate max-w-[140px]">{profile.email}</p>
                       </td>
                       <td className="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">G{profile.grade}</td>
+                      <td className="px-5 py-4 text-sm" onClick={e => e.stopPropagation()}>
+                        {s.linkedParent?.email ? (
+                          <div>
+                            <p className="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[140px]">
+                              {s.linkedParent.name || 'Parent'}
+                            </p>
+                            <p className="text-xs text-slate-400 font-medium truncate max-w-[140px]">{s.linkedParent.email}</p>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-bold">—</span>
+                        )}
+                      </td>
                       <td className="px-5 py-4 font-bold text-slate-600 dark:text-slate-400 text-sm">{profile.username}</td>
                       <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center gap-1">

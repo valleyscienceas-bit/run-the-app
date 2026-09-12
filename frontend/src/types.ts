@@ -267,12 +267,19 @@ export interface LearningStats {
   lastUpdated?: string;
 }
 
+export interface LinkedParentSummary {
+  uid: string;
+  name: string;
+  email: string;
+}
+
 export interface StudentOverview {
   studentProfile: UserProfile | null;
   results: TestResult[];
   stats: LearningStats;
   linkedStudents?: Pick<UserProfile, 'uid' | 'name' | 'grade' | 'username' | 'isPaid'>[];
   activeStudentUid?: string;
+  linkedParent?: LinkedParentSummary | null;
 }
 
 export interface DemoProfileRefs {
