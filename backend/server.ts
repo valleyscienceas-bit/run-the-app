@@ -38,6 +38,21 @@ import {
   syncAuthUserRoleLabels,
 } from "./lib/authUserProvisioning.js";
 import { provisionParentForStudent } from "./lib/parentProvisioning.js";
+import {
+  authorizeDistrictParentLink,
+  unlinkStudentFromParent,
+} from "./lib/linkDistrictParent.js";
+import {
+  SANDBOX_VERSION,
+  SANDBOX_TEACHER_EMAIL,
+  SANDBOX_PASSWORD,
+  SANDBOX_STUDENT_EMAIL,
+  SANDBOX_PARENT_EMAIL,
+  SANDBOX_CLASSROOM_ID,
+  SANDBOX_DISTRICT_ID,
+  getOrCreateSandboxAuthUser,
+  ensureSandboxDistrictParent,
+} from "./lib/sandboxSeed.js";
 
 dotenv.config();
 
@@ -716,6 +731,81 @@ async function startServer() {
       res.json({ success: true, parentUid: result.parentUid });
     } catch (error: any) {
       console.error("District parent provisioning error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/link-district-parent", async (req, res) => {
+    const {
+      studentUid,
+      parentEmail,
+      parentName,
+      requesterUid,
+      requesterRole,
+      studentName,
+      studentGrade,
+      districtId,
+    } = req.body;
+
+    if (!studentUid || !parentEmail || !requesterUid || !requesterRole) {
+      return res.status(400).json({
+        error: "studentUid, parentEmail, requesterUid, and requesterRole are required",
+      });
+    }
+
+    try {
+      const studentSnap = await adminDb.collection("users").doc(studentUid).get();
+      if (!studentSnap.exists) {
+        return res.status(404).json({ error: "Student not found" });
+      }
+      const student = studentSnap.data()!;
+
+      let teacherData: Record<string, unknown> | undefined;
+      if (requesterRole === "teacher") {
+        const teacherSnap = await adminDb.collection("users").doc(requesterUid).get();
+        teacherData = teacherSnap.exists ? teacherSnap.data()! : undefined;
+      }
+
+      const authz = authorizeDistrictParentLink(
+        { studentUid, parentEmail, parentName, requesterUid, requesterRole },
+        student,
+        teacherData
+      );
+      if (!authz.ok) {
+        return res.status(authz.status).json({ error: authz.error });
+      }
+
+      const oldParentUid = student.parentUid as string | undefined;
+      const resolvedDistrictId =
+        districtId || student.districtId || (teacherData?.districtId as string | undefined);
+
+      const result = await provisionParentForStudent(adminAuth, adminDb, sendValleyScienceEmail, {
+        studentUid,
+        studentName: studentName || (student.name as string),
+        parentEmail,
+        parentName,
+        studentGrade: studentGrade || (student.grade as string),
+        path: "district",
+        districtId: resolvedDistrictId,
+        initialPassword: "Sandbox123!",
+      });
+
+      await unlinkStudentFromParent(adminDb, oldParentUid, studentUid, result.parentUid);
+
+      const parentSnap = await adminDb.collection("users").doc(result.parentUid).get();
+      res.json({
+        success: true,
+        parentUid: result.parentUid,
+        parent: parentSnap.exists
+          ? {
+              uid: result.parentUid,
+              name: parentSnap.data()?.name,
+              email: parentSnap.data()?.email,
+            }
+          : null,
+      });
+    } catch (error: any) {
+      console.error("Link district parent error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -2126,10 +2216,37 @@ async function startServer() {
           adminDb.collection("results").doc(uid).get(),
           adminDb.collection("stats").doc(uid).get()
         ]);
+        const studentProfile = userSnap.exists ? userSnap.data() : null;
+        let linkedParent: { uid: string; name: string; email: string } | null = null;
+        const parentUid = studentProfile?.parentUid as string | undefined;
+        if (parentUid) {
+          const parentSnap = await adminDb.collection("users").doc(parentUid).get();
+          if (parentSnap.exists) {
+            const p = parentSnap.data()!;
+            linkedParent = {
+              uid: parentUid,
+              name: (p.name as string) || "Parent",
+              email: (p.email as string) || (studentProfile?.parentEmail as string) || "",
+            };
+          } else if (studentProfile?.parentEmail) {
+            linkedParent = {
+              uid: parentUid,
+              name: "Parent",
+              email: studentProfile.parentEmail as string,
+            };
+          }
+        } else if (studentProfile?.parentEmail) {
+          linkedParent = {
+            uid: "",
+            name: "Parent",
+            email: studentProfile.parentEmail as string,
+          };
+        }
         students.push({
-          studentProfile: userSnap.exists ? userSnap.data() : null,
+          studentProfile,
           results: resultsSnap.exists ? (resultsSnap.data()?.results || []) : [],
-          stats: statsSnap.exists ? statsSnap.data() : { totalSeconds: 0 }
+          stats: statsSnap.exists ? statsSnap.data() : { totalSeconds: 0 },
+          linkedParent,
         });
       }
       res.json({ students });
@@ -2887,11 +3004,6 @@ async function startServer() {
   // ==========================================
   // DISTRICT SANDBOX SEED
   // ==========================================
-  const SANDBOX_VERSION = 2;
-  const SANDBOX_TEACHER_EMAIL = "sandbox.teacher@valley-science.demo";
-  const SANDBOX_PASSWORD = "Sandbox123!";
-  const SANDBOX_STUDENT_EMAIL = "sandbox.student1@valley-science.demo";
-  const SANDBOX_PARENT_EMAIL = "sandbox.parent@valley-science.demo";
   const SANDBOX_FAKE_NAMES = ["Alex M.", "Jordan K.", "Sam R.", "Taylor L.", "Casey P.", "Riley N.", "Morgan B.", "Quinn D."];
   let sandboxSeedInFlight: Promise<void> | null = null;
 
@@ -2908,24 +3020,9 @@ async function startServer() {
     };
   }
 
-  async function getOrCreateSandboxAuthUser(
-    email: string,
-    password: string,
-    name: string,
-    role: "student" | "teacher" | "parent" = "student"
-  ) {
-    try {
-      const uid = (await adminAuth.getUserByEmail(email)).uid;
-      await syncAuthUserRoleLabels(adminAuth, uid, role, name);
-      return uid;
-    } catch {
-      const created = await createAuthUserWithRoleLabels(adminAuth, { email, password, role, name });
-      return created.uid;
-    }
-  }
-
   async function runFullSandboxSeed() {
     const teacherUid = await getOrCreateSandboxAuthUser(
+      adminAuth,
       SANDBOX_TEACHER_EMAIL,
       SANDBOX_PASSWORD,
       "Sandbox Teacher",
@@ -2935,22 +3032,22 @@ async function startServer() {
     await adminDb.collection("users").doc(teacherUid).set({
       uid: teacherUid, name: "Sandbox Teacher", username: "sandbox_teacher", email: SANDBOX_TEACHER_EMAIL,
       role: "teacher", path: "district", grade: "7", xp: 0, isFirstTime: false, isPaid: true,
-      districtId: "sandbox-district", classroomIds: ["sandbox-class-1"], demoPassword: SANDBOX_PASSWORD,
+      districtId: SANDBOX_DISTRICT_ID, classroomIds: [SANDBOX_CLASSROOM_ID], demoPassword: SANDBOX_PASSWORD,
       createdAt: new Date().toISOString()
     }, { merge: true });
 
-    await adminDb.collection("districts").doc("sandbox-district").set({
-      id: "sandbox-district", name: "Sandbox District", adminUid: "sandbox-admin", settings: {}
+    await adminDb.collection("districts").doc(SANDBOX_DISTRICT_ID).set({
+      id: SANDBOX_DISTRICT_ID, name: "Sandbox District", adminUid: "sandbox-admin", settings: {}
     }, { merge: true });
 
     const studentUids = await Promise.all(SANDBOX_FAKE_NAMES.map(async (name, i) => {
       const email = `sandbox.student${i + 1}@valley-science.demo`;
-      const uid = await getOrCreateSandboxAuthUser(email, SANDBOX_PASSWORD, name, "student");
+      const uid = await getOrCreateSandboxAuthUser(adminAuth, email, SANDBOX_PASSWORD, name, "student");
 
       await adminDb.collection("users").doc(uid).set({
         uid, name, username: `sandbox_s${i + 1}`, email,
         role: "student", path: "district", grade: "7", xp: 0, isFirstTime: false, isPaid: true,
-        districtId: "sandbox-district", classroomIds: ["sandbox-class-1"], teacherUid, demoPassword: SANDBOX_PASSWORD,
+        districtId: SANDBOX_DISTRICT_ID, classroomIds: [SANDBOX_CLASSROOM_ID], teacherUid, demoPassword: SANDBOX_PASSWORD,
         createdAt: new Date().toISOString()
       }, { merge: true });
 
@@ -2978,37 +3075,10 @@ async function startServer() {
     }));
 
     const sandboxStudent1Uid = studentUids[0];
-    const parentUid = await getOrCreateSandboxAuthUser(
-      SANDBOX_PARENT_EMAIL,
-      SANDBOX_PASSWORD,
-      "Parent of Alex M.",
-      "parent"
-    );
-    await adminDb.collection("users").doc(parentUid).set({
-      uid: parentUid,
-      name: "Parent of Alex M.",
-      username: "sandbox_parent",
-      email: SANDBOX_PARENT_EMAIL,
-      role: "parent",
-      path: "district",
-      grade: "7",
-      xp: 0,
-      isFirstTime: false,
-      isPaid: true,
-      districtId: "sandbox-district",
-      linkedStudentUid: sandboxStudent1Uid,
-      linkedStudentUids: [sandboxStudent1Uid],
-      activeStudentUid: sandboxStudent1Uid,
-      demoPassword: SANDBOX_PASSWORD,
-      createdAt: new Date().toISOString(),
-    }, { merge: true });
-    await adminDb.collection("users").doc(sandboxStudent1Uid).set({
-      parentUid,
-      parentEmail: SANDBOX_PARENT_EMAIL,
-    }, { merge: true });
+    await ensureSandboxDistrictParent(adminAuth, adminDb, sandboxStudent1Uid);
 
-    await adminDb.collection("classrooms").doc("sandbox-class-1").set({
-      id: "sandbox-class-1", name: "Period 3 — Grade 7", teacherUid, districtId: "sandbox-district", grade: "7", studentUids
+    await adminDb.collection("classrooms").doc(SANDBOX_CLASSROOM_ID).set({
+      id: SANDBOX_CLASSROOM_ID, name: "Period 3 — Grade 7", teacherUid, districtId: SANDBOX_DISTRICT_ID, grade: "7", studentUids
     }, { merge: true });
 
     const futureDue = new Date();
@@ -3033,13 +3103,13 @@ async function startServer() {
 
     await Promise.all([
       adminDb.collection("assignments").doc("sandbox-assign-current").set({
-        id: "sandbox-assign-current", classroomId: "sandbox-class-1", teacherUid,
+        id: "sandbox-assign-current", classroomId: SANDBOX_CLASSROOM_ID, teacherUid,
         title: "Cell Structure Module", dueAt: futureDue.toISOString(), grade: "7",
         minScore: 70, moduleIds: ["8-1-1", "8-1-2"], submissions: buildSubmissions(0),
         createdAt: new Date().toISOString()
       }, { merge: true }),
       adminDb.collection("assignments").doc("sandbox-assign-past").set({
-        id: "sandbox-assign-past", classroomId: "sandbox-class-1", teacherUid,
+        id: "sandbox-assign-past", classroomId: SANDBOX_CLASSROOM_ID, teacherUid,
         title: "Ecosystems Unit Review", dueAt: pastDue.toISOString(), grade: "7",
         minScore: 65, moduleIds: ["5-1-1"], submissions: buildSubmissions(1),
         createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
@@ -3050,7 +3120,7 @@ async function startServer() {
       version: SANDBOX_VERSION,
       seededAt: new Date().toISOString(),
       teacherUid,
-      classroomId: "sandbox-class-1",
+      classroomId: SANDBOX_CLASSROOM_ID,
     });
   }
 
@@ -3076,14 +3146,14 @@ async function startServer() {
       let alreadySeeded = metaSnap.exists && metaSnap.data()?.version === SANDBOX_VERSION;
 
       if (!alreadySeeded) {
-        const classSnap = await adminDb.collection("classrooms").doc("sandbox-class-1").get();
+        const classSnap = await adminDb.collection("classrooms").doc(SANDBOX_CLASSROOM_ID).get();
         if (classSnap.exists) {
           const classData = classSnap.data()!;
           await metaRef.set({
             version: SANDBOX_VERSION,
             seededAt: new Date().toISOString(),
             teacherUid: classData.teacherUid,
-            classroomId: "sandbox-class-1",
+            classroomId: SANDBOX_CLASSROOM_ID,
             migrated: true,
           });
           alreadySeeded = true;
@@ -3092,6 +3162,8 @@ async function startServer() {
 
       if (!alreadySeeded) {
         await ensureSandboxSeeded();
+      } else {
+        await ensureSandboxDistrictParent(adminAuth, adminDb);
       }
 
       res.json(sandboxSeedResponse(alreadySeeded));

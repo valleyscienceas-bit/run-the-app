@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { User, Lock, ShieldCheck, Save, AlertCircle, ShieldHalf, UserCircle, Sun } from 'lucide-react';
 import { UserState, UserProfile } from '../types';
-import { auth, db, doc, updateDoc } from '../lib/firebase';
+import { auth, db, doc, updateDoc, getDoc } from '../lib/firebase';
 import { updatePassword } from 'firebase/auth';
 import { ThemeToggle } from './ThemeToggle';
 import { MfaSettings } from './MfaSettings';
+import { LinkParentCard } from './LinkParentCard';
 import { INPUT_CLASS_PX } from '../lib/formStyles';
 
 interface SettingsProps {
@@ -23,6 +24,16 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const isDistrictStudent = userState.path === 'district' && userState.role === 'student';
+
+  const refreshProfile = async () => {
+    if (!profile?.uid) return;
+    const profileDoc = await getDoc(doc(db, 'users', profile.uid));
+    if (profileDoc.exists()) {
+      onUpdateProfile(profileDoc.data() as UserProfile);
+    }
+  };
 
   const handleUpdateUsername = async () => {
     if (!isIndividual) return;
@@ -217,6 +228,25 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
                 </p>
               </div>
             </div>
+          </div>
+        ) : isDistrictStudent ? (
+          <div className="lg:col-span-2">
+            <LinkParentCard
+              studentUid={profile!.uid}
+              studentName={profile?.name}
+              studentGrade={profile?.grade}
+              districtId={profile?.districtId}
+              linkedParent={
+                profile?.parentEmail
+                  ? { uid: profile.parentUid, email: profile.parentEmail, name: 'Linked parent' }
+                  : null
+              }
+              requesterUid={profile!.uid}
+              requesterRole="student"
+              onLinked={refreshProfile}
+              title="Parent account"
+              description="Link one parent or guardian so they can sign in under District Partnership → Parent and view your progress."
+            />
           </div>
         ) : (
           <div className="bg-sage-green/5 dark:bg-sage-green/10 p-10 rounded-[40px] border border-sage-green/20 dark:border-sage-green/30 shadow-xl shadow-slate-200/20 dark:shadow-black/20 lg:col-span-2">

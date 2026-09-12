@@ -549,8 +549,8 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
                       {path === 'district' ? (
                         <>
                           <RoleButton active={role === 'teacher'} onClick={() => setRole('teacher')} icon={<Briefcase size={20} />} label="Teacher" />
-                          <RoleButton active={role === 'student'} onClick={() => setRole('student')} icon={<GraduationCap size={20} />} label="Student" />
                           <RoleButton active={role === 'parent'} onClick={() => { setRole('parent'); setMode('login'); }} icon={<UserCircle size={20} />} label="Parent" />
+                          <RoleButton active={role === 'student'} onClick={() => setRole('student')} icon={<GraduationCap size={20} />} label="Student" />
                         </>
                       ) : (
                         <>
