@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Installed into .git/hooks/post-checkout by: npm run prepare
+# Only reinstalls when a package-lock.json changes between checkouts.
+
+prev_head="${1:-}"
+new_head="${2:-}"
+branch_checkout="${3:-}"
+
+# File checkout (not branch switch) — skip
+if [[ "$branch_checkout" != "1" ]]; then
+  exit 0
+fi
+
+# First clone / empty prev — skip (user should install once)
+if [[ -z "$prev_head" || "$prev_head" =~ ^0+$ ]]; then
+  exit 0
+fi
+
+changed="$(git diff --name-only "$prev_head" "$new_head" -- '**/package-lock.json' 'package-lock.json' 2>/dev/null || true)"
+
+if [[ -z "$changed" ]]; then
+  exit 0
+fi
+
+echo "📦 package-lock.json changed on branch switch — updating npm deps..."
+
+while IFS= read -r lockfile; do
+  [[ -z "$lockfile" ]] && continue
+  dir="$(dirname "$lockfile")"
+  if [[ -f "$dir/package.json" ]]; then
+    echo "  → npm install in $dir"
+    (cd "$dir" && npm install --no-fund --no-audit)
+  fi
+done <<< "$changed"
+
+echo "✅ deps updated"
