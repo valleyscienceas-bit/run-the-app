@@ -37,8 +37,8 @@ export type PaletteTheme = {
 export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
   linear: {
     id: 'linear',
-    name: 'Linear / Notion',
-    vibe: 'Hyper-minimalist startup',
+    name: '1. Authentic Linear / Notion',
+    vibe: 'Hyper-minimalist, fiercely professional',
     cream: '#F7F8FA',
     softPink: '#E4E5E7',
     sageGreen: '#5E6AD2',
@@ -57,8 +57,8 @@ export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
   },
   brilliant: {
     id: 'brilliant',
-    name: 'Brilliant.org',
-    vibe: 'Optimistic EdTech',
+    name: '2. Authentic Brilliant.org',
+    vibe: 'Optimistic, accessible EdTech',
     cream: '#F4F5F7',
     softPink: '#00B27A',
     sageGreen: '#0066FF',
@@ -77,7 +77,7 @@ export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
   },
   'pro-dev': {
     id: 'pro-dev',
-    name: 'Pro Developer',
+    name: '3. Authentic Pro Developer',
     vibe: 'GitHub / VS Code dark',
     cream: '#0D1117',
     softPink: '#58A6FF',
