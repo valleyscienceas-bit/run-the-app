@@ -38,3 +38,10 @@ backend/dist/
 # Logs
 *.log
 npm-debug.log*
+
+# macOS Finder duplicate copies (break TypeScript / CI)
+**/* 2.*
+**/* 3.*
+**/* 4.*
+**/lib 2/
+**/scripts 2/
