@@ -13,7 +13,7 @@ const REVENUE_DATA = [
 
 const USER_STATS = [
   { name: 'District', value: 4500, color: '#2563eb' },
-  { name: 'Individual', value: 1200, color: '#87A96B' },
+  { name: 'Individual', value: 1200, color: '#0077B6' },
 ];
 
 interface PendingDemoRequest {

@@ -25,9 +25,9 @@ export function ValerieMascot({
   const systemDark = useDarkMode();
   const isDark = forceLightPalette ? false : systemDark;
   const instanceId = useId().replace(/:/g, '');
-  const bodyFill = isDark ? '#E8A0AB' : '#FADADD';
+  const bodyFill = isDark ? '#90E0EF' : '#48CAE4';
   const stroke = isDark ? '#e2e8f0' : '#334155';
-  const blush = isDark ? '#F472B6' : '#FFB6C1';
+  const blush = isDark ? '#0077B6' : '#00B4D8';
   const capFill = isDark ? '#cbd5e1' : '#334155';
   const glowId = `valerie-glow-${instanceId}`;
 
