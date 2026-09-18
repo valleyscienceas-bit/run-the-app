@@ -5,9 +5,10 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-cream: #FFFDD0;
-  --color-soft-pink: #FADADD;
-  --color-sage-green: #87A96B;
+  /* Coastal science experiment palette (keeps class names: cream / soft-pink / sage-green) */
+  --color-cream: #EAF6F6;
+  --color-soft-pink: #48CAE4;
+  --color-sage-green: #0077B6;
 }
 
 @layer base {

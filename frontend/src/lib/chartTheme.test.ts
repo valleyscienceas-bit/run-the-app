@@ -3,13 +3,13 @@ import { chartAxisColors, chartBarFill, chartGridColor, chartTooltipStyle } from
 
 describe('chartBarFill', () => {
   it('uses green for strong scores', () => {
-    expect(chartBarFill(80, false)).toBe('#87A96B');
-    expect(chartBarFill(100, true)).toBe('#a3c97a');
+    expect(chartBarFill(80, false)).toBe('#0077B6');
+    expect(chartBarFill(100, true)).toBe('#48CAE4');
   });
 
   it('uses pink for mid scores', () => {
-    expect(chartBarFill(60, false)).toBe('#FADADD');
-    expect(chartBarFill(79, true)).toBe('#f5b8c0');
+    expect(chartBarFill(60, false)).toBe('#48CAE4');
+    expect(chartBarFill(79, true)).toBe('#90E0EF');
   });
 
   it('uses orange/red for low scores', () => {
