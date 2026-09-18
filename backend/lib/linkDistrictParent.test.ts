@@ -56,7 +56,7 @@ describe("authorizeDistrictParentLink", () => {
       districtStudent
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.status).toBe(403);
+    if (result.ok === false) expect(result.status).toBe(403);
   });
 
   it("allows teachers in the same classroom", () => {
@@ -85,6 +85,6 @@ describe("authorizeDistrictParentLink", () => {
       { ...districtTeacher, classroomIds: ["other-class"] }
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.status).toBe(403);
+    if (result.ok === false) expect(result.status).toBe(403);
   });
 });
