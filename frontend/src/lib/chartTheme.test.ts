@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { chartAxisColors, chartBarFill, chartGridColor, chartTooltipStyle } from './chartTheme';
+import { getPalette } from './paletteThemes';
 
 describe('chartBarFill', () => {
-  it('uses green for strong scores', () => {
-    expect(chartBarFill(80, false)).toBe('#87A96B');
-    expect(chartBarFill(100, true)).toBe('#a3c97a');
-  });
-
-  it('uses pink for mid scores', () => {
-    expect(chartBarFill(60, false)).toBe('#FADADD');
-    expect(chartBarFill(79, true)).toBe('#f5b8c0');
+  it('uses palette accents for strong and mid scores', () => {
+    const palette = getPalette('linear');
+    expect(chartBarFill(80, false)).toBe(palette.chartHigh);
+    expect(chartBarFill(100, true)).toBe(palette.chartHighDark);
+    expect(chartBarFill(60, false)).toBe(palette.chartMid);
+    expect(chartBarFill(79, true)).toBe(palette.chartMidDark);
   });
 
   it('uses orange/red for low scores', () => {

@@ -1,6 +1,7 @@
-import React, { useId } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { motion } from 'motion/react';
 import { useDarkMode } from '../lib/theme';
+import { getActivePaletteId, getPalette } from '../lib/paletteThemes';
 
 export type ValerieExpression = 'happy' | 'thinking' | 'excited' | 'proud';
 
@@ -25,10 +26,17 @@ export function ValerieMascot({
   const systemDark = useDarkMode();
   const isDark = forceLightPalette ? false : systemDark;
   const instanceId = useId().replace(/:/g, '');
-  const bodyFill = isDark ? '#E8A0AB' : '#FADADD';
-  const stroke = isDark ? '#e2e8f0' : '#334155';
-  const blush = isDark ? '#F472B6' : '#FFB6C1';
-  const capFill = isDark ? '#cbd5e1' : '#334155';
+  const [paletteId, setPaletteId] = useState(getActivePaletteId);
+  useEffect(() => {
+    const sync = () => setPaletteId(getActivePaletteId());
+    window.addEventListener('vs-palette-change', sync);
+    return () => window.removeEventListener('vs-palette-change', sync);
+  }, []);
+  const palette = getPalette(paletteId);
+  const bodyFill = isDark ? palette.chartHighDark : palette.sageGreen;
+  const stroke = isDark ? '#e2e8f0' : palette.text;
+  const blush = isDark ? palette.chartMidDark : palette.softPink;
+  const capFill = isDark ? '#cbd5e1' : palette.text;
   const glowId = `valerie-glow-${instanceId}`;
 
   return (
