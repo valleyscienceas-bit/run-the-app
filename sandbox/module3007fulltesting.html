@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3007 — Severe Meteorological Hazards & Vortex Dynamics | Valley Science</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #080c15;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.16) 0%, rgba(15, 23, 42, 0) 65%),
+    radial-gradient(circle at 15% 90%, rgba(99, 102, 241, 0.10) 0%, transparent 55%),
+    radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.08) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#cosmic-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cursorBlink {
+  50% { opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(14, 165, 233, 0.3); }
+  50% { box-shadow: 0 0 28px rgba(56, 189, 248, 0.6); }
+}
+
+@keyframes pulseEmerald {
+  0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.7); }
+}
+
+#version-tag {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  z-index: 9999;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(11, 15, 25, 0.85);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  pointer-events: none;
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: fadeUp 0.45s ease both, floatSubtle 6s ease-in-out infinite;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #ffffff;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.35), 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.65), 0 4px 16px rgba(14, 165, 233, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #f8fafc;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+/* Intro Screen */
+#screen-intro { flex-direction: column; }
+.intro-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+.intro-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  z-index: 10;
+}
+
+.badge {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.18);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.intro-title {
+  font-size: clamp(34px, 5.8vw, 56px);
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -1px;
+  line-height: 1.08;
+  text-shadow: 0 0 28px rgba(56, 189, 248, 0.3);
+}
+
+.intro-title span {
+  color: #38bdf8;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.55);
+}
+
+.terminal-box {
+  background: rgba(10, 15, 26, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
+  padding: 20px 22px;
+  width: 100%;
+  text-align: left;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.05);
+  animation: floatSubtle 5s ease-in-out infinite;
+}
+
+#story-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #94a3b8;
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: #38bdf8;
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 3px;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.btn-launch {
+  animation: pulseGlow 2.4s ease-in-out infinite;
+  font-size: 16px;
+  padding: 15px 44px;
+}
+
+/* Modal Windows */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-dialog {
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 480px;
+  width: 92%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 32px rgba(56, 189, 248, 0.2);
+  text-align: center;
+  animation: fadeUp 0.3s ease, floatSubtle 5s ease-in-out infinite;
+}
+
+.modal-dialog.chat-mode {
+  max-width: 540px;
+  text-align: left;
+  padding: 24px;
+}
+
+.tutor-dialog-body {
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutor-chat-log {
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.chat-bubble.tutor {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #e2e8f0;
+  align-self: flex-start;
+}
+
+.chat-bubble.student {
+  background: rgba(2, 132, 199, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #f8fafc;
+  align-self: flex-end;
+}
+
+.tutor-chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tutor-chat-input {
+  flex: 1;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  outline: none;
+}
+
+.tutor-chat-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.tutor-status-note {
+  font-size: 11px;
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+
+/* Hypothesis Screen */
+#screen-hypothesis {
+  flex-direction: column;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.hypothesis-container {
+  max-width: 680px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.text-input {
+  width: 100%;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 16px;
+  resize: none;
+  outline: none;
+  height: 112px;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.text-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.text-input::placeholder {
+  color: #64748b;
+  font-style: italic;
+}
+
+.tutor-speech-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: 18px 22px;
+  animation: fadeUp 0.4s ease both, floatSubtle 5s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
+}
+
+.avatar-orb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, #7dd3fc, #0284c7, #0369a1);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
+}
+
+/* Simulation Screen - 2:3 Ratio */
+#screen-simulation {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+}
+
+#valerie-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  box-shadow: inset 0 0 100px rgba(56, 189, 248, 0.12);
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+#valerie-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Sidebar Dashboard (40%) */
+.sidebar {
+  width: 40%;
+  min-width: 320px;
+  max-width: 440px;
+  flex-shrink: 0;
+  background: rgba(11, 17, 30, 0.92);
+  border-right: 1px solid rgba(56, 189, 248, 0.22);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(16px);
+}
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 3px; }
+
+.sidebar-action {
+  padding: 14px 16px 18px;
+  background: rgba(11, 17, 30, 0.95);
+  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
+}
+
+.tutor-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.65);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.tutor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, #bae6fd, #0284c7, #075985);
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.6);
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+.tutor-name { font-size: 14px; font-weight: 900; color: #f8fafc; }
+.tutor-role { font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; }
+
+.btn-ask-tutor {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.btn-ask-tutor:hover {
+  background: rgba(14, 165, 233, 0.22);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+}
+
+.tutor-message-panel {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-left: 3px solid #38bdf8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13.5px;
+  color: #cbd5e1;
+  line-height: 1.65;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+.steps-list { display: flex; flex-direction: column; gap: 5px; }
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.5);
+  transition: all 0.25s ease;
+}
+
+.step-item.active {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 14px rgba(14, 165, 233, 0.2);
+}
+
+.step-item.done {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.step-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.3);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.25s ease;
+}
+
+.step-item.active .step-badge {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+.step-item.done .step-badge {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  transition: color 0.25s ease;
+}
+
+.step-item.active .step-title { color: #38bdf8; font-weight: 800; }
+.step-item.done .step-title { color: #a7f3d0; }
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.metric-card {
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-label {
+  font-size: 9px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.observation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.observation-prompt { font-size: 13px; color: #cbd5e1; line-height: 1.55; font-weight: 600; }
+.observation-textarea {
+  width: 100%;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  height: 76px;
+  transition: all 0.2s ease;
+}
+
+.observation-textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+.summary-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 12px;
+  border-left: 3px solid #10b981;
+  padding: 14px;
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.65;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  animation: fadeUp 0.4s ease both;
+}
+
+.summary-heading {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #10b981;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Lab Area (60%) */
+.lab-stage {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+  background: #080c15;
+}
+
+.canvas-frame {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  background: #0a0e18;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 36px rgba(0, 0, 0, 0.6), inset 0 0 24px rgba(56, 189, 248, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.canvas-frame.glow {
+  border-color: #10b981;
+  box-shadow: 0 0 44px rgba(16, 185, 129, 0.4);
+}
+
+#sim-canvas { display: block; width: 100%; height: auto; }
+
+.canvas-standby-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 20, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 16px;
+  transition: opacity 0.45s ease;
+}
+
+.canvas-standby-overlay.dismissed { opacity: 0; pointer-events: none; }
+.standby-tag { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: #38bdf8; letter-spacing: 0.15em; }
+.standby-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
+
+/* In-Lab Controls */
+.lab-controls-panel {
+  width: 100%;
+  max-width: 920px;
+  margin-top: 14px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 16px;
+  padding: 16px 20px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.controllers-layout {
+  display: grid;
+  grid-template-columns: 1fr 180px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.control-card {
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.control-card.left { border-left: 3px solid #38bdf8; }
+.control-card.right { border-right: 3px solid #f59e0b; }
+.control-card.left.active { border-color: rgba(56, 189, 248, 0.5); box-shadow: 0 0 16px rgba(56, 189, 248, 0.2); }
+.control-card.right.active { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 16px rgba(245, 158, 11, 0.2); }
+
+.control-header { display: flex; justify-content: space-between; align-items: center; }
+.control-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.control-card.left .control-title { color: #38bdf8; }
+.control-card.right .control-title { color: #f59e0b; }
+
+.control-readout {
+  font-size: 19px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+.control-card.left .control-readout { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+.control-card.right .control-readout { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+
+input[type=range].slider-control {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(30, 41, 59, 0.9);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.control-card.left input[type=range].slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0284c7;
+  cursor: pointer;
+  border: 2px solid #bae6fd;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+}
+
+.control-card.right input[type=range].slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #d97706;
+  cursor: pointer;
+  border: 2px solid #fde68a;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.nudge-buttons { display: flex; gap: 6px; justify-content: center; }
+.btn-nudge {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-nudge:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.9);
+  color: #f8fafc;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.center-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 8px 6px;
+  background: rgba(10, 15, 26, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+}
+
+.center-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.center-value {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #38bdf8;
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-pill.nominal {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+  animation: pulseEmerald 2s infinite;
+}
+
+.btn-confirm-action {
+  background: linear-gradient(135deg, #059669, #047857);
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+  animation: pulseEmerald 1.8s infinite;
+  transition: all 0.18s ease;
+  width: 100%;
+  margin-top: 2px;
+}
+
+/* Interstellar Wave Transition */
+#step-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+}
+
+#step-transition-layer.active { opacity: 1; pointer-events: all; }
+#transition-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.transition-hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transition-hud.show { opacity: 1; transform: scale(1); }
+
+.transition-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 24px;
+  padding: 26px 48px;
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(56, 189, 248, 0.25);
+  animation: floatSubtle 4s ease-in-out infinite;
+}
+
+.transition-step-number {
+  font-size: 32px;
+  font-weight: 900;
+  color: #f8fafc;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.6);
+  text-transform: uppercase;
+}
+
+.transition-step-label { font-size: 15px; color: #cbd5e1; font-weight: 700; }
+
+/* Video Deep Dive */
+#screen-video { flex-direction: column; padding: 36px 20px; overflow-y: auto; }
+.video-container { max-width: 760px; width: 100%; display: flex; flex-direction: column; gap: 18px; }
+.video-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0e18;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.1);
+}
+
+#video-canvas { width: 100%; height: auto; display: block; }
+.video-loading-screen {
+  position: absolute;
+  inset: 0;
+  background: #0a0e18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.video-loading-screen.dismissed { opacity: 0; visibility: hidden; }
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-top-color: #38bdf8;
+  animation: spin 0.75s linear infinite;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+}
+
+.caption-overlay {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0 36px;
+  pointer-events: none;
+}
+
+.caption-bubble {
+  display: inline-block;
+  background: rgba(3, 7, 18, 0.9);
+  border-bottom: 2px solid #38bdf8;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+}
+.caption-bubble.active { opacity: 1; transform: translateY(0); }
+
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(3, 7, 18, 0.92));
+  padding: 18px 18px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.video-player:hover .video-controls { opacity: 1; }
+
+.btn-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0284c7;
+  border: 1px solid #38bdf8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.progress-track { flex: 1; height: 5px; background: rgba(255, 255, 255, 0.15); border-radius: 3px; cursor: pointer; position: relative; }
+.progress-fill { height: 100%; background: #38bdf8; border-radius: 3px; width: 0%; box-shadow: 0 0 8px #38bdf8; }
+.timestamp { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8; }
+
+/* Quiz Screen */
+#screen-quiz { flex-direction: column; padding: 40px 20px; overflow-y: auto; }
+.quiz-container { max-width: 660px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+.quiz-progress-bar { width: 100%; height: 6px; background: rgba(30, 41, 59, 0.8); border-radius: 3px; overflow: hidden; }
+.quiz-progress-fill { height: 100%; background: #38bdf8; border-radius: 3px; transition: width 0.4s ease; box-shadow: 0 0 10px #38bdf8; }
+
+.quiz-card h3 { font-size: 18px; font-weight: 900; color: #f8fafc; line-height: 1.45; margin-bottom: 8px; }
+.quiz-hint { font-size: 13px; color: #94a3b8; font-style: italic; font-weight: 600; }
+
+/* Results Screen */
+#screen-results { flex-direction: column; padding: 40px 20px; overflow-y: auto; align-items: center; justify-content: flex-start; }
+#celebration-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.results-container { max-width: 700px; width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 20px 0 40px; position: relative; z-index: 3; }
+.results-header { text-align: center; animation: fadeUp 0.45s ease both; }
+.results-header h2 { font-size: 32px; font-weight: 900; color: #f8fafc; letter-spacing: -0.5px; text-shadow: 0 0 24px rgba(56, 189, 248, 0.35); }
+.score-ring-wrapper { display: flex; justify-content: center; }
+.results-breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.feedback-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 14px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.feedback-card.success { border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.06); }
+.feedback-card.review { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.06); }
+.feedback-card-heading { font-size: 10.5px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+.feedback-card.success .feedback-card-heading { color: #34d399; }
+.feedback-card.review .feedback-card-heading { color: #fbbf24; }
+.feedback-card p { font-size: 13px; color: #cbd5e1; line-height: 1.65; margin-bottom: 4px; font-weight: 600; }
+
+@media screen and (max-width: 1050px) {
+  #screen-simulation { flex-direction: column; }
+  .sidebar { width: 100%; max-width: 100%; height: auto; max-height: 38vh; border-right: none; border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
+  .lab-stage { flex: 1; min-height: 62vh; padding: 12px; }
+  .controllers-layout { grid-template-columns: 1fr; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="cosmic-bg-canvas"></canvas>
+
+<!-- Interstellar Wave Transition Overlay -->
+<div id="step-transition-layer">
+  <canvas id="transition-canvas"></canvas>
+  <div class="transition-hud" id="transition-hud">
+    <div class="transition-card">
+      <div class="badge">NEXT STEP</div>
+      <div class="transition-step-number" id="transition-step-number">STEP 2</div>
+      <div class="transition-step-label" id="transition-step-label">2. Updraft Acceleration</div>
+    </div>
+  </div>
+</div>
+
+<!-- Intro Screen -->
+<div class="screen" id="screen-intro">
+  <div class="intro-grid"></div>
+  <div class="intro-topbar">
+    <button class="btn-secondary" id="btn-exit-intro">✕ Exit</button>
+    <button class="btn-secondary" id="btn-open-standards">ⓘ Standards &amp; Vocabulary</button>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:70px 20px 20px;z-index:5;max-width:640px;animation:fadeUp .6s ease both">
+    <div class="badge">Utah SEEd 3.1.3 · Grade 3 · Module 3007</div>
+    <h1 class="intro-title">Severe<br><span>Weather Hazards</span></h1>
+    <canvas id="icon-canvas" width="280" height="110"></canvas>
+    <div class="terminal-box">
+      <span id="story-text"></span><span class="cursor-blink" id="cursor-blink"></span>
+    </div>
+    <div style="margin-top:6px">
+      <button class="btn-primary btn-launch" id="btn-start-intro" style="opacity:0;pointer-events:none;transform:translateY(8px)">
+        Launch Lab Simulation →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Standards Modal -->
+<div class="modal-overlay" id="modal-standards">
+  <div class="modal-dialog">
+    <span class="badge" style="margin-bottom:12px;display:inline-block">3.1.3</span>
+    <h2>Scientific Standards &amp; Vocabulary</h2>
+    <ul>
+      <li><strong>Standard:</strong> Strand 1: Weather and Climate (3.1.3).</li>
+      <li><strong>Target Vocabulary:</strong> Severe Weather, Mesocyclone, Tornado, Flash Flood.</li>
+      <li><strong>Core Directive:</strong> Rigorous academic terminology enforced across all Socratic interactions.</li>
+    </ul>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah State Science with Engineering Education (SEEd) Standards.</p>
+    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Acknowledge</button>
+  </div>
+</div>
+
+<!-- Valerie Socratic AI Modal -->
+<div class="modal-overlay" id="modal-valerie-dialog">
+  <div class="modal-dialog chat-mode">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tutor-avatar" style="width:32px;height:32px"></div>
+        <div>
+          <h3 style="color:#f8fafc;font-size:16px;font-weight:900">Ask Valerie</h3>
+          <span style="color:#38bdf8;font-size:11px;font-family:'JetBrains Mono',monospace" id="tutor-connection-status">Online (Socratic AI)</span>
+        </div>
+      </div>
+      <button class="btn-secondary" id="btn-close-tutor-modal" style="padding:4px 10px;font-size:12px">✕</button>
+    </div>
+    <div class="tutor-dialog-body">
+      <div class="tutor-chat-log" id="tutor-chat-history">
+        <div class="chat-bubble tutor">
+          Greetings! I am Valerie, your Socratic science tutor. What empirical observations or questions do you have regarding Severe Weather Hazards? Remember to utilize Tier-2/Tier-3 academic vocabulary.
+        </div>
+      </div>
+      <div class="tutor-chat-input-row">
+        <input type="text" class="tutor-chat-input" id="tutor-user-input" placeholder="Ask Valerie a question about this experiment..." autocomplete="off">
+        <button class="btn-primary" id="btn-send-tutor-message" style="padding:8px 18px;font-size:13px">Ask</button>
+      </div>
+      <div class="tutor-status-note" id="tutor-api-status-note">Valerie AI API endpoint ready. Socratic validation active.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Hypothesis Screen -->
+<div class="screen hidden" id="screen-hypothesis">
+  <div class="hypothesis-container">
+    <div class="card">
+      <div class="section-label">Scientific Investigation</div>
+      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Severe Meteorological Hazards & Vortex Dynamics</h3>
+      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">A multi-cell thunderstorm over the Salt Lake Valley undergoes explosive supercell cyclogenesis. Intense updrafts generate rotating mesocyclones capable of spawning destructive tornadoes and flash floods.</p>
+    </div>
+    <div class="card">
+      <div class="section-label">Hypothesis Formulation</div>
+      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">What thermodynamic interaction between rapid atmospheric updrafts and rotating wind shear generates a tornado?</p>
+      <textarea class="text-input" id="hypothesis-input" placeholder="I hypothesize that when rising warm updrafts encounter perpendicular horizontal wind shear..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Hypothesis →</button>
+      </div>
+    </div>
+    <div class="tutor-speech-bubble hidden" id="tutor-hypothesis-reply">
+      <div class="avatar-orb"></div>
+      <p id="tutor-hypothesis-text" style="color:#cbd5e1;font-size:14px;line-height:1.65;font-weight:600"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Simulation Screen (2:3 Ratio) -->
+<div id="version-tag">Module 3007 · V7 HYBRID</div>
+<div class="screen hidden" id="screen-simulation">
+  <div id="valerie-overlay"></div>
+
+  <!-- Dashboard Sidebar (40%) -->
+  <aside class="sidebar">
+    <div class="tutor-header">
+      <div class="tutor-avatar"></div>
+      <div>
+        <div class="tutor-name">Valerie</div>
+        <div class="tutor-role">Socratic AI Mentor</div>
+      </div>
+      <button class="btn-ask-tutor" id="btn-ask-valerie">Ask Valerie</button>
+    </div>
+
+    <div class="sidebar-scroll">
+      <div class="tutor-message-panel" id="tutor-panel">Initializing scientific laboratory...</div>
+
+      <nav class="steps-list">
+        
+        <div class="step-item active" id="step-item-0">
+          <div class="step-badge">1</div>
+          <div class="step-title">1. Supercell Ingestion</div>
+        </div>
+        <div class="step-item " id="step-item-1">
+          <div class="step-badge">2</div>
+          <div class="step-title">2. Updraft Acceleration</div>
+        </div>
+        <div class="step-item " id="step-item-2">
+          <div class="step-badge">3</div>
+          <div class="step-title">3. Mesocyclone Spin</div>
+        </div>
+        <div class="step-item " id="step-item-3">
+          <div class="step-badge">4</div>
+          <div class="step-title">4. Funnel Touchdown</div>
+        </div>
+        <div class="step-item " id="step-item-4">
+          <div class="step-badge">5</div>
+          <div class="step-title">5. Hazard Radius Mapping</div>
+        </div>
+        <div class="step-item " id="step-item-5">
+          <div class="step-badge">6</div>
+          <div class="step-title">6. Safety Protocol Synthesis</div>
+        </div>
+      </nav>
+
+      <div class="telemetry-grid">
+        <div class="metric-card"><div class="metric-value" id="metric-val-1">0.0</div><div class="metric-label">Vortex Intensity</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-2">0.00</div><div class="metric-label">Fujita Rating</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-3">0.00</div><div class="metric-label">Flash Flood Risk</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-4">0.00</div><div class="metric-label">Alert Status</div></div>
+      </div>
+
+      <div id="observation-container"></div>
+    </div>
+
+    <div class="sidebar-action">
+      <div id="action-area">
+        <button class="btn-primary" style="width:100%" id="btn-initialize-sim">Start Experiment →</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Lab Stage (60%) -->
+  <main class="lab-stage">
+    <div class="canvas-frame" id="canvas-frame">
+      <canvas id="sim-canvas"></canvas>
+      <div class="canvas-standby-overlay" id="canvas-standby">
+        <div class="standby-tag">[ SIMULATION STANDBY ]</div>
+        <div class="standby-text">Review parameters in dashboard, then launch!</div>
+      </div>
+    </div>
+
+    <div class="lab-controls-panel">
+      <div class="controllers-layout">
+        <!-- Left Control -->
+        <div class="control-card left" id="card-ctrl-left">
+          <div class="control-header">
+            <span class="control-title">Convective Updraft Power</span>
+            <span class="control-readout" id="readout-left">35 m/s</span>
+          </div>
+          <input type="range" class="slider-control" id="slider-left" min="10" max="70" value="35" step="1" disabled>
+          <div class="nudge-buttons">
+            <button class="btn-nudge" data-channel="left" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-channel="left" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-channel="left" data-delta="1">+1</button>
+            <button class="btn-nudge" data-channel="left" data-delta="10">+10</button>
+          </div>
+        </div>
+
+        <!-- Center Readout -->
+        <div class="center-display">
+          <div class="center-label">Vortex Intensity</div>
+          <div class="center-value" id="chip-center-val">0.0 m/s</div>
+          <div class="status-pill nominal" id="status-main-pill">NOMINAL</div>
+          <div id="balance-confirmation-container" style="width:100%"></div>
+        </div>
+
+        <!-- Right Control -->
+        <div class="control-card right" id="card-ctrl-right">
+          <div class="control-header">
+            <span class="control-title">Rotational Wind Shear</span>
+            <span class="control-readout" id="readout-right">200 m²/s²</span>
+          </div>
+          <input type="range" class="slider-control" id="slider-right" min="50" max="450" value="200" step="5" disabled>
+          <div class="nudge-buttons">
+            <button class="btn-nudge" data-channel="right" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-channel="right" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-channel="right" data-delta="1">+1</button>
+            <button class="btn-nudge" data-channel="right" data-delta="10">+10</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Video Screen -->
+<div class="screen hidden" id="screen-video">
+  <div class="video-container">
+    <div class="section-label">Concept Deep-Dive</div>
+    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">Atmospheric Physics of Severe Weather Hazards</h2>
+    <p style="font-size:14px;color:#94a3b8;font-weight:600">Unraveling the thermodynamic energy driving tornadoes, supercells, and flash floods</p>
+    <div class="video-player" id="video-player">
+      <canvas id="video-canvas"></canvas>
+      <div class="video-loading-screen" id="video-loading">
+        <div class="spinner"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94a3b8">Buffering simulation media...</div>
+      </div>
+      <div class="caption-overlay"><span class="caption-bubble" id="caption-text"></span></div>
+      <div class="video-controls">
+        <button class="btn-play" id="btn-toggle-video">▶</button>
+        <div class="progress-track" id="video-progress-track">
+          <div class="progress-fill" id="video-progress-fill"></div>
+        </div>
+        <div class="timestamp" id="video-timestamp">0:00 / 0:30</div>
+      </div>
+    </div>
+    <button class="btn-primary hidden" id="btn-continue-to-quiz" style="align-self:center">Take Lexical Assessment →</button>
+  </div>
+</div>
+
+<!-- Quiz Screen -->
+<div class="screen hidden" id="screen-quiz">
+  <div class="quiz-container">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="section-label" id="quiz-counter-label" style="margin-bottom:0">Question 1 of 3</div>
+      <button class="btn-secondary" id="btn-quiz-prev" style="padding:4px 12px;font-size:11px;display:none">← Previous Question</button>
+    </div>
+    <div class="card quiz-card" id="card-quiz-question" style="gap:14px;display:flex;flex-direction:column">
+      <h3 id="quiz-question-text"></h3>
+      <p class="quiz-hint" id="quiz-hint-text"></p>
+      <textarea class="text-input" id="quiz-answer-input" placeholder="Type your answer utilizing Tier-2/Tier-3 academic vocabulary (Press Enter to submit)..."></textarea>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn-primary" id="btn-submit-quiz-answer" disabled>Submit Answer →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Results Screen -->
+<div class="screen hidden" id="screen-results">
+  <canvas id="celebration-canvas"></canvas>
+  <div class="results-container">
+    <div class="results-header">
+      <h2>EVALUATION COMPLETE</h2>
+      <p>Module 3007: Severe Meteorological Hazards & Vortex Dynamics</p>
+    </div>
+    <div class="score-ring-wrapper"><canvas id="score-ring-canvas" width="140" height="140"></canvas></div>
+    <div class="results-breakdown-grid" id="results-feedback-grid"></div>
+    <div class="tutor-speech-bubble">
+      <div class="avatar-orb"></div>
+      <p id="tutor-final-summary" style="color:#e2e8f0;font-size:14px;line-height:1.7;font-weight:600"></p>
+    </div>
+    <button class="btn-primary" id="btn-finish-module" style="align-self:center">Complete Module ✓</button>
+  </div>
+</div>
+
+<script>
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radius) {
+    const r = Math.min(radius, w / 2, h / 2);
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.quadraticCurveTo(x + w, y, x + w, y + r);
+    this.lineTo(x + w, y + h - r);
+    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    this.lineTo(x + r, y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - r);
+    this.lineTo(x, y + r);
+    this.quadraticCurveTo(x, y, x + r, y);
+    this.closePath();
+    return this;
+  };
+}
+
+const labState = {
+  moduleId: 3007,
+  currentStep: 0,
+  hypothesisText: '',
+  observations: [],
+  valLeft: 35,
+  valRight: 200,
+  quizAnswers: [],
+  isSimRunning: false,
+  simAnimationId: null,
+  introIconAnimationId: null,
+  videoAnimationId: null,
+  celebrationAnimationId: null,
+  backgroundDustAnimationId: null,
+  videoCurrentTime: 0,
+  videoDuration: 30,
+  isVideoPlaying: false,
+  hasReachedFirstThreshold: false,
+  hasReachedSecondThreshold: false
+};
+
+const STEP_LABELS = ["1. Supercell Ingestion","2. Updraft Acceleration","3. Mesocyclone Spin","4. Funnel Touchdown","5. Hazard Radius Mapping","6. Safety Protocol Synthesis"];
+const VIDEO_CAPTIONS = [{"start":0,"end":5,"text":"Severe weather encompasses dangerous atmospheric phenomena causing destruction."},{"start":5,"end":10,"text":"Supercell storms harbor powerful vertical updrafts exceeding 50 m/s."},{"start":10,"end":15,"text":"Wind shear tilts rotating columns of air into vertical mesocyclones."},{"start":15,"end":21,"text":"Tornado funnels descend, concentrating kinetic energy at ground contact."},{"start":21,"end":30,"text":"Torrential convective rainfall saturates river basins, triggering flash floods."}];
+const QUIZ_ITEMS = [{"question":"Define 'severe weather' and explain why tornadoes are classified among the most catastrophic meteorological hazards.","hint":"Discuss rotational kinetic energy, destructive pressure drops, and wind speeds exceeding 200 mph.","keywords":["severe weather","tornado","hazard","wind velocity","destruction","kinetic energy"]},{"question":"How does rapid convective rainfall over compacted urban soils produce sudden flash flood hazards?","hint":"Water influx surpasses soil absorption capacity, causing rapid surface runoff into rivers.","keywords":["flash flood","precipitation","runoff","saturation","basin","severe weather"]},{"question":"What protective action should citizens execute immediately upon issuance of a formal Doppler tornado warning?","hint":"Seek subterranean shelter or lowest interior structural room away from exterior glass.","keywords":["tornado","shelter","basement","warning","protection","severe weather"]}];
+
+let activeQuizIndex = 0;
+let observationCallback = null;
+
+// Ambient Star Dust
+function initCosmicBackground() {
+  const canvas = document.getElementById('cosmic-bg-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: 0.6 + Math.random() * 1.8,
+      alpha: 0.15 + Math.random() * 0.55,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: -0.15 - Math.random() * 0.35,
+      baseColor: Math.random() > 0.4 ? 'rgba(56,189,248,' : 'rgba(226,232,240,'
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -10) p.y = canvas.height + 10;
+      if (p.x < -10) p.x = canvas.width + 10;
+      if (p.x > canvas.width + 10) p.x = -10;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.baseColor + p.alpha + ')';
+      ctx.fill();
+    }
+    labState.backgroundDustAnimationId = requestAnimationFrame(render);
+  }
+  render();
+}
+
+// 2-Second Cinematic Interstellar Transition
+function playStepTransition(stepNumber, stepTitle, onComplete) {
+  const overlay = document.getElementById('step-transition-layer');
+  const hud = document.getElementById('transition-hud');
+  const numberText = document.getElementById('transition-step-number');
+  const labelText = document.getElementById('transition-step-label');
+  const canvas = document.getElementById('transition-canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  numberText.textContent = "STEP " + stepNumber;
+  labelText.textContent = stepTitle || ("Step " + stepNumber);
+
+  overlay.classList.add('active');
+  hud.classList.add('show');
+
+  const startTime = performance.now();
+  const duration = 2000;
+
+  const glints = [];
+  for (let i = 0; i < 36; i++) {
+    glints.push({
+      yRatio: Math.random(),
+      relOffset: (Math.random() - 0.5) * 200,
+      size: 1.5 + Math.random() * 3.5,
+      alpha: 0.4 + Math.random() * 0.6
+    });
+  }
+
+  function renderFrame(now) {
+    const elapsed = now - startTime;
+    const p = Math.min(elapsed / duration, 1);
+
+    let ease;
+    if (p < 0.45) {
+      const t = p / 0.45;
+      ease = (t * t * (3 - 2 * t)) * 0.38;
+    } else if (p < 0.70) {
+      const t = (p - 0.45) / 0.25;
+      ease = 0.38 + (Math.sin(t * Math.PI * 0.5)) * 0.08;
+    } else {
+      const t = (p - 0.70) / 0.30;
+      ease = 0.46 + (t * t * t * t) * 0.54;
+    }
+
+    if (p >= 0.68 && p <= 0.94) {
+      const shakeIntensity = Math.sin((p - 0.68) / 0.26 * Math.PI) * 5.5;
+      const sx = (Math.random() - 0.5) * shakeIntensity;
+      const sy = (Math.random() - 0.5) * shakeIntensity;
+      overlay.style.transform = "translate(" + sx.toFixed(1) + "px, " + sy.toFixed(1) + "px)";
+    } else {
+      overlay.style.transform = 'translate(0px, 0px)';
+    }
+
+    const width = canvas.width;
+    const height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
+
+    const waveFront = -300 + ease * (width + 650);
+    const waveWidth = 420;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(waveFront - waveWidth, 0);
+    for (let y = 0; y <= height; y += 20) {
+      const curve = Math.sin((y / height) * Math.PI * 2 + p * Math.PI * 1.5) * 55;
+      ctx.lineTo(waveFront + curve, y);
+    }
+    ctx.lineTo(waveFront - waveWidth - 80, height);
+    ctx.closePath();
+
+    const gradient = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
+    gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
+    gradient.addColorStop(0.3, 'rgba(99, 102, 241, 0.40)');
+    gradient.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)');
+    gradient.addColorStop(0.90, 'rgba(226, 232, 240, 0.70)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.90)');
+
+    ctx.fillStyle = gradient;
+    ctx.shadowColor = '#38bdf8';
+    ctx.shadowBlur = 40;
+    ctx.fill();
+
+    for (let i = 0; i < glints.length; i++) {
+      const g = glints[i];
+      const gx = waveFront - 60 + g.relOffset;
+      const gy = g.yRatio * height;
+      if (gx > 0 && gx < width) {
+        ctx.save();
+        ctx.translate(gx, gy);
+        ctx.fillStyle = "rgba(255, 255, 255, " + (g.alpha * (1 - Math.abs(p - 0.55) * 1.6)) + ")";
+        ctx.beginPath();
+        ctx.arc(0, 0, g.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(56, 189, 248, " + (g.alpha * 0.8) + ")";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-g.size * 2.8, 0); ctx.lineTo(g.size * 2.8, 0);
+        ctx.moveTo(0, -g.size * 2.8); ctx.lineTo(0, g.size * 2.8);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+
+    if (p < 1) {
+      requestAnimationFrame(renderFrame);
+    } else {
+      hud.classList.remove('show');
+      overlay.classList.remove('active');
+      overlay.style.transform = 'translate(0px, 0px)';
+      ctx.clearRect(0, 0, width, height);
+      if (onComplete) onComplete();
+    }
+  }
+  requestAnimationFrame(renderFrame);
+}
+
+// Typing Intro
+const STORY_TEXT = "INCIDENT BRIEFING: A multi-cell thunderstorm over the Salt Lake Valley undergoes explosive supercell cyclogenesis. Intense updrafts generate rotating mesocyclones capable of spawning destructive tornadoes and flash floods.\n\nMission Objective: Analyze convective available potential energy (CAPE) and wind shear vectors to predict vortex formation and structural hazard risks. Enforce target academic vocabulary: Severe Weather, Mesocyclone, Tornado, Flash Flood.";
+let storyCharIndex = 0;
+
+function runTypewriter() {
+  const container = document.getElementById('story-text');
+  if (!container) return;
+  if (storyCharIndex < STORY_TEXT.length) {
+    const char = STORY_TEXT.charAt(storyCharIndex);
+    container.innerHTML += char === '\n' ? '<br>' : char;
+    storyCharIndex++;
+    setTimeout(runTypewriter, 12);
+  } else {
+    setTimeout(() => {
+      const launchButton = document.getElementById('btn-start-intro');
+      launchButton.style.opacity = '1';
+      launchButton.style.pointerEvents = 'all';
+      launchButton.style.transform = 'translateY(0)';
+      document.getElementById('cursor-blink').style.display = 'none';
+    }, 250);
+  }
+}
+
+function initIntroIcon() {
+  const canvas = document.getElementById('icon-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let frame = 0;
+
+  function render() {
+    ctx.clearRect(0, 0, 280, 110);
+    const cx = 140, cy = 55;
+    const floatBob = Math.sin(frame * 0.05) * 3.5;
+
+    const glow = ctx.createRadialGradient(cx, cy + floatBob, 2, cx, cy + floatBob, 52);
+    glow.addColorStop(0, 'rgba(56, 189, 248, 0.20)');
+    glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy + floatBob, 52, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(cx - 35, cy - 25 + floatBob, 70, 50, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText("3.1.3", cx, cy + floatBob - 6);
+    ctx.fillStyle = '#a7f3d0';
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.fillText("Severe Weather", cx, cy + floatBob + 10);
+
+    frame++;
+    labState.introIconAnimationId = requestAnimationFrame(render);
+  }
+  render();
+  setTimeout(runTypewriter, 350);
+}
+
+function transitionScreen(fromScreenId, toScreenId) {
+  const fromScreen = document.getElementById(fromScreenId);
+  const toScreen = document.getElementById(toScreenId);
+
+  fromScreen.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  fromScreen.style.opacity = '0';
+  fromScreen.style.transform = 'translateX(-30px)';
+
+  setTimeout(() => {
+    fromScreen.classList.add('hidden');
+    fromScreen.style.cssText = '';
+
+    toScreen.classList.remove('hidden');
+    toScreen.style.opacity = '0';
+    toScreen.style.transform = 'translateX(30px)';
+    toScreen.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toScreen.style.opacity = '1';
+        toScreen.style.transform = 'translateX(0)';
+        setTimeout(() => { toScreen.style.cssText = ''; }, 400);
+      });
+    });
+  }, 300);
+}
+
+function setTutorMessage(htmlContent) {
+  const panel = document.getElementById('tutor-panel');
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(4px)';
+  panel.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+  setTimeout(() => {
+    panel.innerHTML = htmlContent;
+    panel.style.opacity = '1';
+    panel.style.transform = 'translateY(0)';
+  }, 180);
+}
+
+function updateStepNavigation(activeStepIndex) {
+  for (let i = 0; i <= 5; i++) {
+    const item = document.getElementById("step-item-" + i);
+    if (!item) continue;
+    item.classList.remove('active', 'done');
+    if (i < activeStepIndex) item.classList.add('done');
+    else if (i === activeStepIndex) item.classList.add('active');
+  }
+}
+
+// Canvas Simulation Renderer
+function getSimCanvasDimensions() {
+  const canvas = document.getElementById('sim-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  return [canvas.width / dpr, canvas.height / dpr];
+}
+
+function drawSimCanvas(ctx, [width, height]) {
+  const dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, width, height);
+
+  // Background Grid Lines
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < width; x += 44) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+  }
+  for (let y = 0; y < height; y += 44) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+  }
+
+  const cx = width / 2;
+  const cy = height / 2;
+  const now = Date.now();
+  const bob = Math.sin(now * 0.003) * 5;
+
+  // Render Simulation Graphic
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy + bob, 70, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Internal visual element based on module category
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+  ctx.beginPath();
+  ctx.roundRect(cx - 60, cy - 35 + bob, 120, 70, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  // Dynamic vector rays or rings
+  const valRatio = (labState.valLeft + labState.valRight) / 200;
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy + bob, 40 + valRatio * 20, 0, Math.PI * 2 * Math.min(1, valRatio + 0.2));
+  ctx.stroke();
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 12px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText("Severe Weather Hazards", cx, cy + bob - 8);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '11px "JetBrains Mono", monospace';
+  ctx.fillText("Severe Weather: " + labState.valLeft + " m/s", cx, cy + bob + 10);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillText("Mesocyclone: " + labState.valRight + " m²/s²", cx, cy + bob + 24);
+
+  ctx.resetTransform();
+}
+
+function updateTelemetryDisplay() {
+  document.getElementById('readout-left').textContent = labState.valLeft + " m/s";
+  document.getElementById('readout-right').textContent = labState.valRight + " m²/s²";
+  document.getElementById('slider-left').value = labState.valLeft;
+  document.getElementById('slider-right').value = labState.valRight;
+
+  const derivedMetric = (labState.valRight - labState.valLeft);
+  document.getElementById('chip-center-val').textContent = derivedMetric.toFixed(1) + " m/s";
+
+  document.getElementById('metric-val-1').textContent = labState.valLeft.toFixed(1);
+  document.getElementById('metric-val-2').textContent = labState.valRight.toFixed(1);
+  document.getElementById('metric-val-3').textContent = Math.abs(derivedMetric).toFixed(2);
+  document.getElementById('metric-val-4').textContent = (Math.abs(derivedMetric) * 1.5).toFixed(2);
+
+  const statusPill = document.getElementById('status-main-pill');
+  if (Math.abs(derivedMetric) <= 2) {
+    statusPill.className = 'status-pill nominal';
+    statusPill.textContent = 'EQUILIBRIUM / BALANCED';
+  } else {
+    statusPill.className = 'status-pill';
+    statusPill.textContent = 'DYNAMIC VARIATION';
+  }
+
+  // Dynamic Tutor Messages with Vocabulary Enforcement
+  if (labState.currentStep === 1 && labState.isSimRunning) {
+    setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>Convective Updraft Power</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
+  } else if (labState.currentStep === 3 && labState.isSimRunning) {
+    const confirmContainer = document.getElementById('balance-confirmation-container');
+    if (Math.abs(derivedMetric) <= 2) {
+      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>Severe Weather</em> and <em>Mesocyclone</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
+      if (!document.getElementById('btn-confirm-balance')) {
+        confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
+        document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
+      }
+    } else {
+      setTutorMessage("Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity.");
+      confirmContainer.innerHTML = '';
+    }
+  }
+}
+
+function runPhysicsTick() {
+  if (!labState.isSimRunning) return;
+  const canvas = document.getElementById('sim-canvas');
+  const ctx = canvas.getContext('2d');
+  drawSimCanvas(ctx, getSimCanvasDimensions());
+  labState.simAnimationId = requestAnimationFrame(runPhysicsTick);
+}
+
+function initSimulationLab() {
+  const canvas = document.getElementById('sim-canvas');
+  const frame = document.getElementById('canvas-frame');
+  const width = frame.clientWidth;
+  const height = Math.round(width * 0.50);
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  labState.currentStep = 0;
+  labState.valLeft = 35;
+  labState.valRight = 200;
+
+  setTutorMessage("<strong>Welcome to Module 3007: Severe Weather Hazards!</strong><br><br>Utilize the controllers below to test how <strong>Severe Weather</strong> interacts with <strong>Mesocyclone</strong>. Click <strong>Start Experiment</strong> to launch live data acquisition!");
+  updateStepNavigation(0);
+  document.getElementById('btn-initialize-sim').style.display = 'block';
+  document.getElementById('valerie-overlay').classList.remove('active');
+
+  const ctx = canvas.getContext('2d');
+  drawSimCanvas(ctx, getSimCanvasDimensions());
+  updateTelemetryDisplay();
+}
+
+function showObservationPrompt(label, promptText, onSubmitCallback) {
+  const container = document.getElementById('observation-container');
+  container.innerHTML = `
+    <div class="observation-panel">
+      <div class="section-label">${label}</div>
+      <div class="observation-prompt">${promptText}</div>
+      <textarea class="observation-textarea" id="observation-input" placeholder="Type your answer using target terms: ${"Severe Weather, Mesocyclone"} (Press Enter to submit)..."></textarea>
+      <button class="btn-primary" style="width:100%" id="btn-submit-observation" disabled>Submit Answer →</button>
+    </div>
+  `;
+
+  const input = document.getElementById('observation-input');
+  const submitBtn = document.getElementById('btn-submit-observation');
+
+  input.addEventListener('input', () => {
+    submitBtn.disabled = input.value.trim().length === 0;
+  });
+
+  function doSubmit() {
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
+    labState.observations.push(input.value.trim());
+    if (observationCallback) {
+      const cb = observationCallback;
+      observationCallback = null;
+      cb();
+    }
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      doSubmit();
+    }
+  });
+
+  submitBtn.addEventListener('click', doSubmit);
+  document.getElementById('btn-initialize-sim').style.display = 'none';
+  document.getElementById('action-area').innerHTML = '';
+  observationCallback = onSubmitCallback;
+  input.focus();
+}
+
+function clearObservationPrompt() {
+  document.getElementById('observation-container').innerHTML = '';
+  document.getElementById('action-area').innerHTML = '';
+}
+
+// Step Flow Functions
+function onStartExperiment() {
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('btn-initialize-sim').style.display = 'none';
+  document.getElementById('canvas-standby').classList.add('dismissed');
+
+  playStepTransition(2, STEP_LABELS[1], () => {
+    labState.currentStep = 1;
+    labState.isSimRunning = true;
+    document.getElementById('slider-left').disabled = false;
+    updateStepNavigation(1);
+    setTutorMessage("<strong>Active Step 2: System Activation</strong><br><br>Adjust the left control slider past 60 to induce initial dynamic variance. Observe the telemetry!");
+    runPhysicsTick();
+  });
+}
+
+function onTriggerObservation1() {
+  labState.isSimRunning = false;
+  labState.currentStep = 2;
+  document.getElementById('slider-left').disabled = true;
+  document.getElementById('slider-right').disabled = true;
+  document.getElementById('canvas-frame').classList.add('glow');
+  document.getElementById('valerie-overlay').classList.add('active');
+
+  playStepTransition(3, STEP_LABELS[2], () => {
+    updateStepNavigation(2);
+    setTutorMessage("<strong>Data Recorded: Observation 1</strong><br><br>The initial parameter shift generated measurable variation. Formulate your observation below utilizing academic terminology.");
+    showObservationPrompt(
+      'Observation 1',
+      "Describe how altering the initial parameter influenced the physical state of the system, referencing <em>Severe Weather</em>.",
+      onObservation1Submitted
+    );
+  });
+}
+
+function onObservation1Submitted() {
+  clearObservationPrompt();
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('canvas-frame').classList.remove('glow');
+
+  playStepTransition(4, STEP_LABELS[3], () => {
+    labState.currentStep = 3;
+    labState.isSimRunning = true;
+    document.getElementById('slider-left').disabled = false;
+    document.getElementById('slider-right').disabled = false;
+    updateStepNavigation(3);
+    updateTelemetryDisplay();
+    runPhysicsTick();
+  });
+}
+
+function onConfirmStep3() {
+  labState.hasReachedSecondThreshold = true;
+  labState.currentStep = 4;
+  labState.isSimRunning = false;
+  document.getElementById('slider-left').disabled = true;
+  document.getElementById('slider-right').disabled = true;
+  document.getElementById('balance-confirmation-container').innerHTML = '';
+  document.getElementById('canvas-frame').classList.add('glow');
+  document.getElementById('valerie-overlay').classList.add('active');
+
+  playStepTransition(5, STEP_LABELS[4], () => {
+    updateStepNavigation(4);
+    setTutorMessage("<strong>Discovery Confirmed!</strong><br><br>System parameters have stabilized. Synthesize your scientific findings in the discovery log.");
+    showObservationPrompt(
+      'Discovery Log',
+      "Describe how elevating updraft velocity and rotational wind shear transforms a standard thunderstorm into a tornadic mesocyclone.",
+      onObservation2Submitted
+    );
+  });
+}
+
+function onObservation2Submitted() {
+  clearObservationPrompt();
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('canvas-frame').classList.remove('glow');
+
+  playStepTransition(6, STEP_LABELS[5], () => {
+    labState.currentStep = 5;
+    updateStepNavigation(5);
+
+    document.getElementById('observation-container').innerHTML = `
+      <div class="summary-card">
+        <div class="summary-heading">Empirical Synthesis</div>
+        ${"Intense vertical atmospheric updrafts combined with rotational wind shear generate destructive mesocyclones, demanding early warning systems."}
+      </div>
+    `;
+
+    document.getElementById('btn-initialize-sim').style.display = 'none';
+    const actionArea = document.getElementById('action-area');
+    actionArea.innerHTML = '<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>';
+    document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
+
+    setTutorMessage("<strong>Investigation Complete!</strong><br><br>You verified foundational principles of Severe Weather Hazards. Proceed to the concept deep-dive!");
+  });
+}
+
+function onProceedToVideo() {
+  if (labState.simAnimationId) cancelAnimationFrame(labState.simAnimationId);
+  document.getElementById('valerie-overlay').classList.remove('active');
+  document.getElementById('canvas-frame').classList.remove('glow');
+  clearObservationPrompt();
+  playStepTransition(6, 'Concept Deep-Dive', () => {
+    transitionScreen('screen-simulation', 'screen-video');
+    setTimeout(initConceptVideo, 450);
+  });
+}
+
+// Concept Video Player
+function formatTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+  return mins + ":" + secs;
+}
+
+function initConceptVideo() {
+  const player = document.getElementById('video-player');
+  const canvas = document.getElementById('video-canvas');
+  const width = player.clientWidth;
+  const height = player.clientHeight || Math.round(width * 9 / 16);
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  labState.videoCurrentTime = 0;
+  labState.isVideoPlaying = false;
+
+  setTimeout(() => {
+    document.getElementById('video-loading').classList.add('dismissed');
+    drawVideoFrame(0);
+  }, 1200);
+}
+
+function toggleVideoPlayback() {
+  labState.isVideoPlaying = !labState.isVideoPlaying;
+  document.getElementById('btn-toggle-video').textContent = labState.isVideoPlaying ? '⏸' : '▶';
+
+  if (labState.isVideoPlaying) {
+    let lastTimestamp = performance.now();
+    function runLoop(now) {
+      const delta = (now - lastTimestamp) / 1000;
+      lastTimestamp = now;
+      labState.videoCurrentTime = Math.min(labState.videoCurrentTime + delta, labState.videoDuration);
+
+      const percent = (labState.videoCurrentTime / labState.videoDuration) * 100;
+      document.getElementById('video-progress-fill').style.width = percent + "%";
+      document.getElementById('video-timestamp').textContent = formatTime(labState.videoCurrentTime) + " / " + formatTime(labState.videoDuration);
+
+      drawVideoFrame(labState.videoCurrentTime);
+      updateVideoCaption(labState.videoCurrentTime);
+
+      if (labState.videoCurrentTime >= labState.videoDuration) {
+        labState.isVideoPlaying = false;
+        document.getElementById('btn-toggle-video').textContent = '▶';
+        document.getElementById('btn-continue-to-quiz').classList.remove('hidden');
+        return;
+      }
+      labState.videoAnimationId = requestAnimationFrame(runLoop);
+    }
+    labState.videoAnimationId = requestAnimationFrame(runLoop);
+  } else {
+    cancelAnimationFrame(labState.videoAnimationId);
+  }
+}
+
+function updateVideoCaption(time) {
+  const currentCaption = VIDEO_CAPTIONS.find(c => time >= c.start && time < c.end);
+  const captionEl = document.getElementById('caption-text');
+  if (currentCaption) {
+    captionEl.textContent = currentCaption.text;
+    captionEl.classList.add('active');
+  } else {
+    captionEl.classList.remove('active');
+  }
+}
+
+function drawVideoFrame(time) {
+  const canvas = document.getElementById('video-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.width / dpr;
+  const height = canvas.height / dpr;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, width, height);
+  const cx = width / 2;
+  const cy = height / 2;
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = "bold " + Math.round(width * 0.04) + "px sans-serif";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText("Severe Weather Hazards", cx, cy - 20);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = Math.round(width * 0.024) + "px monospace";
+  ctx.fillText("Utah SEEd 3.1.3 · Grade 3 · Module 3007", cx, cy + 18);
+
+  ctx.resetTransform();
+}
+
+// Quiz Logic
+function showQuizQuestion(index) {
+  activeQuizIndex = index;
+  const item = QUIZ_ITEMS[index];
+  const progressPercent = (index / QUIZ_ITEMS.length) * 100;
+
+  document.getElementById('quiz-progress-fill').style.width = progressPercent + "%";
+  document.getElementById('quiz-counter-label').textContent = "Question " + (index + 1) + " of " + QUIZ_ITEMS.length;
+
+  const prevBtn = document.getElementById('btn-quiz-prev');
+  if (prevBtn) {
+    prevBtn.style.display = index > 0 ? 'inline-block' : 'none';
+  }
+
+  const questionCard = document.getElementById('card-quiz-question');
+  questionCard.style.opacity = '0';
+  questionCard.style.transform = 'translateX(24px)';
+  questionCard.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+
+  setTimeout(() => {
+    document.getElementById('quiz-question-text').textContent = item.question;
+    document.getElementById('quiz-hint-text').textContent = item.hint;
+    const existing = labState.quizAnswers.find(a => a.index === index);
+    const input = document.getElementById('quiz-answer-input');
+    input.value = existing ? existing.answer : '';
+    document.getElementById('btn-submit-quiz-answer').disabled = input.value.trim().length === 0;
+    questionCard.style.opacity = '1';
+    questionCard.style.transform = 'translateX(0)';
+    input.focus();
+  }, 180);
+}
+
+function onQuizAnswerSubmitted() {
+  const text = document.getElementById('quiz-answer-input').value.trim();
+  if (!text) return;
+  const existingIdx = labState.quizAnswers.findIndex(a => a.index === activeQuizIndex);
+  if (existingIdx >= 0) {
+    labState.quizAnswers[existingIdx].answer = text;
+  } else {
+    labState.quizAnswers.push({ index: activeQuizIndex, answer: text });
+  }
+
+  if (activeQuizIndex < QUIZ_ITEMS.length - 1) {
+    showQuizQuestion(activeQuizIndex + 1);
+  } else {
+    document.getElementById('quiz-progress-fill').style.width = '100%';
+    setTimeout(() => {
+      transitionScreen('screen-quiz', 'screen-results');
+      setTimeout(buildResultsSummary, 400);
+    }, 350);
+  }
+}
+
+function buildResultsSummary() {
+  const evaluations = labState.quizAnswers.map(item => {
+    const keywords = QUIZ_ITEMS[item.index].keywords;
+    const matches = keywords.filter(word => item.answer.toLowerCase().includes(word.toLowerCase()));
+    const score = Math.min(matches.length / Math.max(keywords.length * 0.45, 2), 1);
+    return { score, matches, answer: item.answer, index: item.index };
+  });
+
+  const averageScore = evaluations.reduce((sum, item) => sum + item.score, 0) / evaluations.length;
+  const scorePercentage = Math.round(averageScore * 100);
+
+  renderScoreRing(scorePercentage);
+  launchCelebrationParticles();
+
+  const grid = document.getElementById('results-feedback-grid');
+  grid.innerHTML = '';
+
+  const strengths = evaluations.filter(e => e.score >= 0.55);
+  const reviewAreas = evaluations.filter(e => e.score < 0.55);
+
+  if (strengths.length > 0) {
+    const card = document.createElement('div');
+    card.className = 'feedback-card success';
+    card.innerHTML = '<div class="feedback-card-heading">[ Academic Vocabulary Mastered ]</div>' +
+      strengths.map(s => '<p>• Question ' + (s.index + 1) + ': Excellent lexical precision with <em>' + s.matches.slice(0, 3).join(', ') + '</em></p>').join('');
+    grid.appendChild(card);
+  }
+
+  if (reviewAreas.length > 0) {
+    const card = document.createElement('div');
+    card.className = 'feedback-card review';
+    card.innerHTML = '<div class="feedback-card-heading">[ Vocabulary Expansion Needed ]</div>' +
+      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Integrate required terms: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
+    grid.appendChild(card);
+  }
+
+  const finalSummaryText = scorePercentage >= 80
+    ? "Exemplary Scientific Mastery: " + scorePercentage + "%! You fluently demonstrated academic vocabulary and conceptual mastery of Severe Weather Hazards."
+    : scorePercentage >= 55
+    ? "Proficient Scientific Performance: " + scorePercentage + "%. Sound conceptual grasp. Continue pairing descriptive ideas with Tier-2/Tier-3 terms."
+    : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: Severe Weather, Mesocyclone, Tornado, Flash Flood.";
+
+  document.getElementById('tutor-final-summary').textContent = finalSummaryText;
+}
+
+function renderScoreRing(percentage) {
+  const canvas = document.getElementById('score-ring-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 140;
+  const center = 70;
+  const radius = 50;
+  const color = percentage >= 80 ? '#10b981' : (percentage >= 55 ? '#38bdf8' : '#f59e0b');
+
+  let currentFrame = 0;
+  const totalFrames = 60;
+
+  function animate() {
+    ctx.clearRect(0, 0, size, size);
+    const progress = Math.min(currentFrame / totalFrames, 1);
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+    ctx.lineWidth = 10;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, -Math.PI / 2, -Math.PI / 2 + (percentage / 100) * 2 * Math.PI * progress);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 24px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(percentage * progress) + "%", center, center);
+
+    currentFrame++;
+    if (currentFrame <= totalFrames) requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function launchCelebrationParticles() {
+  const canvas = document.getElementById('celebration-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particleColors = ['#38bdf8', '#00f0ff', '#10b981', '#34d399', '#f59e0b', '#fbbf24', '#ec4899', '#8b5cf6', '#e2e8f0'];
+  const particles = [];
+  for (let i = 0; i < 160; i++) {
+    particles.push({
+      x: canvas.width * 0.5 + (Math.random() - 0.5) * 120,
+      y: canvas.height * 0.45 + (Math.random() - 0.5) * 80,
+      vx: (Math.random() - 0.5) * 18,
+      vy: -12 - Math.random() * 14,
+      size: 4 + Math.random() * 7,
+      color: particleColors[Math.floor(Math.random() * particleColors.length)],
+      rotation: Math.random() * Math.PI * 2,
+      angularVelocity: (Math.random() - 0.5) * 0.2,
+      isRectangle: Math.random() > 0.5,
+      opacity: 1,
+      gravity: 0.38 + Math.random() * 0.15
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.985;
+      p.rotation += p.angularVelocity;
+      if (p.y > canvas.height * 0.7) p.opacity -= 0.012;
+
+      if (p.opacity > 0) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        if (p.isRectangle) {
+          ctx.fillRect(-p.size, -p.size * 0.6, p.size * 2, p.size * 1.2);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+    labState.celebrationAnimationId = requestAnimationFrame(render);
+  }
+  render();
+}
+
+// Valerie Socratic AI Stub
+const valerieAI = {
+  isEnabled: false,
+  apiEndpoint: '/api/chat',
+  apiKey: '',
+  chatHistory: [],
+  async callTutorAPI(userMessage) {
+    return {
+      success: false,
+      reply: "Valerie Socratic Tutor is analyzing your query on Severe Weather Hazards. Remember to cite: Severe Weather and Mesocyclone."
+    };
+  }
+};
+
+// Wire Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+  initCosmicBackground();
+  initIntroIcon();
+
+  document.getElementById('btn-exit-intro').addEventListener('click', () => {
+    if (confirm('Exit Module 3007? Progress will not be saved.')) {
+      document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3007 Closed</div></div>';
+    }
+  });
+
+  document.getElementById('btn-open-standards').addEventListener('click', () => {
+    document.getElementById('modal-standards').classList.add('open');
+  });
+
+  document.getElementById('btn-close-standards').addEventListener('click', () => {
+    document.getElementById('modal-standards').classList.remove('open');
+  });
+
+  document.getElementById('btn-start-intro').addEventListener('click', () => {
+    cancelAnimationFrame(labState.introIconAnimationId);
+    transitionScreen('screen-intro', 'screen-hypothesis');
+    setTimeout(() => { document.getElementById('hypothesis-input').focus(); }, 450);
+  });
+
+  // Valerie Tutor Modal
+  const tutorModal = document.getElementById('modal-valerie-dialog');
+  const tutorChatHistory = document.getElementById('tutor-chat-history');
+  const tutorUserInput = document.getElementById('tutor-user-input');
+  const btnSendTutor = document.getElementById('btn-send-tutor-message');
+
+  document.getElementById('btn-ask-valerie').addEventListener('click', () => {
+    tutorModal.classList.add('open');
+    tutorUserInput.focus();
+  });
+  document.getElementById('btn-close-tutor-modal').addEventListener('click', () => {
+    tutorModal.classList.remove('open');
+  });
+
+  function handleTutorQuery() {
+    const q = tutorUserInput.value.trim();
+    if (!q) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble student';
+    bubble.textContent = q;
+    tutorChatHistory.appendChild(bubble);
+    tutorUserInput.value = '';
+    setTimeout(() => {
+      const resp = document.createElement('div');
+      resp.className = 'chat-bubble tutor';
+      resp.textContent = "Socratic guidance: Have you verified the behavior of Severe Weather in your telemetry readings?";
+      tutorChatHistory.appendChild(resp);
+      tutorChatHistory.scrollTop = tutorChatHistory.scrollHeight;
+    }, 400);
+  }
+
+  btnSendTutor.addEventListener('click', handleTutorQuery);
+  tutorUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleTutorQuery();
+  });
+
+  // Hypothesis Submission
+  const hypothesisInput = document.getElementById('hypothesis-input');
+  const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
+
+  hypothesisInput.addEventListener('input', () => {
+    hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+  });
+
+  hypothesisInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!hypothesisSubmitBtn.disabled) hypothesisSubmitBtn.click();
+    }
+  });
+
+  hypothesisSubmitBtn.addEventListener('click', () => {
+    labState.hypothesisText = hypothesisInput.value.trim();
+    hypothesisSubmitBtn.disabled = true;
+    hypothesisInput.disabled = true;
+
+    document.getElementById('tutor-hypothesis-text').textContent = "Hypothesis registered. Initiating empirical parameter testing in simulation environment...";
+    document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
+
+    setTimeout(() => {
+      playStepTransition(1, STEP_LABELS[0], () => {
+        transitionScreen('screen-hypothesis', 'screen-simulation');
+        setTimeout(initSimulationLab, 400);
+      });
+    }, 1600);
+  });
+
+  // Controls & Nudge
+  function adjustChannel(channel, delta) {
+    if (channel === 'left') {
+      const s = document.getElementById('slider-left');
+      if (s.disabled) return;
+      labState.valLeft = Math.max(10, Math.min(70, labState.valLeft + delta));
+    } else {
+      const s = document.getElementById('slider-right');
+      if (s.disabled) return;
+      labState.valRight = Math.max(50, Math.min(450, labState.valRight + delta));
+    }
+    updateTelemetryDisplay();
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+      labState.hasReachedFirstThreshold = true;
+      onTriggerObservation1();
+    }
+  }
+
+  document.querySelectorAll('.btn-nudge').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const ch = e.currentTarget.getAttribute('data-channel');
+      const d = parseInt(e.currentTarget.getAttribute('data-delta'), 10);
+      adjustChannel(ch, d);
+    });
+  });
+
+  document.getElementById('slider-left').addEventListener('input', (e) => {
+    if (document.getElementById('slider-left').disabled) return;
+    labState.valLeft = parseFloat(e.target.value);
+    updateTelemetryDisplay();
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+      labState.hasReachedFirstThreshold = true;
+      onTriggerObservation1();
+    }
+  });
+
+  document.getElementById('slider-right').addEventListener('input', (e) => {
+    if (document.getElementById('slider-right').disabled) return;
+    labState.valRight = parseFloat(e.target.value);
+    updateTelemetryDisplay();
+  });
+
+  document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
+
+  window.addEventListener('resize', () => {
+    const canvas = document.getElementById('sim-canvas');
+    const frame = document.getElementById('canvas-frame');
+    if (canvas && frame && frame.clientWidth > 0) {
+      const w = frame.clientWidth;
+      const h = Math.round(w * 0.50);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      if (!labState.isSimRunning) drawSimCanvas(canvas.getContext('2d'), [w, h]);
+    }
+  });
+
+  // Video Controls
+  document.getElementById('btn-toggle-video').addEventListener('click', toggleVideoPlayback);
+  document.getElementById('video-progress-track').addEventListener('click', (e) => {
+    const track = e.currentTarget;
+    labState.videoCurrentTime = (e.offsetX / track.clientWidth) * labState.videoDuration;
+    drawVideoFrame(labState.videoCurrentTime);
+    updateVideoCaption(labState.videoCurrentTime);
+    document.getElementById('video-progress-fill').style.width = ((labState.videoCurrentTime / labState.videoDuration) * 100) + "%";
+  });
+
+  document.getElementById('btn-continue-to-quiz').addEventListener('click', () => {
+    if (labState.videoAnimationId) cancelAnimationFrame(labState.videoAnimationId);
+    transitionScreen('screen-video', 'screen-quiz');
+    setTimeout(() => { showQuizQuestion(0); }, 350);
+  });
+
+  // Quiz Listeners with Enter Support and Previous Question Navigation
+  const quizInput = document.getElementById('quiz-answer-input');
+  const quizSubmitBtn = document.getElementById('btn-submit-quiz-answer');
+  const quizPrevBtn = document.getElementById('btn-quiz-prev');
+
+  quizInput.addEventListener('input', () => {
+    quizSubmitBtn.disabled = quizInput.value.trim().length === 0;
+  });
+
+  quizInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!quizSubmitBtn.disabled) onQuizAnswerSubmitted();
+    }
+  });
+
+  quizSubmitBtn.addEventListener('click', onQuizAnswerSubmitted);
+
+  if (quizPrevBtn) {
+    quizPrevBtn.addEventListener('click', () => {
+      if (activeQuizIndex > 0) showQuizQuestion(activeQuizIndex - 1);
+    });
+  }
+
+  document.getElementById('btn-finish-module').addEventListener('click', () => {
+    [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
+      .forEach(id => id && cancelAnimationFrame(id));
+    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Completed!</div><div style="color:#94a3b8;font-size:16px;font-family:monospace">All empirical data and lexical scores logged.</div></div>';
+  });
+});
+</script>
+</body>
+</html>
