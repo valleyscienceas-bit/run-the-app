@@ -771,7 +771,7 @@ async function startServer() {
         student,
         teacherData
       );
-      if (!authz.ok) {
+      if (authz.ok === false) {
         return res.status(authz.status).json({ error: authz.error });
       }
 
