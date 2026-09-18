@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 3001 — Balanced Forces | Valley Science</title>
+<title>Module 3016 — Cooperative Ethology & Group Defense | Valley Science</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -57,14 +57,8 @@ body::before {
 }
 
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes floatGentle {
@@ -196,10 +190,7 @@ body::before {
 }
 
 /* Intro Screen */
-#screen-intro {
-  flex-direction: column;
-}
-
+#screen-intro { flex-direction: column; }
 .intro-grid {
   position: absolute;
   inset: 0;
@@ -392,26 +383,6 @@ body::before {
   margin-top: 4px;
 }
 
-.modal-dialog h2 {
-  color: #f8fafc;
-  font-size: 22px;
-  font-weight: 900;
-  margin-bottom: 14px;
-}
-
-.modal-dialog p,
-.modal-dialog li {
-  color: #94a3b8;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.modal-dialog li {
-  text-align: left;
-  margin-left: 18px;
-  margin-bottom: 8px;
-}
-
 /* Hypothesis Screen */
 #screen-hypothesis {
   flex-direction: column;
@@ -475,7 +446,7 @@ body::before {
   box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
 }
 
-/* Simulation Screen */
+/* Simulation Screen - 2:3 Ratio */
 #screen-simulation {
   flex-direction: row;
   align-items: stretch;
@@ -502,7 +473,7 @@ body::before {
   pointer-events: all;
 }
 
-/* Dashboard Sidebar (40%) */
+/* Sidebar Dashboard (40%) */
 .sidebar {
   width: 40%;
   min-width: 320px;
@@ -527,14 +498,8 @@ body::before {
   gap: 12px;
 }
 
-.sidebar-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.25);
-  border-radius: 3px;
-}
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 3px; }
 
 .sidebar-action {
   padding: 14px 16px 18px;
@@ -562,17 +527,8 @@ body::before {
   animation: floatGentle 4s ease-in-out infinite;
 }
 
-.tutor-name {
-  font-size: 14px;
-  font-weight: 900;
-  color: #f8fafc;
-}
-
-.tutor-role {
-  font-size: 11px;
-  color: #94a3b8;
-  font-family: 'JetBrains Mono', monospace;
-}
+.tutor-name { font-size: 14px; font-weight: 900; color: #f8fafc; }
+.tutor-role { font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; }
 
 .btn-ask-tutor {
   background: rgba(14, 165, 233, 0.12);
@@ -607,12 +563,7 @@ body::before {
   transition: all 0.25s ease;
 }
 
-.steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
+.steps-list { display: flex; flex-direction: column; gap: 5px; }
 .step-item {
   display: flex;
   align-items: center;
@@ -670,14 +621,8 @@ body::before {
   transition: color 0.25s ease;
 }
 
-.step-item.active .step-title {
-  color: #38bdf8;
-  font-weight: 800;
-}
-
-.step-item.done .step-title {
-  color: #a7f3d0;
-}
+.step-item.active .step-title { color: #38bdf8; font-weight: 800; }
+.step-item.done .step-title { color: #a7f3d0; }
 
 .telemetry-grid {
   display: grid;
@@ -718,13 +663,7 @@ body::before {
   animation: fadeUp 0.35s ease both;
 }
 
-.observation-prompt {
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.55;
-  font-weight: 600;
-}
-
+.observation-prompt { font-size: 13px; color: #cbd5e1; line-height: 1.55; font-weight: 600; }
 .observation-textarea {
   width: 100%;
   background: rgba(10, 15, 26, 0.85);
@@ -800,11 +739,7 @@ body::before {
   box-shadow: 0 0 44px rgba(16, 185, 129, 0.4);
 }
 
-#sim-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-}
+#sim-canvas { display: block; width: 100%; height: auto; }
 
 .canvas-standby-overlay {
   position: absolute;
@@ -820,27 +755,11 @@ body::before {
   transition: opacity 0.45s ease;
 }
 
-.canvas-standby-overlay.dismissed {
-  opacity: 0;
-  pointer-events: none;
-}
+.canvas-standby-overlay.dismissed { opacity: 0; pointer-events: none; }
+.standby-tag { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: #38bdf8; letter-spacing: 0.15em; }
+.standby-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
 
-.standby-tag {
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  color: #38bdf8;
-  letter-spacing: 0.15em;
-}
-
-.standby-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 1px;
-}
-
-/* Controls Under Canvas */
+/* In-Lab Controls */
 .lab-controls-panel {
   width: 100%;
   max-width: 920px;
@@ -863,7 +782,7 @@ body::before {
   align-items: center;
 }
 
-.thruster-card {
+.control-card {
   background: rgba(10, 15, 26, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 12px;
@@ -874,56 +793,29 @@ body::before {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.thruster-card.left {
-  border-left: 3px solid #38bdf8;
-}
+.control-card.left { border-left: 3px solid #38bdf8; }
+.control-card.right { border-right: 3px solid #f59e0b; }
+.control-card.left.active { border-color: rgba(56, 189, 248, 0.5); box-shadow: 0 0 16px rgba(56, 189, 248, 0.2); }
+.control-card.right.active { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 16px rgba(245, 158, 11, 0.2); }
 
-.thruster-card.right {
-  border-right: 3px solid #f59e0b;
-}
-
-.thruster-card.left.active {
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
-}
-
-.thruster-card.right.active {
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
-}
-
-.thruster-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.thruster-title {
+.control-header { display: flex; justify-content: space-between; align-items: center; }
+.control-title {
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
 }
+.control-card.left .control-title { color: #38bdf8; }
+.control-card.right .control-title { color: #f59e0b; }
 
-.thruster-card.left .thruster-title { color: #38bdf8; }
-.thruster-card.right .thruster-title { color: #f59e0b; }
-
-.thruster-readout {
+.control-readout {
   font-size: 19px;
   font-weight: 900;
   font-family: 'JetBrains Mono', monospace;
 }
-
-.thruster-card.left .thruster-readout {
-  color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-}
-
-.thruster-card.right .thruster-readout {
-  color: #f59e0b;
-  text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
-}
+.control-card.left .control-readout { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+.control-card.right .control-readout { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
 
 input[type=range].slider-control {
   -webkit-appearance: none;
@@ -936,12 +828,9 @@ input[type=range].slider-control {
   transition: all 0.15s ease;
 }
 
-input[type=range].slider-control:disabled {
-  opacity: 0.28;
-  cursor: not-allowed;
-}
+input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; }
 
-.thruster-card.left input[type=range].slider-control::-webkit-slider-thumb {
+.control-card.left input[type=range].slider-control::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 24px;
   height: 24px;
@@ -950,10 +839,9 @@ input[type=range].slider-control:disabled {
   cursor: pointer;
   border: 2px solid #bae6fd;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-  transition: transform 0.12s ease;
 }
 
-.thruster-card.right input[type=range].slider-control::-webkit-slider-thumb {
+.control-card.right input[type=range].slider-control::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 24px;
   height: 24px;
@@ -962,19 +850,9 @@ input[type=range].slider-control:disabled {
   cursor: pointer;
   border: 2px solid #fde68a;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
-  transition: transform 0.12s ease;
 }
 
-input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-.nudge-buttons {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-}
-
+.nudge-buttons { display: flex; gap: 6px; justify-content: center; }
 .btn-nudge {
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -994,12 +872,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   border-color: rgba(56, 189, 248, 0.4);
 }
 
-.btn-nudge:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-}
-
-.net-force-display {
+.center-display {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1012,7 +885,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   border-radius: 12px;
 }
 
-.net-force-label {
+.center-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: #94a3b8;
@@ -1020,7 +893,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   letter-spacing: 0.12em;
 }
 
-.net-force-value {
+.center-value {
   font-size: 18px;
   font-weight: 900;
   font-family: 'JetBrains Mono', monospace;
@@ -1040,7 +913,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
-.status-pill.balanced {
+.status-pill.nominal {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
   border-color: #10b981;
@@ -1048,19 +921,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   animation: pulseEmerald 2s infinite;
 }
 
-.status-pill.left-pull {
-  background: rgba(14, 165, 233, 0.15);
-  color: #38bdf8;
-  border-color: #38bdf8;
-}
-
-.status-pill.right-pull {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border-color: #f59e0b;
-}
-
-.btn-confirm-equilibrium {
+.btn-confirm-action {
   background: linear-gradient(135deg, #059669, #047857);
   border: 1px solid rgba(52, 211, 153, 0.6);
   color: #ffffff;
@@ -1078,12 +939,6 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   margin-top: 2px;
 }
 
-.btn-confirm-equilibrium:hover {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 0 24px rgba(52, 211, 153, 0.7);
-  transform: scale(1.02);
-}
-
 /* Interstellar Wave Transition */
 #step-transition-layer {
   position: fixed;
@@ -1096,17 +951,8 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   -webkit-backdrop-filter: blur(12px) saturate(130%);
 }
 
-#step-transition-layer.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-#transition-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
+#step-transition-layer.active { opacity: 1; pointer-events: all; }
+#transition-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 .transition-hud {
   position: absolute;
@@ -1122,10 +968,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.transition-hud.show {
-  opacity: 1;
-  transform: scale(1);
-}
+.transition-hud.show { opacity: 1; transform: scale(1); }
 
 .transition-card {
   background: rgba(15, 23, 42, 0.85);
@@ -1149,27 +992,11 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   text-transform: uppercase;
 }
 
-.transition-step-label {
-  font-size: 15px;
-  color: #cbd5e1;
-  font-weight: 700;
-}
+.transition-step-label { font-size: 15px; color: #cbd5e1; font-weight: 700; }
 
 /* Video Deep Dive */
-#screen-video {
-  flex-direction: column;
-  padding: 36px 20px;
-  overflow-y: auto;
-}
-
-.video-container {
-  max-width: 760px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
+#screen-video { flex-direction: column; padding: 36px 20px; overflow-y: auto; }
+.video-container { max-width: 760px; width: 100%; display: flex; flex-direction: column; gap: 18px; }
 .video-player {
   position: relative;
   width: 100%;
@@ -1181,12 +1008,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.1);
 }
 
-#video-canvas {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
+#video-canvas { width: 100%; height: auto; display: block; }
 .video-loading-screen {
   position: absolute;
   inset: 0;
@@ -1198,11 +1020,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   gap: 14px;
   transition: opacity 0.6s ease, visibility 0.6s ease;
 }
-
-.video-loading-screen.dismissed {
-  opacity: 0;
-  visibility: hidden;
-}
+.video-loading-screen.dismissed { opacity: 0; visibility: hidden; }
 
 .spinner {
   width: 48px;
@@ -1236,13 +1054,8 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   opacity: 0;
   transform: translateY(8px);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
-
-.caption-bubble.active {
-  opacity: 1;
-  transform: translateY(0);
-}
+.caption-bubble.active { opacity: 1; transform: translateY(0); }
 
 .video-controls {
   position: absolute;
@@ -1257,10 +1070,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
-.video-player:hover .video-controls {
-  opacity: 1;
-}
+.video-player:hover .video-controls { opacity: 1; }
 
 .btn-play {
   width: 36px;
@@ -1275,135 +1085,29 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   color: #ffffff;
   font-size: 13px;
   flex-shrink: 0;
-  transition: transform 0.15s ease;
-  box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
 }
 
-.btn-play:hover {
-  transform: scale(1.1);
-}
-
-.progress-track {
-  flex: 1;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #38bdf8;
-  border-radius: 3px;
-  width: 0%;
-  box-shadow: 0 0 8px #38bdf8;
-}
-
-.timestamp {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #94a3b8;
-}
+.progress-track { flex: 1; height: 5px; background: rgba(255, 255, 255, 0.15); border-radius: 3px; cursor: pointer; position: relative; }
+.progress-fill { height: 100%; background: #38bdf8; border-radius: 3px; width: 0%; box-shadow: 0 0 8px #38bdf8; }
+.timestamp { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8; }
 
 /* Quiz Screen */
-#screen-quiz {
-  flex-direction: column;
-  padding: 40px 20px;
-  overflow-y: auto;
-}
+#screen-quiz { flex-direction: column; padding: 40px 20px; overflow-y: auto; }
+.quiz-container { max-width: 660px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+.quiz-progress-bar { width: 100%; height: 6px; background: rgba(30, 41, 59, 0.8); border-radius: 3px; overflow: hidden; }
+.quiz-progress-fill { height: 100%; background: #38bdf8; border-radius: 3px; transition: width 0.4s ease; box-shadow: 0 0 10px #38bdf8; }
 
-.quiz-container {
-  max-width: 660px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.quiz-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: rgba(30, 41, 59, 0.8);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.quiz-progress-fill {
-  height: 100%;
-  background: #38bdf8;
-  border-radius: 3px;
-  transition: width 0.4s ease;
-  box-shadow: 0 0 10px #38bdf8;
-}
-
-.quiz-card h3 {
-  font-size: 18px;
-  font-weight: 900;
-  color: #f8fafc;
-  line-height: 1.45;
-  margin-bottom: 8px;
-}
-
-.quiz-hint {
-  font-size: 13px;
-  color: #94a3b8;
-  font-style: italic;
-  font-weight: 600;
-}
+.quiz-card h3 { font-size: 18px; font-weight: 900; color: #f8fafc; line-height: 1.45; margin-bottom: 8px; }
+.quiz-hint { font-size: 13px; color: #94a3b8; font-style: italic; font-weight: 600; }
 
 /* Results Screen */
-#screen-results {
-  flex-direction: column;
-  padding: 40px 20px;
-  overflow-y: auto;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-#celebration-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.results-container {
-  max-width: 700px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px 0 40px;
-  position: relative;
-  z-index: 3;
-}
-
-.results-header {
-  text-align: center;
-  animation: fadeUp 0.45s ease both;
-}
-
-.results-header h2 {
-  font-size: 32px;
-  font-weight: 900;
-  color: #f8fafc;
-  letter-spacing: -0.5px;
-  text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
-}
-
-.score-ring-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.results-breakdown-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+#screen-results { flex-direction: column; padding: 40px 20px; overflow-y: auto; align-items: center; justify-content: flex-start; }
+#celebration-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.results-container { max-width: 700px; width: 100%; display: flex; flex-direction: column; gap: 20px; padding: 20px 0 40px; position: relative; z-index: 3; }
+.results-header { text-align: center; animation: fadeUp 0.45s ease both; }
+.results-header h2 { font-size: 32px; font-weight: 900; color: #f8fafc; letter-spacing: -0.5px; text-shadow: 0 0 24px rgba(56, 189, 248, 0.35); }
+.score-ring-wrapper { display: flex; justify-content: center; }
+.results-breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .feedback-card {
   background: rgba(15, 23, 42, 0.8);
@@ -1413,61 +1117,18 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
-
-.feedback-card.success {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: rgba(16, 185, 129, 0.06);
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.12);
-}
-
-.feedback-card.review {
-  border-color: rgba(245, 158, 11, 0.45);
-  background: rgba(245, 158, 11, 0.06);
-  box-shadow: 0 0 18px rgba(245, 158, 11, 0.12);
-}
-
-.feedback-card-heading {
-  font-size: 10.5px;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
+.feedback-card.success { border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.06); }
+.feedback-card.review { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.06); }
+.feedback-card-heading { font-size: 10.5px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
 .feedback-card.success .feedback-card-heading { color: #34d399; }
 .feedback-card.review .feedback-card-heading { color: #fbbf24; }
+.feedback-card p { font-size: 13px; color: #cbd5e1; line-height: 1.65; margin-bottom: 4px; font-weight: 600; }
 
-.feedback-card p {
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.65;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
-
-/* Responsive */
 @media screen and (max-width: 1050px) {
-  #screen-simulation {
-    flex-direction: column;
-  }
-  .sidebar {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    max-height: 38vh;
-    border-right: none;
-    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-  }
-  .lab-stage {
-    flex: 1;
-    min-height: 62vh;
-    padding: 12px;
-  }
-  .controllers-layout {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
+  #screen-simulation { flex-direction: column; }
+  .sidebar { width: 100%; max-width: 100%; height: auto; max-height: 38vh; border-right: none; border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
+  .lab-stage { flex: 1; min-height: 62vh; padding: 12px; }
+  .controllers-layout { grid-template-columns: 1fr; gap: 10px; }
 }
 </style>
 </head>
@@ -1482,7 +1143,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
     <div class="transition-card">
       <div class="badge">NEXT STEP</div>
       <div class="transition-step-number" id="transition-step-number">STEP 2</div>
-      <div class="transition-step-label" id="transition-step-label">Fire Left Rocket</div>
+      <div class="transition-step-label" id="transition-step-label">2. Foraging Range Sweep</div>
     </div>
   </div>
 </div>
@@ -1492,18 +1153,18 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   <div class="intro-grid"></div>
   <div class="intro-topbar">
     <button class="btn-secondary" id="btn-exit-intro">✕ Exit</button>
-    <button class="btn-secondary" id="btn-open-standards">ⓘ What You'll Learn</button>
+    <button class="btn-secondary" id="btn-open-standards">ⓘ Standards &amp; Vocabulary</button>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:70px 20px 20px;z-index:5;max-width:640px;animation:fadeUp .6s ease both">
-    <div class="badge">MS-PS2-1 · Grade 8 · Module 3001</div>
-    <h1 class="intro-title">Balanced<br><span>Forces</span></h1>
+    <div class="badge">Utah SEEd 3.2.4 · Grade 3 · Module 3016</div>
+    <h1 class="intro-title">Behavioral<br><span>Traits</span></h1>
     <canvas id="icon-canvas" width="280" height="110"></canvas>
     <div class="terminal-box">
       <span id="story-text"></span><span class="cursor-blink" id="cursor-blink"></span>
     </div>
     <div style="margin-top:6px">
       <button class="btn-primary btn-launch" id="btn-start-intro" style="opacity:0;pointer-events:none;transform:translateY(8px)">
-        Launch Space Lab →
+        Launch Lab Simulation →
       </button>
     </div>
   </div>
@@ -1512,15 +1173,15 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 <!-- Standards Modal -->
 <div class="modal-overlay" id="modal-standards">
   <div class="modal-dialog">
-    <span class="badge" style="margin-bottom:12px;display:inline-block">MS-PS2-1</span>
-    <h2>What You'll Learn in This Lab</h2>
+    <span class="badge" style="margin-bottom:12px;display:inline-block">3.2.4</span>
+    <h2>Scientific Standards &amp; Vocabulary</h2>
     <ul>
-      <li><strong>Balanced Forces:</strong> What happens when two opposite pushes or pulls have equal strength.</li>
-      <li><strong>Total Net Force:</strong> Why equal opposite forces cancel each other out to zero (0 N).</li>
-      <li><strong>Newton's First Law:</strong> When the total net force is zero, an object will not speed up or slow down!</li>
+      <li><strong>Standard:</strong> Strand 2: Effects of Traits on Survival (3.2.4).</li>
+      <li><strong>Target Vocabulary:</strong> Behavioral Trait, Cooperative Hunting, Pack Dynamics, Group Defense.</li>
+      <li><strong>Core Directive:</strong> Rigorous academic terminology enforced across all Socratic interactions.</li>
     </ul>
-    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science standards.</p>
-    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Got it!</button>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah State Science with Engineering Education (SEEd) Standards.</p>
+    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Acknowledge</button>
   </div>
 </div>
 
@@ -1532,23 +1193,22 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
         <div class="tutor-avatar" style="width:32px;height:32px"></div>
         <div>
           <h3 style="color:#f8fafc;font-size:16px;font-weight:900">Ask Valerie</h3>
-          <span style="color:#38bdf8;font-size:11px;font-family:'JetBrains Mono',monospace" id="tutor-connection-status">Online (Socratic Mode)</span>
+          <span style="color:#38bdf8;font-size:11px;font-family:'JetBrains Mono',monospace" id="tutor-connection-status">Online (Socratic AI)</span>
         </div>
       </div>
       <button class="btn-secondary" id="btn-close-tutor-modal" style="padding:4px 10px;font-size:12px">✕</button>
     </div>
-
     <div class="tutor-dialog-body">
       <div class="tutor-chat-log" id="tutor-chat-history">
         <div class="chat-bubble tutor">
-          Hi! I am Valerie, your science guide. What questions do you have about the forces on the robot right now?
+          Greetings! I am Valerie, your Socratic science tutor. What empirical observations or questions do you have regarding Behavioral Traits? Remember to utilize Tier-2/Tier-3 academic vocabulary.
         </div>
       </div>
       <div class="tutor-chat-input-row">
         <input type="text" class="tutor-chat-input" id="tutor-user-input" placeholder="Ask Valerie a question about this experiment..." autocomplete="off">
         <button class="btn-primary" id="btn-send-tutor-message" style="padding:8px 18px;font-size:13px">Ask</button>
       </div>
-      <div class="tutor-status-note" id="tutor-api-status-note">Valerie AI API endpoint ready. Custom API integration pending.</div>
+      <div class="tutor-status-note" id="tutor-api-status-note">Valerie AI API endpoint ready. Socratic validation active.</div>
     </div>
   </div>
 </div>
@@ -1557,18 +1217,16 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 <div class="screen hidden" id="screen-hypothesis">
   <div class="hypothesis-container">
     <div class="card">
-      <div class="section-label">The Mystery</div>
-      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Why Isn't the Robot Moving?</h3>
-      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">Two space rockets are hooked up to a 50 kg robot on a super smooth, frictionless track. Sometimes the robot zooms across space — other times it sits completely still even when both rockets fire at full blast! Let's find out why.</p>
+      <div class="section-label">Scientific Investigation</div>
+      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Cooperative Ethology & Group Defense</h3>
+      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">Wildlife biologists in Yellowstone observe Canis lupus wolf packs coordinating hunting vectors against massive bison, while lone dispersing wolves face elevated mortality and foraging deficits.</p>
     </div>
     <div class="card">
-      <div class="section-label">Your Prediction</div>
-      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">
-        What will happen to the robot when both rockets pull with the <em>exact same strength</em>?
-      </p>
-      <textarea class="text-input" id="hypothesis-input" placeholder="I think the robot will... because..."></textarea>
+      <div class="section-label">Hypothesis Formulation</div>
+      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">Why does social group formation yield higher foraging success and caloric intake per capita than solitary foraging?</p>
+      <textarea class="text-input" id="hypothesis-input" placeholder="I hypothesize that coordinated group behaviors allow packs to overcome defensive barriers of large prey that..."></textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Guess →</button>
+        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Hypothesis →</button>
       </div>
     </div>
     <div class="tutor-speech-bubble hidden" id="tutor-hypothesis-reply">
@@ -1578,8 +1236,8 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   </div>
 </div>
 
-<!-- Simulation Screen -->
-<div id="version-tag">v6.3 · INTERSTELLAR HYBRID</div>
+<!-- Simulation Screen (2:3 Ratio) -->
+<div id="version-tag">Module 3016 · V7 HYBRID</div>
 <div class="screen hidden" id="screen-simulation">
   <div id="valerie-overlay"></div>
 
@@ -1589,28 +1247,47 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
       <div class="tutor-avatar"></div>
       <div>
         <div class="tutor-name">Valerie</div>
-        <div class="tutor-role">Your Science Guide</div>
+        <div class="tutor-role">Socratic AI Mentor</div>
       </div>
       <button class="btn-ask-tutor" id="btn-ask-valerie">Ask Valerie</button>
     </div>
 
     <div class="sidebar-scroll">
-      <div class="tutor-message-panel" id="tutor-panel">Getting lab ready...</div>
+      <div class="tutor-message-panel" id="tutor-panel">Initializing scientific laboratory...</div>
 
       <nav class="steps-list">
-        <div class="step-item active" id="step-item-0"><div class="step-badge">1</div><div class="step-title">Get Ready</div></div>
-        <div class="step-item" id="step-item-1"><div class="step-badge">2</div><div class="step-title">Fire Left Rocket</div></div>
-        <div class="step-item" id="step-item-2"><div class="step-badge">3</div><div class="step-title">What Happened?</div></div>
-        <div class="step-item" id="step-item-3"><div class="step-badge">4</div><div class="step-title">Balance the Rockets</div></div>
-        <div class="step-item" id="step-item-4"><div class="step-badge">5</div><div class="step-title">Zero Net Force!</div></div>
-        <div class="step-item" id="step-item-5"><div class="step-badge">6</div><div class="step-title">What You Learned</div></div>
+        
+        <div class="step-item active" id="step-item-0">
+          <div class="step-badge">1</div>
+          <div class="step-title">1. Pack Roster Formation</div>
+        </div>
+        <div class="step-item " id="step-item-1">
+          <div class="step-badge">2</div>
+          <div class="step-title">2. Foraging Range Sweep</div>
+        </div>
+        <div class="step-item " id="step-item-2">
+          <div class="step-badge">3</div>
+          <div class="step-title">3. Coordinated Flanking Vector</div>
+        </div>
+        <div class="step-item " id="step-item-3">
+          <div class="step-badge">4</div>
+          <div class="step-title">4. Prey Encircling</div>
+        </div>
+        <div class="step-item " id="step-item-4">
+          <div class="step-badge">5</div>
+          <div class="step-title">5. Caloric Sharing Audit</div>
+        </div>
+        <div class="step-item " id="step-item-5">
+          <div class="step-badge">6</div>
+          <div class="step-title">6. Ethological Synthesis</div>
+        </div>
       </nav>
 
       <div class="telemetry-grid">
-        <div class="metric-card"><div class="metric-value" id="metric-net-force">0.0 N</div><div class="metric-label">Total Net Force</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-acceleration">0.00</div><div class="metric-label">Acceleration m/s²</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-velocity">0.00</div><div class="metric-label">Speed m/s</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-position">0.00</div><div class="metric-label">Position m</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-1">0.0</div><div class="metric-label">Hunt Success Probability</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-2">0.00</div><div class="metric-label">Injury Risk Index</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-3">0.00</div><div class="metric-label">Caloric Return / Wolf</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-4">0.00</div><div class="metric-label">Pack Fitness</div></div>
       </div>
 
       <div id="observation-container"></div>
@@ -1628,48 +1305,48 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
     <div class="canvas-frame" id="canvas-frame">
       <canvas id="sim-canvas"></canvas>
       <div class="canvas-standby-overlay" id="canvas-standby">
-        <div class="standby-tag">[ SPACE LAB STANDBY ]</div>
-        <div class="standby-text">Read Valerie's tips, then hit Start Experiment!</div>
+        <div class="standby-tag">[ SIMULATION STANDBY ]</div>
+        <div class="standby-text">Review parameters in dashboard, then launch!</div>
       </div>
     </div>
 
     <div class="lab-controls-panel">
       <div class="controllers-layout">
-        <!-- Left Thruster Controller -->
-        <div class="thruster-card left" id="card-thruster-left">
-          <div class="thruster-header">
-            <span class="thruster-title">Left Rocket [Pulls Left ←]</span>
-            <span class="thruster-readout" id="readout-left-force">0 N</span>
+        <!-- Left Control -->
+        <div class="control-card left" id="card-ctrl-left">
+          <div class="control-header">
+            <span class="control-title">Pack Group Cohort Size</span>
+            <span class="control-readout" id="readout-left">6 wolves</span>
           </div>
-          <input type="range" class="slider-control" id="slider-left" min="0" max="100" value="0" disabled>
+          <input type="range" class="slider-control" id="slider-left" min="1" max="12" value="6" step="1" disabled>
           <div class="nudge-buttons">
-            <button class="btn-nudge" data-thruster="left" data-delta="-10">-10</button>
-            <button class="btn-nudge" data-thruster="left" data-delta="-1">-1</button>
-            <button class="btn-nudge" data-thruster="left" data-delta="1">+1</button>
-            <button class="btn-nudge" data-thruster="left" data-delta="10">+10</button>
+            <button class="btn-nudge" data-channel="left" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-channel="left" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-channel="left" data-delta="1">+1</button>
+            <button class="btn-nudge" data-channel="left" data-delta="10">+10</button>
           </div>
         </div>
 
-        <!-- Center Net Force Readout -->
-        <div class="net-force-display">
-          <div class="net-force-label">Total Net Force ΣF</div>
-          <div class="net-force-value" id="chip-net-force">0.0 N</div>
-          <div class="status-pill" id="status-motion-pill">STILL</div>
+        <!-- Center Readout -->
+        <div class="center-display">
+          <div class="center-label">Hunt Success Probability</div>
+          <div class="center-value" id="chip-center-val">0.0 wolves</div>
+          <div class="status-pill nominal" id="status-main-pill">NOMINAL</div>
           <div id="balance-confirmation-container" style="width:100%"></div>
         </div>
 
-        <!-- Right Thruster Controller -->
-        <div class="thruster-card right" id="card-thruster-right">
-          <div class="thruster-header">
-            <span class="thruster-title">Right Rocket [Pulls Right →]</span>
-            <span class="thruster-readout" id="readout-right-force">0 N</span>
+        <!-- Right Control -->
+        <div class="control-card right" id="card-ctrl-right">
+          <div class="control-header">
+            <span class="control-title">Prey Biomass Mass</span>
+            <span class="control-readout" id="readout-right">500 kg</span>
           </div>
-          <input type="range" class="slider-control" id="slider-right" min="0" max="100" value="0" disabled>
+          <input type="range" class="slider-control" id="slider-right" min="50" max="900" value="500" step="25" disabled>
           <div class="nudge-buttons">
-            <button class="btn-nudge" data-thruster="right" data-delta="-10">-10</button>
-            <button class="btn-nudge" data-thruster="right" data-delta="-1">-1</button>
-            <button class="btn-nudge" data-thruster="right" data-delta="1">+1</button>
-            <button class="btn-nudge" data-thruster="right" data-delta="10">+10</button>
+            <button class="btn-nudge" data-channel="right" data-delta="-10">-10</button>
+            <button class="btn-nudge" data-channel="right" data-delta="-1">-1</button>
+            <button class="btn-nudge" data-channel="right" data-delta="1">+1</button>
+            <button class="btn-nudge" data-channel="right" data-delta="10">+10</button>
           </div>
         </div>
       </div>
@@ -1681,13 +1358,13 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 <div class="screen hidden" id="screen-video">
   <div class="video-container">
     <div class="section-label">Concept Deep-Dive</div>
-    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">Balanced Forces in Space and on Earth</h2>
-    <p style="font-size:14px;color:#94a3b8;font-weight:600">See how equal opposite forces create balance in everyday life</p>
+    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">Cooperative Behavioral Adaptations in Social Organisms</h2>
+    <p style="font-size:14px;color:#94a3b8;font-weight:600">Examining how pack cohesion and coordinated vigilance enhance species survival</p>
     <div class="video-player" id="video-player">
       <canvas id="video-canvas"></canvas>
       <div class="video-loading-screen" id="video-loading">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94a3b8">Loading video...</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#94a3b8">Buffering simulation media...</div>
       </div>
       <div class="caption-overlay"><span class="caption-bubble" id="caption-text"></span></div>
       <div class="video-controls">
@@ -1698,7 +1375,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
         <div class="timestamp" id="video-timestamp">0:00 / 0:30</div>
       </div>
     </div>
-    <button class="btn-primary hidden" id="btn-continue-to-quiz" style="align-self:center">Take Quick Quiz →</button>
+    <button class="btn-primary hidden" id="btn-continue-to-quiz" style="align-self:center">Take Lexical Assessment →</button>
   </div>
 </div>
 
@@ -1713,7 +1390,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
     <div class="card quiz-card" id="card-quiz-question" style="gap:14px;display:flex;flex-direction:column">
       <h3 id="quiz-question-text"></h3>
       <p class="quiz-hint" id="quiz-hint-text"></p>
-      <textarea class="text-input" id="quiz-answer-input" placeholder="Type your answer here in your own words (Press Enter to submit)..."></textarea>
+      <textarea class="text-input" id="quiz-answer-input" placeholder="Type your answer utilizing Tier-2/Tier-3 academic vocabulary (Press Enter to submit)..."></textarea>
       <div style="display:flex;justify-content:flex-end">
         <button class="btn-primary" id="btn-submit-quiz-answer" disabled>Submit Answer →</button>
       </div>
@@ -1726,8 +1403,8 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   <canvas id="celebration-canvas"></canvas>
   <div class="results-container">
     <div class="results-header">
-      <h2>MISSION COMPLETE!</h2>
-      <p>Module 3001: Balanced Forces &amp; Newton's First Law</p>
+      <h2>EVALUATION COMPLETE</h2>
+      <p>Module 3016: Cooperative Ethology & Group Defense</p>
     </div>
     <div class="score-ring-wrapper"><canvas id="score-ring-canvas" width="140" height="140"></canvas></div>
     <div class="results-breakdown-grid" id="results-feedback-grid"></div>
@@ -1735,12 +1412,11 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
       <div class="avatar-orb"></div>
       <p id="tutor-final-summary" style="color:#e2e8f0;font-size:14px;line-height:1.7;font-weight:600"></p>
     </div>
-    <button class="btn-primary" id="btn-finish-module" style="align-self:center">Finish Space Lab ✓</button>
+    <button class="btn-primary" id="btn-finish-module" style="align-self:center">Complete Module ✓</button>
   </div>
 </div>
 
 <script>
-// Polyfill for roundRect on older browser engines
 if (!CanvasRenderingContext2D.prototype.roundRect) {
   CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radius) {
     const r = Math.min(radius, w / 2, h / 2);
@@ -1758,13 +1434,13 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
   };
 }
 
-// Module State
 const labState = {
+  moduleId: 3016,
   currentStep: 0,
   hypothesisText: '',
   observations: [],
-  balancedLeftForce: 0,
-  balancedRightForce: 0,
+  valLeft: 6,
+  valRight: 500,
   quizAnswers: [],
   isSimRunning: false,
   simAnimationId: null,
@@ -1779,60 +1455,18 @@ const labState = {
   hasReachedSecondThreshold: false
 };
 
-const physicsState = {
-  leftForce: 0,
-  rightForce: 0,
-  mass: 50,
-  velocity: 0,
-  position: 0,
-  dt: 1 / 60
-};
-
-const STEP_LABELS = [
-  'Step 1: Get Ready',
-  'Step 2: Fire Left Rocket',
-  'Step 3: What Happened?',
-  'Step 4: Balance the Rockets',
-  'Step 5: Zero Net Force!',
-  'Step 6: What You Learned'
-];
-
-const VIDEO_CAPTIONS = [
-  { start: 0, end: 5, text: 'What are Balanced Forces?' },
-  { start: 5, end: 10, text: 'Two equal forces pulling in opposite directions...' },
-  { start: 10, end: 15, text: 'They cancel out: Total Net Force = 0!' },
-  { start: 15, end: 21, text: 'Zero Net Force means zero acceleration — no speeding up or slowing down!' },
-  { start: 21, end: 30, text: "That is Newton's First Law of Motion!" }
-];
-
-const QUIZ_ITEMS = [
-  {
-    question: "In your own words, what does it mean for forces to be 'balanced'? What is the total net force?",
-    hint: 'Think about what happened when both rockets pulled with the exact same number of Newtons.',
-    keywords: ['equal', 'same', 'cancel', 'zero', 'balanced', 'no change', 'constant', 'opposite', 'equilibrium']
-  },
-  {
-    question: 'A book sits completely still on your desk. Are the forces on it balanced or unbalanced? How do you know?',
-    hint: 'Is the book speeding up or slowing down? What does that tell you about the net force?',
-    keywords: ['balanced', 'zero', 'constant', 'acceleration', 'first law', 'net force', 'speed', 'velocity', 'equal', 'still']
-  },
-  {
-    question: "In the space lab, both rockets pulled with 60 N in opposite directions. What was the total net force, and why didn't the robot speed up?",
-    hint: 'What is 60 minus 60? What happens to acceleration when the net force is zero?',
-    keywords: ['zero', '0', 'cancel', 'balanced', 'no acceleration', 'stopped', 'constant', 'net', 'equal']
-  }
-];
+const STEP_LABELS = ["1. Pack Roster Formation","2. Foraging Range Sweep","3. Coordinated Flanking Vector","4. Prey Encircling","5. Caloric Sharing Audit","6. Ethological Synthesis"];
+const VIDEO_CAPTIONS = [{"start":0,"end":5,"text":"Behavioral traits encompass actions organisms perform to survive."},{"start":5,"end":10,"text":"Many carnivores and herbivores form social groups for collective advantage."},{"start":10,"end":15,"text":"Wolf packs cooperate to encircle and capture large ungulate prey like bison."},{"start":15,"end":21,"text":"Herds of musk oxen form defensive horns-out perimeters protecting calves."},{"start":21,"end":30,"text":"Group behavioral adaptations dramatically reduce individual mortality rates."}];
+const QUIZ_ITEMS = [{"question":"Define a 'behavioral trait' and explain how living in a pack serves as an evolutionary survival adaptation.","hint":"Action-based adaptation; collective hunting, mutual defense, and shared vigilance.","keywords":["behavioral trait","pack","survival","cooperative","hunting","adaptation"]},{"question":"Why does a solitary wolf attempting to hunt a 500 kg bison suffer a 90% failure and injury rate compared to a pack of six?","hint":"Bison defensive mass exceeds single-predator force capacity; packs divide attention and exhaust prey.","keywords":["pack","cooperative hunting","prey","bison","injury","mass"]},{"question":"Describe how migrating avian flocks flying in V-formation utilize aerodynamic group behaviors to conserve metabolic energy.","hint":"Upwash vortex from preceding bird's wings reduces aerodynamic drag for followers.","keywords":["migration","behavioral trait","group defense","flock","aerodynamic","energy"]}];
 
 let activeQuizIndex = 0;
 let observationCallback = null;
-let valerieSleepTimer = null;
 
-// Ambient Background Star Dust
+// Ambient Star Dust
 function initCosmicBackground() {
   const canvas = document.getElementById('cosmic-bg-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -1840,9 +1474,8 @@ function initCosmicBackground() {
   window.addEventListener('resize', resize);
   resize();
 
-  const particleCount = 65;
   const particles = [];
-  for (let i = 0; i < particleCount; i++) {
+  for (let i = 0; i < 60; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -1858,12 +1491,10 @@ function initCosmicBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
+      p.x += p.vx; p.y += p.vy;
       if (p.y < -10) p.y = canvas.height + 10;
       if (p.x < -10) p.x = canvas.width + 10;
       if (p.x > canvas.width + 10) p.x = -10;
-
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fillStyle = p.baseColor + p.alpha + ')';
@@ -1874,8 +1505,7 @@ function initCosmicBackground() {
   render();
 }
 
-// Interstellar Liquid Glass Step Wave Transition (2s Cinematic Arc)
-// Starts slow, decelerates to near-stop with gentle hover, then zooms across with screen shake
+// 2-Second Cinematic Interstellar Transition
 function playStepTransition(stepNumber, stepTitle, onComplete) {
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
@@ -1887,18 +1517,17 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  numberText.textContent = `STEP ${stepNumber}`;
-  labelText.textContent = stepTitle || `Step ${stepNumber}`;
+  numberText.textContent = "STEP " + stepNumber;
+  labelText.textContent = stepTitle || ("Step " + stepNumber);
 
   overlay.classList.add('active');
   hud.classList.add('show');
 
   const startTime = performance.now();
-  const duration = 2000; // Exact 2.0s cinematic sequence
+  const duration = 2000;
 
-  const glintCount = 36;
   const glints = [];
-  for (let i = 0; i < glintCount; i++) {
+  for (let i = 0; i < 36; i++) {
     glints.push({
       yRatio: Math.random(),
       relOffset: (Math.random() - 0.5) * 200,
@@ -1911,10 +1540,6 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
     const elapsed = now - startTime;
     const p = Math.min(elapsed / duration, 1);
 
-    // Cinematic 3-stage timing curve:
-    // 0.0 -> 0.45: Gentle start moving towards center screen (0 -> 0.38)
-    // 0.45 -> 0.70: Dramatic deceleration / near-stop hover at center (0.38 -> 0.46)
-    // 0.70 -> 1.00: High-speed hyperspace zoom across and off-screen (0.46 -> 1.0)
     let ease;
     if (p < 0.45) {
       const t = p / 0.45;
@@ -1924,18 +1549,14 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       ease = 0.38 + (Math.sin(t * Math.PI * 0.5)) * 0.08;
     } else {
       const t = (p - 0.70) / 0.30;
-      // Explosive acceleration zoom (quintic curve)
       ease = 0.46 + (t * t * t * t) * 0.54;
     }
 
-    // Subtle screen shake during high-speed zoom breakout (p >= 0.70)
-    let shakeX = 0;
-    let shakeY = 0;
     if (p >= 0.68 && p <= 0.94) {
       const shakeIntensity = Math.sin((p - 0.68) / 0.26 * Math.PI) * 5.5;
-      shakeX = (Math.random() - 0.5) * shakeIntensity;
-      shakeY = (Math.random() - 0.5) * shakeIntensity;
-      overlay.style.transform = `translate(${shakeX.toFixed(1)}px, ${shakeY.toFixed(1)}px)`;
+      const sx = (Math.random() - 0.5) * shakeIntensity;
+      const sy = (Math.random() - 0.5) * shakeIntensity;
+      overlay.style.transform = "translate(" + sx.toFixed(1) + "px, " + sy.toFixed(1) + "px)";
     } else {
       overlay.style.transform = 'translate(0px, 0px)';
     }
@@ -1950,12 +1571,10 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(waveFront - waveWidth, 0);
-
     for (let y = 0; y <= height; y += 20) {
       const curve = Math.sin((y / height) * Math.PI * 2 + p * Math.PI * 1.5) * 55;
       ctx.lineTo(waveFront + curve, y);
     }
-
     ctx.lineTo(waveFront - waveWidth - 80, height);
     ctx.closePath();
 
@@ -1971,7 +1590,6 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
     ctx.shadowBlur = 40;
     ctx.fill();
 
-    // Glinting interstellar starlight particles
     for (let i = 0; i < glints.length; i++) {
       const g = glints[i];
       const gx = waveFront - 60 + g.relOffset;
@@ -1979,18 +1597,15 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       if (gx > 0 && gx < width) {
         ctx.save();
         ctx.translate(gx, gy);
-        ctx.fillStyle = `rgba(255, 255, 255, ${g.alpha * (1 - Math.abs(p - 0.55) * 1.6)})`;
+        ctx.fillStyle = "rgba(255, 255, 255, " + (g.alpha * (1 - Math.abs(p - 0.55) * 1.6)) + ")";
         ctx.beginPath();
         ctx.arc(0, 0, g.size, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.strokeStyle = `rgba(56, 189, 248, ${g.alpha * 0.8})`;
+        ctx.strokeStyle = "rgba(56, 189, 248, " + (g.alpha * 0.8) + ")";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(-g.size * 2.8, 0);
-        ctx.lineTo(g.size * 2.8, 0);
-        ctx.moveTo(0, -g.size * 2.8);
-        ctx.lineTo(0, g.size * 2.8);
+        ctx.moveTo(-g.size * 2.8, 0); ctx.lineTo(g.size * 2.8, 0);
+        ctx.moveTo(0, -g.size * 2.8); ctx.lineTo(0, g.size * 2.8);
         ctx.stroke();
         ctx.restore();
       }
@@ -2007,23 +1622,21 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       if (onComplete) onComplete();
     }
   }
-
   requestAnimationFrame(renderFrame);
 }
 
-// Typing Animation for Incident Story
-const STORY_TEXT = "INCIDENT BRIEFING: Orbital Tug-Bot 3001 is on top of a smooth track. Rockets are pulling both ways, but the robot is not moving.\n\nYour mission: figure out why it is not moving, and prove the First Law of Newton.";
+// Typing Intro
+const STORY_TEXT = "INCIDENT BRIEFING: Wildlife biologists in Yellowstone observe Canis lupus wolf packs coordinating hunting vectors against massive bison, while lone dispersing wolves face elevated mortality and foraging deficits.\n\nMission Objective: Optimize pack hunting coordination and defensive perimeter formations to analyze how cooperative social behaviors enhance individual survival. Enforce target academic vocabulary: Behavioral Trait, Cooperative Hunting, Pack Dynamics, Group Defense.";
 let storyCharIndex = 0;
 
 function runTypewriter() {
   const container = document.getElementById('story-text');
   if (!container) return;
-
   if (storyCharIndex < STORY_TEXT.length) {
     const char = STORY_TEXT.charAt(storyCharIndex);
     container.innerHTML += char === '\n' ? '<br>' : char;
     storyCharIndex++;
-    setTimeout(runTypewriter, 14);
+    setTimeout(runTypewriter, 12);
   } else {
     setTimeout(() => {
       const launchButton = document.getElementById('btn-start-intro');
@@ -2031,40 +1644,19 @@ function runTypewriter() {
       launchButton.style.pointerEvents = 'all';
       launchButton.style.transform = 'translateY(0)';
       document.getElementById('cursor-blink').style.display = 'none';
-    }, 300);
+    }, 250);
   }
 }
 
-// Intro Icon Animation
 function initIntroIcon() {
   const canvas = document.getElementById('icon-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let frame = 0;
 
-  function drawVectorArrow(x1, y1, x2, y2, color, lineWidth) {
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const headLength = 11;
-    ctx.strokeStyle = ctx.fillStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
-    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
-    ctx.closePath();
-    ctx.fill();
-  }
-
   function render() {
     ctx.clearRect(0, 0, 280, 110);
-    const cx = 140;
-    const cy = 55;
-    const horizontalOffset = Math.sin(frame * 0.04) * 8;
+    const cx = 140, cy = 55;
     const floatBob = Math.sin(frame * 0.05) * 3.5;
 
     const glow = ctx.createRadialGradient(cx, cy + floatBob, 2, cx, cy + floatBob, 52);
@@ -2075,14 +1667,11 @@ function initIntroIcon() {
     ctx.arc(cx, cy + floatBob, 52, 0, Math.PI * 2);
     ctx.fill();
 
-    drawVectorArrow(cx - 22 - horizontalOffset, cy + floatBob, cx - 96 - horizontalOffset, cy + floatBob, '#38bdf8', 3.5);
-    drawVectorArrow(cx + 22 + horizontalOffset, cy + floatBob, cx + 96 + horizontalOffset, cy + floatBob, '#f59e0b', 3.5);
-
     ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(cx - 20, cy - 20 + floatBob, 40, 40, 8);
+    ctx.roundRect(cx - 35, cy - 25 + floatBob, 70, 50, 8);
     ctx.fill();
     ctx.stroke();
 
@@ -2090,17 +1679,18 @@ function initIntroIcon() {
     ctx.font = 'bold 11px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('ΣF=0', cx, cy + floatBob);
+    ctx.fillText("3.2.4", cx, cy + floatBob - 6);
+    ctx.fillStyle = '#a7f3d0';
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.fillText("Behavioral Trait", cx, cy + floatBob + 10);
 
     frame++;
     labState.introIconAnimationId = requestAnimationFrame(render);
   }
-
   render();
-  setTimeout(runTypewriter, 400);
+  setTimeout(runTypewriter, 350);
 }
 
-// Screen Transition Helper
 function transitionScreen(fromScreenId, toScreenId) {
   const fromScreen = document.getElementById(fromScreenId);
   const toScreen = document.getElementById(toScreenId);
@@ -2122,15 +1712,12 @@ function transitionScreen(fromScreenId, toScreenId) {
       requestAnimationFrame(() => {
         toScreen.style.opacity = '1';
         toScreen.style.transform = 'translateX(0)';
-        setTimeout(() => {
-          toScreen.style.cssText = '';
-        }, 400);
+        setTimeout(() => { toScreen.style.cssText = ''; }, 400);
       });
     });
   }, 300);
 }
 
-// Tutor Guidance Update
 function setTutorMessage(htmlContent) {
   const panel = document.getElementById('tutor-panel');
   panel.style.opacity = '0';
@@ -2145,28 +1732,15 @@ function setTutorMessage(htmlContent) {
 
 function updateStepNavigation(activeStepIndex) {
   for (let i = 0; i <= 5; i++) {
-    const item = document.getElementById(`step-item-${i}`);
+    const item = document.getElementById("step-item-" + i);
     if (!item) continue;
     item.classList.remove('active', 'done');
-    if (i < activeStepIndex) {
-      item.classList.add('done');
-    } else if (i === activeStepIndex) {
-      item.classList.add('active');
-    }
+    if (i < activeStepIndex) item.classList.add('done');
+    else if (i === activeStepIndex) item.classList.add('active');
   }
 }
 
-// Simulation Canvas Rendering
-const CANVAS_STARFIELD = [];
-for (let i = 0; i < 40; i++) {
-  CANVAS_STARFIELD.push({
-    x: Math.random(),
-    y: Math.random(),
-    radius: 0.6 + Math.random() * 1.6,
-    seed: Math.random() * Math.PI * 2
-  });
-}
-
+// Canvas Simulation Renderer
 function getSimCanvasDimensions() {
   const canvas = document.getElementById('sim-canvas');
   const dpr = window.devicePixelRatio || 1;
@@ -2179,237 +1753,94 @@ function drawSimCanvas(ctx, [width, height]) {
   ctx.fillStyle = '#090d16';
   ctx.fillRect(0, 0, width, height);
 
-  const now = Date.now();
-
-  for (let i = 0; i < CANVAS_STARFIELD.length; i++) {
-    const star = CANVAS_STARFIELD[i];
-    const alpha = 0.25 + 0.35 * Math.sin(now * 0.002 + star.seed);
-    ctx.beginPath();
-    ctx.arc(star.x * width, star.y * height, star.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(186, 230, 253, ${alpha})`;
-    ctx.fill();
-  }
-
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.035)';
+  // Background Grid Lines
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
   ctx.lineWidth = 1;
   for (let x = 0; x < width; x += 44) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
   }
   for (let y = 0; y < height; y += 44) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
   }
 
-  const hoverY = Math.sin(now * 0.0026) * 3.5;
-  const cx = width / 2 + (physicsState.position / 8.5) * (width * 0.30);
-  const cy = height / 2 - 6;
+  const cx = width / 2;
+  const cy = height / 2;
+  const now = Date.now();
+  const bob = Math.sin(now * 0.003) * 5;
 
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([8, 6]);
-  ctx.beginPath();
-  ctx.moveTo(54, cy);
-  ctx.lineTo(width - 54, cy);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(width / 2, cy - 18);
-  ctx.lineTo(width / 2, cy + 18);
-  ctx.stroke();
-
-  function drawWinch(x, side, force) {
-    const color = side === 'left' ? '#38bdf8' : '#f59e0b';
-    const alpha = Math.min(0.35 + (force / 100) * 0.65, 1);
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - 14, cy - 20, 28, 40);
-    ctx.beginPath();
-    ctx.arc(x, cy, 10, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, cy, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  drawWinch(64, 'left', physicsState.leftForce);
-  drawWinch(width - 64, 'right', physicsState.rightForce);
-
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+  // Render Simulation Graphic
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(88, cy);
-  ctx.lineTo(cx - 30, cy + hoverY);
+  ctx.arc(cx, cy + bob, 70, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+  // Internal visual element based on module category
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
   ctx.beginPath();
-  ctx.moveTo(width - 88, cy);
-  ctx.lineTo(cx + 30, cy + hoverY);
+  ctx.roundRect(cx - 60, cy - 35 + bob, 120, 70, 10);
+  ctx.fill();
   ctx.stroke();
 
-  const cartWidth = 64;
-  const cartHeight = 50;
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+  // Dynamic vector rays or rings
+  const valRatio = (labState.valLeft + labState.valRight) / 200;
   ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(cx - cartWidth / 2, cy - cartHeight / 2 + hoverY, cartWidth, cartHeight, 8);
-  ctx.fill();
+  ctx.arc(cx, cy + bob, 40 + valRatio * 20, 0, Math.PI * 2 * Math.min(1, valRatio + 0.2));
   ctx.stroke();
 
-  ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-  ctx.beginPath();
-  ctx.arc(cx, cy + hoverY, 12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 11px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 12px "JetBrains Mono", monospace';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('50 kg', cx, cy + hoverY);
+  ctx.fillText("Behavioral Traits", cx, cy + bob - 8);
 
-  function drawForceArrow(x1, y1, x2, y2, color, lineWidth) {
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const headLength = 12;
-    ctx.strokeStyle = ctx.fillStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
-    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
-    ctx.closePath();
-    ctx.fill();
-  }
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '11px "JetBrains Mono", monospace';
+  ctx.fillText("Behavioral Trait: " + labState.valLeft + " wolves", cx, cy + bob + 10);
 
-  const maxArrowLength = 90;
-  if (physicsState.leftForce > 0) {
-    const len = (physicsState.leftForce / 100) * maxArrowLength;
-    drawForceArrow(cx - cartWidth / 2, cy + hoverY, cx - cartWidth / 2 - len, cy + hoverY, '#38bdf8', 3.5);
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 11px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${physicsState.leftForce}N`, cx - cartWidth / 2 - len / 2, cy + hoverY - 18);
-  }
-
-  if (physicsState.rightForce > 0) {
-    const len = (physicsState.rightForce / 100) * maxArrowLength;
-    drawForceArrow(cx + cartWidth / 2, cy + hoverY, cx + cartWidth / 2 + len, cy + hoverY, '#f59e0b', 3.5);
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 11px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${physicsState.rightForce}N`, cx + cartWidth / 2 + len / 2, cy + hoverY - 18);
-  }
-
-  const netForce = physicsState.rightForce - physicsState.leftForce;
-  if (Math.abs(netForce) > 1.5) {
-    const dir = Math.sign(netForce);
-    const len = (Math.abs(netForce) / 100) * 80;
-    drawForceArrow(cx, cy + hoverY + 38, cx + dir * len, cy + hoverY + 38, '#ffffff', 3.5);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`ΣF = ${netForce > 0 ? '+' : ''}${netForce.toFixed(0)} N`, cx + dir * len / 2, cy + hoverY + 55);
-  } else if (labState.currentStep >= 1) {
-    ctx.fillStyle = '#34d399';
-    ctx.font = 'bold 12px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('BALANCED (ΣF = 0)', cx, cy + hoverY + 48);
-  }
-
-  if (Math.abs(physicsState.velocity) > 0.04) {
-    ctx.fillStyle = 'rgba(203, 213, 225, 0.6)';
-    ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`Speed = ${Math.abs(physicsState.velocity).toFixed(2)} m/s`, cx, cy + hoverY - 38);
-  }
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillText("Cooperative Hunting: " + labState.valRight + " kg", cx, cy + bob + 24);
 
   ctx.resetTransform();
 }
 
 function updateTelemetryDisplay() {
-  const netForce = physicsState.rightForce - physicsState.leftForce;
-  const acceleration = netForce / physicsState.mass;
+  document.getElementById('readout-left').textContent = labState.valLeft + " wolves";
+  document.getElementById('readout-right').textContent = labState.valRight + " kg";
+  document.getElementById('slider-left').value = labState.valLeft;
+  document.getElementById('slider-right').value = labState.valRight;
 
-  document.getElementById('readout-left-force').textContent = `${physicsState.leftForce} N`;
-  document.getElementById('readout-right-force').textContent = `${physicsState.rightForce} N`;
-  document.getElementById('slider-left').value = physicsState.leftForce;
-  document.getElementById('slider-right').value = physicsState.rightForce;
+  const derivedMetric = (labState.valRight - labState.valLeft);
+  document.getElementById('chip-center-val').textContent = derivedMetric.toFixed(1) + " wolves";
 
-  const chip = document.getElementById('chip-net-force');
-  chip.textContent = `${netForce >= 0 ? '+' : ''}${netForce.toFixed(1)} N`;
-  chip.style.color = Math.abs(netForce) < 2 ? '#34d399' : (netForce < 0 ? '#38bdf8' : '#f59e0b');
+  document.getElementById('metric-val-1').textContent = labState.valLeft.toFixed(1);
+  document.getElementById('metric-val-2').textContent = labState.valRight.toFixed(1);
+  document.getElementById('metric-val-3').textContent = Math.abs(derivedMetric).toFixed(2);
+  document.getElementById('metric-val-4').textContent = (Math.abs(derivedMetric) * 1.5).toFixed(2);
 
-  document.getElementById('metric-net-force').textContent = `${netForce.toFixed(1)} N`;
-  document.getElementById('metric-acceleration').textContent = acceleration.toFixed(2);
-  document.getElementById('metric-velocity').textContent = physicsState.velocity.toFixed(2);
-  document.getElementById('metric-position').textContent = physicsState.position.toFixed(2);
-
-  const statusPill = document.getElementById('status-motion-pill');
-  if (Math.abs(netForce) <= 1.5) {
-    statusPill.className = 'status-pill balanced';
-    statusPill.textContent = 'BALANCED (0 N)';
-  } else if (netForce < 0) {
-    statusPill.className = 'status-pill left-pull';
-    statusPill.textContent = 'SPEEDING LEFT ←';
+  const statusPill = document.getElementById('status-main-pill');
+  if (Math.abs(derivedMetric) <= 2) {
+    statusPill.className = 'status-pill nominal';
+    statusPill.textContent = 'EQUILIBRIUM / BALANCED';
   } else {
-    statusPill.className = 'status-pill right-pull';
-    statusPill.textContent = 'SPEEDING RIGHT →';
+    statusPill.className = 'status-pill';
+    statusPill.textContent = 'DYNAMIC VARIATION';
   }
 
-  document.getElementById('card-thruster-left').classList.toggle('active', physicsState.leftForce > 0);
-  document.getElementById('card-thruster-right').classList.toggle('active', physicsState.rightForce > 0);
-
-  // Dynamic Tutor Messages based on current student actions
+  // Dynamic Tutor Messages with Vocabulary Enforcement
   if (labState.currentStep === 1 && labState.isSimRunning) {
-    if (physicsState.leftForce === 0) {
-      setTutorMessage(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Look at the robot — watch which way it starts moving!`);
-    } else if (physicsState.leftForce < 50) {
-      setTutorMessage(`<strong>Left Rocket firing at ${physicsState.leftForce} N!</strong><br><br>The blue arrow points left. The total net force is <strong>${physicsState.leftForce} N pulling left</strong>. Keep dragging up to 60 N!`);
-    } else {
-      setTutorMessage(`<strong>Almost there: ${physicsState.leftForce} N!</strong><br><br>The robot is speeding up to the left! Get to 60 N to log your observation.`);
-    }
-  } else if ((labState.currentStep === 3 || labState.currentStep === 4) && labState.isSimRunning) {
-    const diff = Math.abs(physicsState.rightForce - physicsState.leftForce);
+    setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>Pack Group Cohort Size</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
+  } else if (labState.currentStep === 3 && labState.isSimRunning) {
     const confirmContainer = document.getElementById('balance-confirmation-container');
-
-    if (diff === 0 && physicsState.leftForce > 0) {
-      setTutorMessage(`<strong>PERFECT BALANCE!</strong><br><br>Left = <strong>${physicsState.leftForce} N</strong> · Right = <strong>${physicsState.rightForce} N</strong> · Net Force = <strong>0.0 N</strong>!<br>Both rockets are blasting, but because they are equal and opposite, they cancel out! Acceleration is <strong>0.00 m/s²</strong>.<br><br>Click <strong>Confirm Balance</strong> to record what you found!`);
+    if (Math.abs(derivedMetric) <= 2) {
+      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>Behavioral Trait</em> and <em>Cooperative Hunting</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
       if (!document.getElementById('btn-confirm-balance')) {
-        confirmContainer.innerHTML = `<button class="btn-confirm-equilibrium" id="btn-confirm-balance">CONFIRM BALANCE →</button>`;
-        document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmEquilibrium);
+        confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
+        document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
       }
-    } else if (diff <= 3 && physicsState.leftForce > 0) {
-      setTutorMessage(`<strong>Super close to balance!</strong><br><br>Left: <strong>${physicsState.leftForce} N</strong> · Right: <strong>${physicsState.rightForce} N</strong> (Difference: ${diff} N).<br>Use the +1 / -1 buttons to make them match exactly!`);
-      if (!document.getElementById('btn-confirm-balance')) {
-        confirmContainer.innerHTML = `<button class="btn-confirm-equilibrium" id="btn-confirm-balance">CONFIRM BALANCE →</button>`;
-        document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmEquilibrium);
-      }
-    } else if (physicsState.leftForce === 0 && physicsState.rightForce === 0) {
-      setTutorMessage(`Both rockets are at 0 N! Try sliding both rockets up to matching numbers (like 50 N and 50 N) to see active balanced forces in action!`);
-      confirmContainer.innerHTML = '';
-    } else if (physicsState.leftForce > physicsState.rightForce) {
-      setTutorMessage(`<strong>Left rocket is winning!</strong><br><br>Total Net Force is ${(physicsState.leftForce - physicsState.rightForce).toFixed(1)} N pulling left. Turn up the Right Rocket or lower the Left Rocket to balance them!`);
-      confirmContainer.innerHTML = '';
     } else {
-      setTutorMessage(`<strong>Right rocket is winning!</strong><br><br>Total Net Force is ${(physicsState.rightForce - physicsState.leftForce).toFixed(1)} N pulling right. Turn up the Left Rocket or lower the Right Rocket to balance them!`);
+      setTutorMessage("Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity.");
       confirmContainer.innerHTML = '';
     }
   }
@@ -2417,24 +1848,9 @@ function updateTelemetryDisplay() {
 
 function runPhysicsTick() {
   if (!labState.isSimRunning) return;
-
-  const netForce = physicsState.rightForce - physicsState.leftForce;
-  const acceleration = netForce / physicsState.mass;
-
-  physicsState.velocity += acceleration * physicsState.dt;
-  physicsState.velocity *= 0.988;
-  physicsState.position += physicsState.velocity * physicsState.dt;
-  physicsState.position = Math.max(-8.5, Math.min(8.5, physicsState.position));
-
-  document.getElementById('metric-net-force').textContent = `${netForce >= 0 ? '+' : ''}${netForce.toFixed(1)} N`;
-  document.getElementById('metric-acceleration').textContent = acceleration.toFixed(2);
-  document.getElementById('metric-velocity').textContent = physicsState.velocity.toFixed(2);
-  document.getElementById('metric-position').textContent = physicsState.position.toFixed(2);
-
   const canvas = document.getElementById('sim-canvas');
   const ctx = canvas.getContext('2d');
   drawSimCanvas(ctx, getSimCanvasDimensions());
-
   labState.simAnimationId = requestAnimationFrame(runPhysicsTick);
 }
 
@@ -2449,23 +1865,12 @@ function initSimulationLab() {
   canvas.height = height * dpr;
 
   labState.currentStep = 0;
-  physicsState.leftForce = 0;
-  physicsState.rightForce = 0;
-  physicsState.velocity = 0;
-  physicsState.position = 0;
-  labState.hasReachedFirstThreshold = false;
-  labState.hasReachedSecondThreshold = false;
+  labState.valLeft = 6;
+  labState.valRight = 500;
 
-  setTutorMessage(`<strong>Welcome to the Space Lab!</strong><br><br>
-The <span style="color:#38bdf8"><strong>Left slider</strong></span> fires the left rocket (pulls left ←).<br>
-The <span style="color:#f59e0b"><strong>Right slider</strong></span> fires the right rocket (pulls right →).<br>
-The 50 kg robot floats on a <strong>frictionless space track</strong>.<br>
-<span style="color:#38bdf8"><strong>Total Net Force</strong></span> is the combined push or pull.<br><br>
-Click <strong>Start Experiment</strong> below to fire up the engines!`);
-
+  setTutorMessage("<strong>Welcome to Module 3016: Behavioral Traits!</strong><br><br>Utilize the controllers below to test how <strong>Behavioral Trait</strong> interacts with <strong>Cooperative Hunting</strong>. Click <strong>Start Experiment</strong> to launch live data acquisition!");
   updateStepNavigation(0);
   document.getElementById('btn-initialize-sim').style.display = 'block';
-  // Standby overlay is active on start, do NOT make valerie-overlay active here
   document.getElementById('valerie-overlay').classList.remove('active');
 
   const ctx = canvas.getContext('2d');
@@ -2479,7 +1884,7 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
     <div class="observation-panel">
       <div class="section-label">${label}</div>
       <div class="observation-prompt">${promptText}</div>
-      <textarea class="observation-textarea" id="observation-input" placeholder="Type your thoughts here (Press Enter to submit)..."></textarea>
+      <textarea class="observation-textarea" id="observation-input" placeholder="Type your answer using target terms: ${"Behavioral Trait, Cooperative Hunting"} (Press Enter to submit)..."></textarea>
       <button class="btn-primary" style="width:100%" id="btn-submit-observation" disabled>Submit Answer →</button>
     </div>
   `;
@@ -2510,7 +1915,6 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
   });
 
   submitBtn.addEventListener('click', doSubmit);
-
   document.getElementById('btn-initialize-sim').style.display = 'none';
   document.getElementById('action-area').innerHTML = '';
   observationCallback = onSubmitCallback;
@@ -2533,7 +1937,7 @@ function onStartExperiment() {
     labState.isSimRunning = true;
     document.getElementById('slider-left').disabled = false;
     updateStepNavigation(1);
-    setTutorMessage(`<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left Rocket slider</strong> up to <strong>60 N</strong>.<br>Watch the robot — which way does it start moving?`);
+    setTutorMessage("<strong>Active Step 2: System Activation</strong><br><br>Adjust the left control slider past 60 to induce initial dynamic variance. Observe the telemetry!");
     runPhysicsTick();
   });
 }
@@ -2548,10 +1952,10 @@ function onTriggerObservation1() {
 
   playStepTransition(3, STEP_LABELS[2], () => {
     updateStepNavigation(2);
-    setTutorMessage(`<strong>Look at the robot zoom!</strong><br><br>Left Rocket = <strong>${physicsState.leftForce} N</strong> · Net Force = <strong>${physicsState.leftForce} N pulling left</strong>.<br>The robot sped up to the left! What would happen if the right rocket pulled with the exact same ${physicsState.leftForce} N?`);
+    setTutorMessage("<strong>Data Recorded: Observation 1</strong><br><br>The initial parameter shift generated measurable variation. Formulate your observation below utilizing academic terminology.");
     showObservationPrompt(
       'Observation 1',
-      `The left rocket pulled with ${physicsState.leftForce} N to the left. What do you think happens if the right rocket also pulls with ${physicsState.leftForce} N to the right?`,
+      "Describe how altering the initial parameter influenced the physical state of the system, referencing <em>Behavioral Trait</em>.",
       onObservation1Submitted
     );
   });
@@ -2565,8 +1969,6 @@ function onObservation1Submitted() {
   playStepTransition(4, STEP_LABELS[3], () => {
     labState.currentStep = 3;
     labState.isSimRunning = true;
-    physicsState.velocity = 0;
-    physicsState.position = 0;
     document.getElementById('slider-left').disabled = false;
     document.getElementById('slider-right').disabled = false;
     updateStepNavigation(3);
@@ -2575,12 +1977,9 @@ function onObservation1Submitted() {
   });
 }
 
-function onConfirmEquilibrium() {
-  labState.balancedLeftForce = physicsState.leftForce;
-  labState.balancedRightForce = physicsState.rightForce;
+function onConfirmStep3() {
   labState.hasReachedSecondThreshold = true;
   labState.currentStep = 4;
-
   labState.isSimRunning = false;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
@@ -2589,11 +1988,11 @@ function onConfirmEquilibrium() {
   document.getElementById('valerie-overlay').classList.add('active');
 
   playStepTransition(5, STEP_LABELS[4], () => {
-    updateStepNavigation(4); // Highlights Step 5: "Zero Net Force!" (0-indexed: 4)
-    setTutorMessage(`<strong>BALANCED FORCES FOUND!</strong><br><br>Left: <strong>${physicsState.leftForce} N</strong> | Right: <strong>${physicsState.rightForce} N</strong> | Net Force: <strong>0.0 N</strong><br><br>Even though both rockets are blasting, the total net force is zero and the robot doesn't speed up! Write down what you noticed below.`);
+    updateStepNavigation(4);
+    setTutorMessage("<strong>Discovery Confirmed!</strong><br><br>System parameters have stabilized. Synthesize your scientific findings in the discovery log.");
     showObservationPrompt(
       'Discovery Log',
-      `Both rockets are firing (${physicsState.leftForce} N left vs ${physicsState.rightForce} N right). The robot stopped speeding up. Explain in your own words why two equal opposite pulls cancel out (Newton's First Law).`,
+      "Analyze the mathematical threshold: How does scaling pack size from 1 to 6 wolves dramatically flip hunting success from 10% to over 85%?",
       onObservation2Submitted
     );
   });
@@ -2606,25 +2005,21 @@ function onObservation2Submitted() {
 
   playStepTransition(6, STEP_LABELS[5], () => {
     labState.currentStep = 5;
-    updateStepNavigation(5); // Highlights Step 6: "What You Learned" (0-indexed: 5)
+    updateStepNavigation(5);
 
     document.getElementById('observation-container').innerHTML = `
       <div class="summary-card">
-        <div class="summary-heading">What You Discovered</div>
-        • Left Rocket: <strong>${labState.balancedLeftForce} N</strong><br>
-        • Right Rocket: <strong>${labState.balancedRightForce} N</strong><br>
-        • Total Net Force ΣF: <strong>0.0 N</strong><br>
-        • Acceleration: <strong>0.00 m/s²</strong><br><br>
-        <strong>Big Takeaway:</strong> When opposite forces have equal strength, they cancel each other out completely. Zero net force means no acceleration — that's <strong>Newton's First Law</strong>!
+        <div class="summary-heading">Empirical Synthesis</div>
+        ${"Cooperative group behaviors amplify physical capabilities, allowing social organisms to capture prey and defend against predators far beyond solitary limits."}
       </div>
     `;
 
     document.getElementById('btn-initialize-sim').style.display = 'none';
     const actionArea = document.getElementById('action-area');
-    actionArea.innerHTML = `<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>`;
+    actionArea.innerHTML = '<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>';
     document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
 
-    setTutorMessage(`<strong>Mission Accomplished!</strong><br><br>You proved that equal and opposite forces cancel each other out. Net force = 0 means no acceleration. That's Newton's First Law in action!`);
+    setTutorMessage("<strong>Investigation Complete!</strong><br><br>You verified foundational principles of Behavioral Traits. Proceed to the concept deep-dive!");
   });
 }
 
@@ -2639,11 +2034,11 @@ function onProceedToVideo() {
   });
 }
 
-// Concept Video Player Logic
+// Concept Video Player
 function formatTime(totalSeconds) {
   const mins = Math.floor(totalSeconds / 60);
   const secs = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
-  return `${mins}:${secs}`;
+  return mins + ":" + secs;
 }
 
 function initConceptVideo() {
@@ -2655,8 +2050,8 @@ function initConceptVideo() {
 
   canvas.width = width * dpr;
   canvas.height = height * dpr;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
 
   labState.videoCurrentTime = 0;
   labState.isVideoPlaying = false;
@@ -2664,7 +2059,7 @@ function initConceptVideo() {
   setTimeout(() => {
     document.getElementById('video-loading').classList.add('dismissed');
     drawVideoFrame(0);
-  }, 1400);
+  }, 1200);
 }
 
 function toggleVideoPlayback() {
@@ -2679,8 +2074,8 @@ function toggleVideoPlayback() {
       labState.videoCurrentTime = Math.min(labState.videoCurrentTime + delta, labState.videoDuration);
 
       const percent = (labState.videoCurrentTime / labState.videoDuration) * 100;
-      document.getElementById('video-progress-fill').style.width = `${percent}%`;
-      document.getElementById('video-timestamp').textContent = `${formatTime(labState.videoCurrentTime)} / ${formatTime(labState.videoDuration)}`;
+      document.getElementById('video-progress-fill').style.width = percent + "%";
+      document.getElementById('video-timestamp').textContent = formatTime(labState.videoCurrentTime) + " / " + formatTime(labState.videoDuration);
 
       drawVideoFrame(labState.videoCurrentTime);
       updateVideoCaption(labState.videoCurrentTime);
@@ -2723,88 +2118,27 @@ function drawVideoFrame(time) {
   const cx = width / 2;
   const cy = height / 2;
 
-  function drawArrow(x1, y1, x2, y2, color) {
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const headLength = 12;
-    ctx.strokeStyle = ctx.fillStyle = color;
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - headLength * Math.cos(angle - 0.42), y2 - headLength * Math.sin(angle - 0.42));
-    ctx.lineTo(x2 - headLength * Math.cos(angle + 0.42), y2 - headLength * Math.sin(angle + 0.42));
-    ctx.closePath();
-    ctx.fill();
-  }
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = "bold " + Math.round(width * 0.04) + "px sans-serif";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText("Behavioral Traits", cx, cy - 20);
 
-  if (time < 5) {
-    const opacity = Math.min(time, 1);
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = `bold ${Math.round(width * 0.048)}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Balanced Forces', cx, cy - 18);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = `${Math.round(width * 0.026)}px monospace`;
-    ctx.fillText("Newton's First Law of Motion", cx, cy + 18);
-    ctx.globalAlpha = 1;
-  } else if (time < 15) {
-    const opacity = Math.min((time - 5) / 4, 1);
-    const length = 60 + opacity * 30;
-    ctx.globalAlpha = opacity;
-    ctx.strokeStyle = '#38bdf8';
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(cx - 30, cy - 30, 60, 60, 8);
-    ctx.fill();
-    ctx.stroke();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = Math.round(width * 0.024) + "px monospace";
+  ctx.fillText("Utah SEEd 3.2.4 · Grade 3 · Module 3016", cx, cy + 18);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 13px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Robot', cx, cy);
-    ctx.globalAlpha = 1;
-
-    drawArrow(cx - 30, cy, cx - 30 - length, cy, '#38bdf8');
-    drawArrow(cx + 30, cy, cx + 30 + length, cy, '#f59e0b');
-
-    if (time >= 10) {
-      ctx.globalAlpha = Math.min((time - 10) / 2, 1);
-      ctx.fillStyle = '#34d399';
-      ctx.font = `bold ${Math.round(width * 0.032)}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('NET FORCE ΣF = 0', cx, cy + height * 0.32);
-      ctx.globalAlpha = 1;
-    }
-  } else {
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = `bold ${Math.round(width * 0.042)}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Balanced Forces', cx, cy - 18);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = `${Math.round(width * 0.024)}px monospace`;
-    ctx.fillText('Net Force = 0  ⟶  No Acceleration', cx, cy + 16);
-  }
   ctx.resetTransform();
 }
 
-// Quiz Assessment Logic
+// Quiz Logic
 function showQuizQuestion(index) {
   activeQuizIndex = index;
   const item = QUIZ_ITEMS[index];
   const progressPercent = (index / QUIZ_ITEMS.length) * 100;
 
-  document.getElementById('quiz-progress-fill').style.width = `${progressPercent}%`;
-  document.getElementById('quiz-counter-label').textContent = `Question ${index + 1} of ${QUIZ_ITEMS.length}`;
+  document.getElementById('quiz-progress-fill').style.width = progressPercent + "%";
+  document.getElementById('quiz-counter-label').textContent = "Question " + (index + 1) + " of " + QUIZ_ITEMS.length;
 
   const prevBtn = document.getElementById('btn-quiz-prev');
   if (prevBtn) {
@@ -2850,11 +2184,10 @@ function onQuizAnswerSubmitted() {
   }
 }
 
-// Results Evaluation & Particle Celebration
 function buildResultsSummary() {
   const evaluations = labState.quizAnswers.map(item => {
     const keywords = QUIZ_ITEMS[item.index].keywords;
-    const matches = keywords.filter(word => item.answer.toLowerCase().includes(word));
+    const matches = keywords.filter(word => item.answer.toLowerCase().includes(word.toLowerCase()));
     const score = Math.min(matches.length / Math.max(keywords.length * 0.45, 2), 1);
     return { score, matches, answer: item.answer, index: item.index };
   });
@@ -2874,24 +2207,24 @@ function buildResultsSummary() {
   if (strengths.length > 0) {
     const card = document.createElement('div');
     card.className = 'feedback-card success';
-    card.innerHTML = `<div class="feedback-card-heading">[ What You Mastered ]</div>` +
-      strengths.map(s => `<p>• Question ${s.index + 1}: Great job explaining <em>${s.matches.slice(0, 3).join(', ')}</em></p>`).join('');
+    card.innerHTML = '<div class="feedback-card-heading">[ Academic Vocabulary Mastered ]</div>' +
+      strengths.map(s => '<p>• Question ' + (s.index + 1) + ': Excellent lexical precision with <em>' + s.matches.slice(0, 3).join(', ') + '</em></p>').join('');
     grid.appendChild(card);
   }
 
   if (reviewAreas.length > 0) {
     const card = document.createElement('div');
     card.className = 'feedback-card review';
-    card.innerHTML = `<div class="feedback-card-heading">[ Things to Remember ]</div>` +
-      reviewAreas.map(r => `<p>• Question ${r.index + 1}: Try connecting to: <em>${QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ')}</em></p>`).join('');
+    card.innerHTML = '<div class="feedback-card-heading">[ Vocabulary Expansion Needed ]</div>' +
+      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Integrate required terms: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
     grid.appendChild(card);
   }
 
   const finalSummaryText = scorePercentage >= 80
-    ? `Awesome job! You scored ${scorePercentage}%! You proved that when forces are balanced, net force is zero and objects do not speed up. You mastered Newton's First Law!`
+    ? "Exemplary Scientific Mastery: " + scorePercentage + "%! You fluently demonstrated academic vocabulary and conceptual mastery of Behavioral Traits."
     : scorePercentage >= 55
-    ? `Great work! You scored ${scorePercentage}%. You understand the big idea: equal opposite forces cancel out, making net force zero!`
-    : `Good effort! You scored ${scorePercentage}%. Remember: when two opposite forces are equal in strength, they cancel out so total net force = 0.`;
+    ? "Proficient Scientific Performance: " + scorePercentage + "%. Sound conceptual grasp. Continue pairing descriptive ideas with Tier-2/Tier-3 terms."
+    : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: Behavioral Trait, Cooperative Hunting, Pack Dynamics, Group Defense.";
 
   document.getElementById('tutor-final-summary').textContent = finalSummaryText;
 }
@@ -2928,12 +2261,10 @@ function renderScoreRing(percentage) {
     ctx.font = 'bold 24px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${Math.round(percentage * progress)}%`, center, center);
+    ctx.fillText(Math.round(percentage * progress) + "%", center, center);
 
     currentFrame++;
-    if (currentFrame <= totalFrames) {
-      requestAnimationFrame(animate);
-    }
+    if (currentFrame <= totalFrames) requestAnimationFrame(animate);
   }
   animate();
 }
@@ -2946,9 +2277,7 @@ function launchCelebrationParticles() {
 
   const particleColors = ['#38bdf8', '#00f0ff', '#10b981', '#34d399', '#f59e0b', '#fbbf24', '#ec4899', '#8b5cf6', '#e2e8f0'];
   const particles = [];
-  const particleCount = 180;
-
-  for (let i = 0; i < particleCount; i++) {
+  for (let i = 0; i < 160; i++) {
     particles.push({
       x: canvas.width * 0.5 + (Math.random() - 0.5) * 120,
       y: canvas.height * 0.45 + (Math.random() - 0.5) * 80,
@@ -2966,18 +2295,13 @@ function launchCelebrationParticles() {
 
   function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
+      p.x += p.vx; p.y += p.vy;
       p.vy += p.gravity;
       p.vx *= 0.985;
       p.rotation += p.angularVelocity;
-
-      if (p.y > canvas.height * 0.7) {
-        p.opacity -= 0.012;
-      }
+      if (p.y > canvas.height * 0.7) p.opacity -= 0.012;
 
       if (p.opacity > 0) {
         ctx.save();
@@ -2985,7 +2309,6 @@ function launchCelebrationParticles() {
         ctx.fillStyle = p.color;
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rotation);
-
         if (p.isRectangle) {
           ctx.fillRect(-p.size, -p.size * 0.6, p.size * 2, p.size * 1.2);
         } else {
@@ -2996,88 +2319,33 @@ function launchCelebrationParticles() {
         ctx.restore();
       }
     }
-
     labState.celebrationAnimationId = requestAnimationFrame(render);
   }
   render();
 }
 
-// Valerie AI Tutor API Configuration & State
+// Valerie Socratic AI Stub
 const valerieAI = {
   isEnabled: false,
   apiEndpoint: '/api/chat',
   apiKey: '',
   chatHistory: [],
-
-  async callTutorAPI(userMessage, contextData) {
-    if (!this.isEnabled) {
-      return {
-        success: false,
-        status: 'dormant',
-        message: "Valerie AI API connection is currently dormant. Waiting for API key and activation."
-      };
-    }
-
-    try {
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {})
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          history: this.chatHistory,
-          moduleContext: JSON.stringify({
-            module: '3001 - Balanced Forces',
-            standard: 'MS-PS2-1',
-            leftForce: physicsState.leftForce,
-            rightForce: physicsState.rightForce,
-            netForce: physicsState.rightForce - physicsState.leftForce,
-            velocity: physicsState.velocity,
-            step: labState.currentStep,
-            hypothesis: labState.hypothesisText,
-            ...contextData
-          })
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        reply: data.response || data.reply || data.message || "I observed your experiment! What do you notice about the forces?"
-      };
-    } catch (error) {
-      console.warn("Valerie AI API call error:", error);
-      return {
-        success: false,
-        error: error.message,
-        reply: "I am having trouble reaching my science core right now. Let's look closely at your force sliders!"
-      };
-    }
+  async callTutorAPI(userMessage) {
+    return {
+      success: false,
+      reply: "Valerie Socratic Tutor is analyzing your query on Behavioral Traits. Remember to cite: Behavioral Trait and Cooperative Hunting."
+    };
   }
 };
 
-// Event Listeners Wire-up
+// Wire Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   initCosmicBackground();
   initIntroIcon();
 
-  // Intro Screen Buttons
   document.getElementById('btn-exit-intro').addEventListener('click', () => {
-    if (confirm('Exit Module 3001? Progress will not be saved.')) {
-      [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
-        .forEach(id => id && cancelAnimationFrame(id));
-      document.body.innerHTML = `
-        <div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif">
-          <div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3001 Closed</div>
-          <div style="color:#64748b;font-size:15px;font-family:'JetBrains Mono',monospace">Space Lab closed. Progress saved.</div>
-        </div>
-      `;
+    if (confirm('Exit Module 3016? Progress will not be saved.')) {
+      document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3016 Closed</div></div>';
     }
   });
 
@@ -3092,78 +2360,46 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-start-intro').addEventListener('click', () => {
     cancelAnimationFrame(labState.introIconAnimationId);
     transitionScreen('screen-intro', 'screen-hypothesis');
-    setTimeout(() => {
-      document.getElementById('hypothesis-input').focus();
-    }, 450);
+    setTimeout(() => { document.getElementById('hypothesis-input').focus(); }, 450);
   });
 
-  // Valerie Tutor Modal & AI Hook Handlers
+  // Valerie Tutor Modal
   const tutorModal = document.getElementById('modal-valerie-dialog');
   const tutorChatHistory = document.getElementById('tutor-chat-history');
   const tutorUserInput = document.getElementById('tutor-user-input');
   const btnSendTutor = document.getElementById('btn-send-tutor-message');
-  const tutorApiStatusNote = document.getElementById('tutor-api-status-note');
 
-  function openTutorDialog() {
+  document.getElementById('btn-ask-valerie').addEventListener('click', () => {
     tutorModal.classList.add('open');
     tutorUserInput.focus();
-
-    if (!valerieAI.isEnabled) {
-      tutorApiStatusNote.textContent = 'Valerie AI API endpoint ready (/api/chat). Activation toggle is dormant until configured.';
-    } else {
-      tutorApiStatusNote.textContent = `Connected to ${valerieAI.apiEndpoint}`;
-    }
-  }
-
-  function closeTutorDialog() {
+  });
+  document.getElementById('btn-close-tutor-modal').addEventListener('click', () => {
     tutorModal.classList.remove('open');
-  }
-
-  function appendChatMessage(sender, text) {
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${sender}`;
-    bubble.textContent = text;
-    tutorChatHistory.appendChild(bubble);
-    tutorChatHistory.scrollTop = tutorChatHistory.scrollHeight;
-  }
-
-  async function handleSendTutorMessage() {
-    const query = tutorUserInput.value.trim();
-    if (!query) return;
-
-    appendChatMessage('student', query);
-    valerieAI.chatHistory.push({ role: 'user', text: query });
-    tutorUserInput.value = '';
-    btnSendTutor.disabled = true;
-
-    if (!valerieAI.isEnabled) {
-      setTimeout(() => {
-        const fallbackReplies = [
-          "I'm listening! My direct AI neural net is standing by to be activated. In the meantime: check your net force readout — does it equal 0 N?",
-          "Great question! Once my live API key is connected, I will guide you with live Socratic answers. For now, observe whether the cart is speeding up or staying steady!"
-        ];
-        const reply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
-        appendChatMessage('tutor', reply);
-        valerieAI.chatHistory.push({ role: 'model', text: reply });
-        btnSendTutor.disabled = false;
-      }, 500);
-      return;
-    }
-
-    const result = await valerieAI.callTutorAPI(query);
-    appendChatMessage('tutor', result.reply || "Let's review the force arrows on your cart.");
-    valerieAI.chatHistory.push({ role: 'model', text: result.reply || '' });
-    btnSendTutor.disabled = false;
-  }
-
-  document.getElementById('btn-ask-valerie').addEventListener('click', openTutorDialog);
-  document.getElementById('btn-close-tutor-modal').addEventListener('click', closeTutorDialog);
-  btnSendTutor.addEventListener('click', handleSendTutorMessage);
-  tutorUserInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleSendTutorMessage();
   });
 
-  // Hypothesis Input & Submit
+  function handleTutorQuery() {
+    const q = tutorUserInput.value.trim();
+    if (!q) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble student';
+    bubble.textContent = q;
+    tutorChatHistory.appendChild(bubble);
+    tutorUserInput.value = '';
+    setTimeout(() => {
+      const resp = document.createElement('div');
+      resp.className = 'chat-bubble tutor';
+      resp.textContent = "Socratic guidance: Have you verified the behavior of Behavioral Trait in your telemetry readings?";
+      tutorChatHistory.appendChild(resp);
+      tutorChatHistory.scrollTop = tutorChatHistory.scrollHeight;
+    }, 400);
+  }
+
+  btnSendTutor.addEventListener('click', handleTutorQuery);
+  tutorUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleTutorQuery();
+  });
+
+  // Hypothesis Submission
   const hypothesisInput = document.getElementById('hypothesis-input');
   const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
 
@@ -3174,9 +2410,7 @@ document.addEventListener('DOMContentLoaded', () => {
   hypothesisInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!hypothesisSubmitBtn.disabled) {
-        hypothesisSubmitBtn.click();
-      }
+      if (!hypothesisSubmitBtn.disabled) hypothesisSubmitBtn.click();
     }
   });
 
@@ -3185,11 +2419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hypothesisSubmitBtn.disabled = true;
     hypothesisInput.disabled = true;
 
-    const replies = [
-      'Awesome prediction! 🤔 Let us test it in space and see what really happens.',
-      'Great thinking! Science is all about testing your ideas against real experiments. Starting space lab...'
-    ];
-    document.getElementById('tutor-hypothesis-text').textContent = replies[Math.floor(Math.random() * replies.length)];
+    document.getElementById('tutor-hypothesis-text').textContent = "Hypothesis registered. Initiating empirical parameter testing in simulation environment...";
     document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
 
     setTimeout(() => {
@@ -3197,92 +2427,83 @@ document.addEventListener('DOMContentLoaded', () => {
         transitionScreen('screen-hypothesis', 'screen-simulation');
         setTimeout(initSimulationLab, 400);
       });
-    }, 1800);
+    }, 1600);
   });
 
-  // Sliders and Nudge Buttons
-  function onAdjustForce(thruster, delta) {
-    if (thruster === 'left') {
-      const slider = document.getElementById('slider-left');
-      if (slider.disabled) return;
-      physicsState.leftForce = Math.max(0, Math.min(100, physicsState.leftForce + delta));
+  // Controls & Nudge
+  function adjustChannel(channel, delta) {
+    if (channel === 'left') {
+      const s = document.getElementById('slider-left');
+      if (s.disabled) return;
+      labState.valLeft = Math.max(1, Math.min(12, labState.valLeft + delta));
     } else {
-      const slider = document.getElementById('slider-right');
-      if (slider.disabled) return;
-      physicsState.rightForce = Math.max(0, Math.min(100, physicsState.rightForce + delta));
+      const s = document.getElementById('slider-right');
+      if (s.disabled) return;
+      labState.valRight = Math.max(50, Math.min(900, labState.valRight + delta));
     }
     updateTelemetryDisplay();
-
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
   }
 
-  document.querySelectorAll('.btn-nudge').forEach(button => {
-    button.addEventListener('click', e => {
-      const side = e.currentTarget.getAttribute('data-thruster');
-      const delta = parseInt(e.currentTarget.getAttribute('data-delta'), 10);
-      onAdjustForce(side, delta);
+  document.querySelectorAll('.btn-nudge').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const ch = e.currentTarget.getAttribute('data-channel');
+      const d = parseInt(e.currentTarget.getAttribute('data-delta'), 10);
+      adjustChannel(ch, d);
     });
   });
 
-  document.getElementById('slider-left').addEventListener('input', e => {
+  document.getElementById('slider-left').addEventListener('input', (e) => {
     if (document.getElementById('slider-left').disabled) return;
-    physicsState.leftForce = parseInt(e.target.value, 10);
+    labState.valLeft = parseFloat(e.target.value);
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
   });
 
-  document.getElementById('slider-right').addEventListener('input', e => {
+  document.getElementById('slider-right').addEventListener('input', (e) => {
     if (document.getElementById('slider-right').disabled) return;
-    physicsState.rightForce = parseInt(e.target.value, 10);
+    labState.valRight = parseFloat(e.target.value);
     updateTelemetryDisplay();
   });
 
-  // Action Button to Start Simulation
   document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
 
-  // Resize Listener for Canvas
   window.addEventListener('resize', () => {
     const canvas = document.getElementById('sim-canvas');
     const frame = document.getElementById('canvas-frame');
     if (canvas && frame && frame.clientWidth > 0) {
-      const width = frame.clientWidth;
-      const height = Math.round(width * 0.50);
+      const w = frame.clientWidth;
+      const h = Math.round(w * 0.50);
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-
-      if (!labState.isSimRunning) {
-        drawSimCanvas(canvas.getContext('2d'), [width, height]);
-      }
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      if (!labState.isSimRunning) drawSimCanvas(canvas.getContext('2d'), [w, h]);
     }
   });
 
   // Video Controls
   document.getElementById('btn-toggle-video').addEventListener('click', toggleVideoPlayback);
-
-  document.getElementById('video-progress-track').addEventListener('click', e => {
+  document.getElementById('video-progress-track').addEventListener('click', (e) => {
     const track = e.currentTarget;
     labState.videoCurrentTime = (e.offsetX / track.clientWidth) * labState.videoDuration;
     drawVideoFrame(labState.videoCurrentTime);
     updateVideoCaption(labState.videoCurrentTime);
-    document.getElementById('video-progress-fill').style.width = `${(labState.videoCurrentTime / labState.videoDuration) * 100}%`;
+    document.getElementById('video-progress-fill').style.width = ((labState.videoCurrentTime / labState.videoDuration) * 100) + "%";
   });
 
   document.getElementById('btn-continue-to-quiz').addEventListener('click', () => {
     if (labState.videoAnimationId) cancelAnimationFrame(labState.videoAnimationId);
     transitionScreen('screen-video', 'screen-quiz');
-    setTimeout(() => {
-      showQuizQuestion(0);
-    }, 350);
+    setTimeout(() => { showQuizQuestion(0); }, 350);
   });
 
-  // Quiz Event Listeners
+  // Quiz Listeners with Enter Support and Previous Question Navigation
   const quizInput = document.getElementById('quiz-answer-input');
   const quizSubmitBtn = document.getElementById('btn-submit-quiz-answer');
   const quizPrevBtn = document.getElementById('btn-quiz-prev');
@@ -3294,9 +2515,7 @@ document.addEventListener('DOMContentLoaded', () => {
   quizInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!quizSubmitBtn.disabled) {
-        onQuizAnswerSubmitted();
-      }
+      if (!quizSubmitBtn.disabled) onQuizAnswerSubmitted();
     }
   });
 
@@ -3304,22 +2523,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (quizPrevBtn) {
     quizPrevBtn.addEventListener('click', () => {
-      if (activeQuizIndex > 0) {
-        showQuizQuestion(activeQuizIndex - 1);
-      }
+      if (activeQuizIndex > 0) showQuizQuestion(activeQuizIndex - 1);
     });
   }
 
-  // Finish Module Button
   document.getElementById('btn-finish-module').addEventListener('click', () => {
     [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
       .forEach(id => id && cancelAnimationFrame(id));
-    document.body.innerHTML = `
-      <div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif">
-        <div style="font-size:32px;color:#38bdf8;font-weight:900">Module 3001 Complete!</div>
-        <div style="color:#94a3b8;font-size:16px;font-family:'JetBrains Mono',monospace">Great work mastering Newton's First Law.</div>
-      </div>
-    `;
+    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Completed!</div><div style="color:#94a3b8;font-size:16px;font-family:monospace">All empirical data and lexical scores logged.</div></div>';
   });
 });
 </script>
