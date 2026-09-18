@@ -11,9 +11,11 @@ const REVENUE_DATA = [
   { month: 'Apr', rev: 24000 },
 ];
 
+import { getActivePaletteId, getPalette } from '../lib/paletteThemes';
+
 const USER_STATS = [
-  { name: 'District', value: 4500, color: '#2563eb' },
-  { name: 'Individual', value: 1200, color: '#87A96B' },
+  { name: 'District', value: 4500, color: getPalette(getActivePaletteId()).chartHigh },
+  { name: 'Individual', value: 1200, color: getPalette(getActivePaletteId()).chartMid },
 ];
 
 interface PendingDemoRequest {
