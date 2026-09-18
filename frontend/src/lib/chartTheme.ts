@@ -1,3 +1,5 @@
+import { getActivePaletteId, getPalette } from './paletteThemes';
+
 /** Recharts tooltip styles that work in light and dark mode */
 export function chartTooltipStyle(isDark: boolean) {
   return {
@@ -24,8 +26,9 @@ export function chartGridColor(isDark: boolean) {
 }
 
 export function chartBarFill(score: number, isDark: boolean): string {
-  if (score >= 80) return isDark ? '#48CAE4' : '#0077B6';
-  if (score >= 60) return isDark ? '#90E0EF' : '#48CAE4';
+  const palette = getPalette(getActivePaletteId());
+  if (score >= 80) return isDark ? palette.chartHighDark : palette.chartHigh;
+  if (score >= 60) return isDark ? palette.chartMidDark : palette.chartMid;
   return isDark ? '#fb923c' : '#fca5a5';
 }
 
