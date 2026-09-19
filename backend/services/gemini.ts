@@ -58,8 +58,10 @@ export async function getSocraticResponse(
         })
       });
 
-      const data = await response.json();
-      return data.choices[0].message.content || "I'm having trouble connecting to my scientific database.";
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      return data.choices?.[0]?.message?.content || "I'm having trouble connecting to my scientific database.";
     } catch (err) {
       console.error("OpenRouter Error:", err);
     }
