@@ -4,20 +4,30 @@
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Dependencies
 node_modules/
+**/node_modules/
 
 # Environment variables
 .env
+.env.*
 .env.local
 .env.*.local
+!.env.example
 
 # Build output
 dist/
 build/
 .cache/
+frontend/dist/
+backend/dist/
+
+# Vite
+.vite/
+**/.vite/
 
 # IDE
 .vscode/
@@ -28,3 +38,10 @@ build/
 # Logs
 *.log
 npm-debug.log*
+
+# macOS Finder duplicate copies (break TypeScript / CI)
+**/* 2.*
+**/* 3.*
+**/* 4.*
+**/lib 2/
+**/scripts 2/
