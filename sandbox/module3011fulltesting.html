@@ -1506,7 +1506,13 @@ function initCosmicBackground() {
 }
 
 // 2-Second Cinematic Interstellar Transition
+let stepTransitionInFlight = false;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
+  if (stepTransitionInFlight) {
+    if (onComplete) onComplete();
+    return;
+  }
+  stepTransitionInFlight = true;
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
   const numberText = document.getElementById('transition-step-number');
@@ -1619,6 +1625,7 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       overlay.classList.remove('active');
       overlay.style.transform = 'translate(0px, 0px)';
       ctx.clearRect(0, 0, width, height);
+      stepTransitionInFlight = false;
       if (onComplete) onComplete();
     }
   }
@@ -1819,10 +1826,20 @@ function updateTelemetryDisplay() {
   document.getElementById('metric-val-3').textContent = Math.abs(derivedMetric).toFixed(2);
   document.getElementById('metric-val-4').textContent = (Math.abs(derivedMetric) * 1.5).toFixed(2);
 
+  const leftSpan = 100;
+  const rightSpan = 100;
+  const sameScale = true;
+  const balanceTol = Math.max(2, leftSpan * 0.05);
+  const leftMoved = Math.abs(labState.valLeft - 40) >= leftSpan * 0.15;
+  const rightMoved = Math.abs(labState.valRight - 80) >= rightSpan * 0.15;
+  const goalMet = sameScale
+    ? Math.abs(derivedMetric) <= balanceTol
+    : (leftMoved && rightMoved);
+
   const statusPill = document.getElementById('status-main-pill');
-  if (Math.abs(derivedMetric) <= 2) {
+  if (goalMet) {
     statusPill.className = 'status-pill nominal';
-    statusPill.textContent = 'EQUILIBRIUM / BALANCED';
+    statusPill.textContent = sameScale ? 'EQUILIBRIUM / BALANCED' : 'TARGET CONDITION MET';
   } else {
     statusPill.className = 'status-pill';
     statusPill.textContent = 'DYNAMIC VARIATION';
@@ -1833,14 +1850,16 @@ function updateTelemetryDisplay() {
     setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>Maternal Trait Expression</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
   } else if (labState.currentStep === 3 && labState.isSimRunning) {
     const confirmContainer = document.getElementById('balance-confirmation-container');
-    if (Math.abs(derivedMetric) <= 2) {
-      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>Inherited Trait</em> and <em>Offspring</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
+    if (goalMet) {
+      setTutorMessage("<strong>Target Condition Achieved!</strong><br><br>Notice how adjusting <em>Inherited Trait</em> and <em>Offspring</em> changes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
       if (!document.getElementById('btn-confirm-balance')) {
         confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
         document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
       }
     } else {
-      setTutorMessage("Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity.");
+      setTutorMessage(sameScale
+        ? "Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity."
+        : "Adjust <strong>both</strong> controls away from their starting values to gather comparative evidence.");
       confirmContainer.innerHTML = '';
     }
   }
@@ -2227,6 +2246,14 @@ function buildResultsSummary() {
     : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: Inherited Trait, Offspring, Phenotype, Genetics.";
 
   document.getElementById('tutor-final-summary').textContent = finalSummaryText;
+
+  try {
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'valley-lab-complete', moduleId: String(3011), score: scorePercentage }, '*');
+    }
+  } catch (err) {
+    /* ignore cross-origin */
+  }
 }
 
 function renderScoreRing(percentage) {
@@ -2324,19 +2351,49 @@ function launchCelebrationParticles() {
   render();
 }
 
-// Valerie Socratic AI Stub
+// Valerie Socratic AI
 const valerieAI = {
-  isEnabled: false,
+  isEnabled: true,
   apiEndpoint: '/api/chat',
   apiKey: '',
   chatHistory: [],
   async callTutorAPI(userMessage) {
-    return {
-      success: false,
-      reply: "Valerie Socratic Tutor is analyzing your query on Inherited Traits. Remember to cite: Inherited Trait and Offspring."
-    };
+    try {
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.apiKey ? { 'Authorization': 'Bearer ' + this.apiKey } : {})
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          history: this.chatHistory,
+          moduleContext: 'Module 3011: Genetic Inheritance & Phenotypic Patterns. Concept: Inherited Traits. Target vocab: Inherited Trait, Offspring, Phenotype, Genetics.'
+        })
+      });
+      if (!response.ok) throw new Error('status ' + response.status);
+      const data = await response.json();
+      return { success: true, reply: data.response || data.reply || 'What do you notice in the lab?' };
+    } catch (err) {
+      return {
+        success: false,
+        reply: "Valerie is analyzing your query on Inherited Traits. Remember to cite: Inherited Trait and Offspring."
+      };
+    }
   }
 };
+
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data && event.data.type === 'vs-auth-token' && typeof event.data.token === 'string') {
+    valerieAI.apiKey = event.data.token;
+  }
+});
+
+try {
+  const stashed = localStorage.getItem('vs-auth-token');
+  if (stashed) valerieAI.apiKey = stashed;
+} catch (e) { /* ignore */ }
 
 // Wire Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -2442,7 +2499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       labState.valRight = Math.max(0, Math.min(100, labState.valRight + delta));
     }
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55.00000000000001) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2460,7 +2517,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('slider-left').disabled) return;
     labState.valLeft = parseFloat(e.target.value);
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55.00000000000001) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }

@@ -94,11 +94,39 @@ describe('buildStudentChatContext', () => {
     expect(ctx).toContain('72%');
     expect(ctx).toContain('Week 1 Forces');
     expect(ctx).toContain('What is inertia?');
+    expect(ctx).toContain('HARD RULES');
+  });
+
+  it('warns Valerie when the lab is not completed', () => {
+    const ctx = buildStudentChatContext({
+      moduleTitle: 'Balanced Forces',
+      hasLab: true,
+      labCompleted: false,
+      sessionPhase: 'pre_lab',
+    });
+    expect(ctx).toContain('NOT completed');
+    expect(ctx).toContain('Do NOT ask');
+    expect(ctx).toContain('pre_lab');
+  });
+
+  it('allows lab questions only after completion', () => {
+    const ctx = buildStudentChatContext({
+      moduleTitle: 'Balanced Forces',
+      hasLab: true,
+      labCompleted: true,
+      ahHaGoal: 'Equal forces cancel',
+      learnerProfile: { prefersAnalogies: true, recentWins: ['Finished weather lab'] },
+    });
+    expect(ctx).toContain('HAS completed');
+    expect(ctx).toContain('Equal forces cancel');
+    expect(ctx).toContain('likes everyday analogies');
+    expect(ctx).toContain('Finished weather lab');
   });
 
   it('still returns guidance with minimal input', () => {
     const ctx = buildStudentChatContext({});
-    expect(ctx).toContain('Use this context to personalize questions');
+    expect(ctx).toContain('HARD RULES');
+    expect(ctx).toContain('Never invent');
   });
 });
 

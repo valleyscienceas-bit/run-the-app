@@ -1,8 +1,9 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, Lock, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, FlaskConical, Lock, MessageCircle, Play } from 'lucide-react';
 import { NGSSModule, StudentLearningProgress, Unit, Lesson, Topic } from '../types';
 import { BACK_LINK_CLASS } from '../lib/buttonStyles';
 import {
   computeModuleProgressPercent,
+  isLabComplete,
   isLessonComplete,
   isLessonUnlocked,
   isModuleComplete,
@@ -11,6 +12,7 @@ import {
   sortedLessons,
   sortedTopics,
 } from '../lib/learningProgression';
+import { openSandboxLab } from '../lib/authHeaders';
 
 interface ModuleDetailViewProps {
   module: NGSSModule;
@@ -19,6 +21,8 @@ interface ModuleDetailViewProps {
   onBack: () => void;
   onSelectTopic: (module: NGSSModule, lesson: Lesson, topic: Topic) => void;
   onTakePlacementTest: (module: NGSSModule) => void;
+  onCompleteLab?: (module: NGSSModule) => void;
+  completingLab?: boolean;
 }
 
 export function ModuleDetailView({
@@ -28,10 +32,14 @@ export function ModuleDetailView({
   onBack,
   onSelectTopic,
   onTakePlacementTest,
+  onCompleteLab,
+  completingLab,
 }: ModuleDetailViewProps) {
   const pct = computeModuleProgressPercent(progress, module);
   const complete = isModuleComplete(progress, module);
   const lessons = sortedLessons(module);
+  const hasLab = Boolean(module.sandboxHtml);
+  const labDone = isLabComplete(progress, module);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
@@ -56,8 +64,66 @@ export function ModuleDetailView({
         </div>
       </header>
 
+      <div className="grid gap-3 md:grid-cols-3">
+        {[
+          { n: 1, label: 'Lab', desc: 'Explore & observe', done: !hasLab || labDone },
+          { n: 2, label: 'Lessons', desc: 'Learn with Valerie', done: complete },
+          { n: 3, label: 'Module check', desc: 'Show what you know', done: false },
+        ].map((step) => (
+          <div
+            key={step.n}
+            className={`rounded-2xl border-2 px-4 py-3 ${
+              step.done
+                ? 'border-sage-green/40 bg-sage-green/10'
+                : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'
+            }`}
+          >
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step {step.n}</p>
+            <p className="font-black text-slate-900 dark:text-slate-100">{step.label}</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{step.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {hasLab && (
+        <section className="rounded-[32px] border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600">
+              <FlaskConical size={20} />
+            </span>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Step 1 — Lab</p>
+              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Interactive Space Lab</h2>
+            </div>
+          </div>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            Run the experiment end-to-end (observations → quiz). Finishing the lab quiz marks it complete automatically.
+            You can also take a module check to skip ahead if you already know the material.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => module.sandboxHtml && openSandboxLab(module.sandboxHtml)}
+              className="inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 rounded-2xl font-black text-sm hover:opacity-90"
+            >
+              <Play size={16} /> Launch lab
+            </button>
+            {labDone && (
+              <span className="inline-flex items-center gap-2 text-sage-green font-black text-sm">
+                <CheckCircle2 size={16} /> Lab complete — lessons unlocked
+              </span>
+            )}
+          </div>
+        </section>
+      )}
+
       <div className="space-y-6">
-        <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Lessons — complete in order</h2>
+        <div className="flex items-center gap-3">
+          <MessageCircle size={18} className="text-soft-pink" />
+          <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
+            Step 2 — Lessons with Valerie {hasLab && !labDone ? '(unlock after lab)' : '(complete in order)'}
+          </h2>
+        </div>
 
         {lessons.map((lesson, lessonIndex) => {
           const lessonUnlocked = isLessonUnlocked(progress, module, lesson);
@@ -93,7 +159,7 @@ export function ModuleDetailView({
                 </div>
                 {!lessonUnlocked && (
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 shrink-0">
-                    Complete prior lesson
+                    {hasLab && !labDone ? 'Finish lab first' : 'Complete prior lesson'}
                   </span>
                 )}
               </div>
@@ -174,22 +240,21 @@ export function ModuleDetailView({
           <div className="max-w-xl">
             <div className="flex items-center gap-3 text-soft-pink font-black text-xs uppercase tracking-widest mb-4">
               <ClipboardCheck size={20} />
-              Module check
+              Step 3 — Module check
             </div>
-            <h3 className="text-2xl font-black mb-3">Ready for the module placement test?</h3>
+            <h3 className="text-2xl font-black mb-3">Ready for the module check?</h3>
             <p className="text-slate-400 font-medium">
               {complete
-                ? 'You finished all lessons — verify your understanding with a quick check.'
-                : 'Finish all lessons first, then take the placement test to confirm mastery.'}
+                ? 'You finished the lab and lessons — verify your understanding with a quick check.'
+                : 'Finish the lab and lessons first, or take this check now to skip ahead (70%+ credits the module).'}
             </p>
           </div>
           <button
             type="button"
             onClick={() => onTakePlacementTest(module)}
-            disabled={!complete}
-            className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-700"
+            className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-soft-pink hover:text-white transition-all whitespace-nowrap border border-slate-200 dark:border-slate-700"
           >
-            Take placement test <ArrowRight size={20} />
+            {complete ? 'Take module check' : 'Skip ahead with module check'} <ArrowRight size={20} />
           </button>
         </div>
       )}

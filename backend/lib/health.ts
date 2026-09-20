@@ -32,9 +32,15 @@ export function checkSmtpEnv(env: NodeJS.ProcessEnv = process.env): HealthCheckR
 }
 
 export function checkAiEnv(env: NodeJS.ProcessEnv = process.env): HealthCheckResult {
+  const provider = (env.AI_PROVIDER || "auto").trim().toLowerCase();
+  const hasLocal = Boolean(env.LOCAL_LLM_BASE_URL?.trim());
   const hasGemini = Boolean(env.GEMINI_API_KEY?.trim());
   const hasOpenRouter = Boolean(env.OPENROUTER_API_KEY?.trim());
 
+  if (provider === "local" || (provider === "auto" && hasLocal)) {
+    const model = env.LOCAL_LLM_MODEL?.trim() || "phi-4-mini-instruct";
+    return { ok: true, message: `local configured (${model})` };
+  }
   if (hasGemini) {
     return { ok: true, message: "gemini configured" };
   }

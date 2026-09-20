@@ -17,6 +17,8 @@ export interface CatalogModule {
   gradeLevel: string;
   unitId: string;
   lessons: CatalogLesson[];
+  /** When true, lessons unlock only after labCompleted */
+  requiresLab?: boolean;
 }
 
 function lesson(id: string, order: number, topicIds: string[]): CatalogLesson {
@@ -61,6 +63,40 @@ export const CATALOG_MODULES: CatalogModule[] = [
       lesson("5-1-1-L3", 3, ["5-1-1-L3-T1", "5-1-1-L3-T2"]),
     ],
   },
+  {
+    id: "3-3001",
+    order: 1,
+    gradeLevel: "3",
+    unitId: "3-U3",
+    requiresLab: true,
+    lessons: [
+      lesson("3-3001-L1", 1, ["3-3001-L1-T1", "3-3001-L1-T2"]),
+      lesson("3-3001-L2", 2, ["3-3001-L2-T1", "3-3001-L2-T2"]),
+      lesson("3-3001-L3", 3, ["3-3001-L3-T1", "3-3001-L3-T2"]),
+    ],
+  },
+  {
+    id: "3-3002",
+    order: 1,
+    gradeLevel: "3",
+    unitId: "3-U1",
+    requiresLab: true,
+    lessons: [
+      lesson("3-3002-L1", 1, ["3-3002-L1-T1", "3-3002-L1-T2"]),
+      lesson("3-3002-L2", 2, ["3-3002-L2-T1", "3-3002-L2-T2"]),
+    ],
+  },
+  {
+    id: "3-3007",
+    order: 2,
+    gradeLevel: "3",
+    unitId: "3-U1",
+    requiresLab: true,
+    lessons: [
+      lesson("3-3007-L1", 1, ["3-3007-L1-T1", "3-3007-L1-T2"]),
+      lesson("3-3007-L2", 2, ["3-3007-L2-T1", "3-3007-L2-T2"]),
+    ],
+  },
 ];
 
 export function getCatalogModule(moduleId: string): CatalogModule | undefined {
@@ -72,6 +108,7 @@ export interface ModuleLearningProgress {
   completedTopicIds: string[];
   currentLessonId?: string;
   currentTopicId?: string;
+  labCompleted?: boolean;
 }
 
 export interface StudentLearningProgress {
@@ -90,6 +127,7 @@ function moduleProgress(progress: StudentLearningProgress, moduleId: string): Mo
     completedTopicIds: base?.completedTopicIds || [],
     currentLessonId: base?.currentLessonId,
     currentTopicId: base?.currentTopicId,
+    labCompleted: Boolean(base?.labCompleted),
   };
 }
 
@@ -111,10 +149,55 @@ function isLessonComplete(progress: StudentLearningProgress, mod: CatalogModule,
 }
 
 function isLessonUnlocked(progress: StudentLearningProgress, mod: CatalogModule, lesson: CatalogLesson): boolean {
+  if (mod.requiresLab && !moduleProgress(progress, mod.id).labCompleted) {
+    return false;
+  }
   const lessons = sortedLessons(mod);
   const idx = lessons.findIndex(l => l.id === lesson.id);
   if (idx <= 0) return true;
   return isLessonComplete(progress, mod, lessons[idx - 1]);
+}
+
+export function applyLabCompletionServer(
+  progress: StudentLearningProgress,
+  moduleId: string
+): StudentLearningProgress {
+  const mod = getCatalogModule(moduleId);
+  if (!mod) return progress;
+  const prev = moduleProgress(progress, moduleId);
+  return {
+    ...progress,
+    byModule: {
+      ...progress.byModule,
+      [moduleId]: { ...prev, labCompleted: true },
+    },
+  };
+}
+
+/** Credit an entire module after a passing module check / skip test. */
+export function applyModuleCreditFromTestServer(
+  progress: StudentLearningProgress,
+  moduleId: string
+): StudentLearningProgress {
+  const mod = getCatalogModule(moduleId);
+  if (!mod) return progress;
+  const prev = moduleProgress(progress, moduleId);
+  const completedLessonIds = sortedLessons(mod).map((l) => l.id);
+  const completedTopicIds = sortedLessons(mod).flatMap((l) => sortedTopics(l).map((t) => t.id));
+  const nextMp: ModuleLearningProgress = {
+    ...prev,
+    labCompleted: true,
+    completedLessonIds,
+    completedTopicIds,
+  };
+  const completedModuleIds = progress.completedModuleIds.includes(moduleId)
+    ? progress.completedModuleIds
+    : [...progress.completedModuleIds, moduleId];
+  return {
+    ...progress,
+    byModule: { ...progress.byModule, [moduleId]: nextMp },
+    completedModuleIds,
+  };
 }
 
 function isTopicUnlocked(

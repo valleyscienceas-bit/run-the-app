@@ -1495,7 +1495,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
     <button class="btn-secondary" id="btn-open-standards">ⓘ What You'll Learn</button>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:70px 20px 20px;z-index:5;max-width:640px;animation:fadeUp .6s ease both">
-    <div class="badge">MS-PS2-1 · Grade 8 · Module 3001</div>
+    <div class="badge">Utah SEEd 3.3.1 · Grade 3 · Module 3001</div>
     <h1 class="intro-title">Balanced<br><span>Forces</span></h1>
     <canvas id="icon-canvas" width="280" height="110"></canvas>
     <div class="terminal-box">
@@ -1512,14 +1512,14 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 <!-- Standards Modal -->
 <div class="modal-overlay" id="modal-standards">
   <div class="modal-dialog">
-    <span class="badge" style="margin-bottom:12px;display:inline-block">MS-PS2-1</span>
+    <span class="badge" style="margin-bottom:12px;display:inline-block">Utah SEEd 3.3.1</span>
     <h2>What You'll Learn in This Lab</h2>
     <ul>
       <li><strong>Balanced Forces:</strong> What happens when two opposite pushes or pulls have equal strength.</li>
       <li><strong>Total Net Force:</strong> Why equal opposite forces cancel each other out to zero (0 N).</li>
       <li><strong>Newton's First Law:</strong> When the total net force is zero, an object will not speed up or slow down!</li>
     </ul>
-    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Grade 8 Physical Science standards.</p>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah SEEd Grade 3 (Force Affects Motion).</p>
     <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Got it!</button>
   </div>
 </div>
@@ -1876,7 +1876,13 @@ function initCosmicBackground() {
 
 // Interstellar Liquid Glass Step Wave Transition (2s Cinematic Arc)
 // Starts slow, decelerates to near-stop with gentle hover, then zooms across with screen shake
+let stepTransitionInFlight = false;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
+  if (stepTransitionInFlight) {
+    if (onComplete) onComplete();
+    return;
+  }
+  stepTransitionInFlight = true;
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
   const numberText = document.getElementById('transition-step-number');
@@ -2004,6 +2010,7 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       overlay.classList.remove('active');
       overlay.style.transform = 'translate(0px, 0px)';
       ctx.clearRect(0, 0, width, height);
+      stepTransitionInFlight = false;
       if (onComplete) onComplete();
     }
   }
@@ -2894,6 +2901,14 @@ function buildResultsSummary() {
     : `Good effort! You scored ${scorePercentage}%. Remember: when two opposite forces are equal in strength, they cancel out so total net force = 0.`;
 
   document.getElementById('tutor-final-summary').textContent = finalSummaryText;
+
+  try {
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'valley-lab-complete', moduleId: '3001', score: scorePercentage }, '*');
+    }
+  } catch (err) {
+    /* ignore */
+  }
 }
 
 function renderScoreRing(percentage) {
@@ -3004,7 +3019,7 @@ function launchCelebrationParticles() {
 
 // Valerie AI Tutor API Configuration & State
 const valerieAI = {
-  isEnabled: false,
+  isEnabled: true,
   apiEndpoint: '/api/chat',
   apiKey: '',
   chatHistory: [],
@@ -3030,7 +3045,8 @@ const valerieAI = {
           history: this.chatHistory,
           moduleContext: JSON.stringify({
             module: '3001 - Balanced Forces',
-            standard: 'MS-PS2-1',
+            standard: 'Utah SEEd 3.3.1',
+            ahHaGoal: 'Equal opposite forces cancel — net force zero means no acceleration.',
             leftForce: physicsState.leftForce,
             rightForce: physicsState.rightForce,
             netForce: physicsState.rightForce - physicsState.leftForce,
@@ -3061,6 +3077,18 @@ const valerieAI = {
     }
   }
 };
+
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data && event.data.type === 'vs-auth-token' && typeof event.data.token === 'string') {
+    valerieAI.apiKey = event.data.token;
+  }
+});
+
+try {
+  const stashed = localStorage.getItem('vs-auth-token');
+  if (stashed) valerieAI.apiKey = stashed;
+} catch (e) { /* ignore */ }
 
 // Event Listeners Wire-up
 document.addEventListener('DOMContentLoaded', () => {

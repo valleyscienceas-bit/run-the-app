@@ -81,6 +81,6 @@ describe("validateEnv", () => {
     expect(result.ok).toBe(true);
     expect(result.warnings.some((w) => w.includes("SMTP"))).toBe(true);
     expect(result.warnings.some((w) => w.includes("CRON_SECRET"))).toBe(true);
-    expect(result.warnings.some((w) => w.includes("AI API key"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("AI provider") || w.includes("AI API"))).toBe(true);
   });
 });

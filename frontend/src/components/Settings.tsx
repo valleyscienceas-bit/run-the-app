@@ -7,6 +7,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { MfaSettings } from './MfaSettings';
 import { LinkParentCard } from './LinkParentCard';
 import { INPUT_CLASS_PX } from '../lib/formStyles';
+import { getPasswordValidationError, PASSWORD_REQUIREMENTS_MESSAGE } from '../lib/passwordValidation';
 
 interface SettingsProps {
   userState: UserState;
@@ -58,8 +59,9 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
       setMessage({ type: 'error', text: 'Passwords do not match' });
       return;
     }
-    if (newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+    const passwordError = getPasswordValidationError(newPassword);
+    if (passwordError) {
+      setMessage({ type: 'error', text: passwordError });
       return;
     }
 
@@ -161,6 +163,7 @@ export function Settings({ userState, onUpdateProfile, onReplayTour }: SettingsP
                 disabled={loading}
                 className={INPUT_CLASS_PX}
               />
+              <p className="text-[10px] text-slate-400 mt-2 ml-1 font-bold">{PASSWORD_REQUIREMENTS_MESSAGE}</p>
             </div>
 
             <div>

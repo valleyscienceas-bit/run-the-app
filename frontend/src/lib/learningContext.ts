@@ -1,5 +1,11 @@
 import { FULL_CURRICULUM, UNITS } from '../curriculum';
-import { GradeLevel, NGSSModule, TestResult, Unit } from '../types';
+import {
+  GradeLevel,
+  NGSSModule,
+  TestResult,
+  Unit,
+  ValerieLearnerProfile,
+} from '../types';
 
 export function getModuleById(id: string): NGSSModule | undefined {
   return FULL_CURRICULUM.find(m => m.id === id);
@@ -38,12 +44,10 @@ export function computeOpenAndClosedGaps(results: TestResult[]): { openGaps: str
   const allGaps = results.flatMap(r => r.gaps || []);
   const latestGaps = results.length > 0 ? (results[results.length - 1].gaps || []) : [];
 
-  // Non-module gaps close when absent from the latest test
   for (const g of allGaps) {
     if (!latestGaps.includes(g)) closedGapSet.add(g);
   }
 
-  // Module gaps stay closed after a passing module test even if they reappear in latest
   for (const mod of FULL_CURRICULUM) {
     if (passedModuleIds.has(mod.id)) closedGapSet.add(mod.gap);
   }
@@ -80,27 +84,69 @@ export function recommendNextModule(
   return { module: first, gap: first?.gap || null };
 }
 
+export type ChatSessionPhase = 'open_chat' | 'pre_lab' | 'post_lab_lessons' | 'ready_for_check';
+
 export interface StudentChatContextInput {
   grade?: string;
   moduleTitle?: string;
   moduleCode?: string;
   moduleGap?: string;
+  moduleDescription?: string;
+  ahHaGoal?: string;
+  hasLab?: boolean;
+  labCompleted?: boolean;
+  lessonTitle?: string;
+  topicTitle?: string;
+  topicDescription?: string;
+  sessionPhase?: ChatSessionPhase;
   openGaps?: string[];
   closedGaps?: string[];
   placementScore?: number | null;
   assignmentTitle?: string;
   lastChatTopic?: string;
+  learnerProfile?: ValerieLearnerProfile | null;
 }
 
 export function buildStudentChatContext(input: StudentChatContextInput): string {
   const lines: string[] = [];
   if (input.grade) lines.push(`Student grade level: ${input.grade}`);
+
   if (input.moduleTitle) {
     lines.push(
-      `Current module: ${input.moduleTitle}${input.moduleCode ? ` (${input.moduleCode})` : ''}.` +
-      (input.moduleGap ? ` Primary gap for this module: ${input.moduleGap}` : '')
+      `Current module: ${input.moduleTitle}${input.moduleCode ? ` (${input.moduleCode})` : ''}.`
+    );
+    if (input.moduleDescription) lines.push(`Module about: ${input.moduleDescription}`);
+    if (input.moduleGap) lines.push(`Primary gap for this module: ${input.moduleGap}`);
+    if (input.ahHaGoal) lines.push(`Target ah-ha for this module: ${input.ahHaGoal}`);
+  } else {
+    lines.push('No specific module is selected right now (open Socratic chat).');
+  }
+
+  if (input.hasLab) {
+    if (input.labCompleted) {
+      lines.push(
+        `LAB STATUS: The student HAS completed the interactive lab for this module. You may ask about their observations from THIS module's lab only (${input.moduleTitle}).`
+      );
+    } else {
+      lines.push(
+        `LAB STATUS: The student has NOT completed the interactive lab for this module yet. Do NOT ask "what happened in today's lab" or invent a past experiment (no car labs, no previous class labs). Invite them to try the lab, or ask what they already wonder about the topic.`
+      );
+    }
+  } else if (input.moduleTitle) {
+    lines.push('This module has no interactive lab. Teach from lessons/topics only — do not invent a lab.');
+  }
+
+  if (input.lessonTitle || input.topicTitle) {
+    lines.push(
+      `Current lesson/topic: ${[input.lessonTitle, input.topicTitle].filter(Boolean).join(' → ')}.` +
+        (input.topicDescription ? ` Topic focus: ${input.topicDescription}` : '')
     );
   }
+
+  if (input.sessionPhase) {
+    lines.push(`Session phase: ${input.sessionPhase}`);
+  }
+
   if (input.openGaps && input.openGaps.length > 0) {
     lines.push(`Open conceptual gaps to repair: ${input.openGaps.slice(0, 8).join('; ')}`);
   }
@@ -114,8 +160,46 @@ export function buildStudentChatContext(input: StudentChatContextInput): string 
     lines.push(`Active teacher assignment: "${input.assignmentTitle}" — prioritize this work.`);
   }
   if (input.lastChatTopic) {
-    lines.push(`Student's recent focus: ${input.lastChatTopic}`);
+    lines.push(`Student's recent chat focus: ${input.lastChatTopic}`);
   }
-  lines.push('Use this context to personalize questions. Prefer open gaps and the current module.');
+
+  const lp = input.learnerProfile;
+  if (lp) {
+    const prefs: string[] = [];
+    if (lp.prefersAnalogies) prefs.push('likes everyday analogies');
+    if (lp.prefersShortQuestions) prefs.push('prefers short questions');
+    if (lp.prefersStepByStep) prefs.push('likes step-by-step scaffolding');
+    if (prefs.length) lines.push(`How this student learns best: ${prefs.join('; ')}.`);
+    if (lp.recentStruggles?.length) {
+      lines.push(`Recent struggles to be gentle with: ${lp.recentStruggles.slice(0, 4).join('; ')}`);
+    }
+    if (lp.recentWins?.length) {
+      lines.push(`Recent wins to build on: ${lp.recentWins.slice(0, 4).join('; ')}`);
+    }
+    if (lp.coachingNotes?.length) {
+      lines.push(`Coach notes: ${lp.coachingNotes.slice(0, 4).join('; ')}`);
+    }
+  }
+
+  lines.push(
+    'HARD RULES: Only refer to labs/experiments the student actually completed (see LAB STATUS). Never invent prior activities. Personalize using gaps and learner notes. Prefer questions over lectures.'
+  );
   return lines.join('\n');
+}
+
+export function mergeValerieLearnerProfile(
+  prev: ValerieLearnerProfile | undefined,
+  patch: Partial<ValerieLearnerProfile>
+): ValerieLearnerProfile {
+  const next: ValerieLearnerProfile = { ...(prev || {}), ...patch, updatedAt: new Date().toISOString() };
+  if (patch.recentWins) {
+    next.recentWins = [...(prev?.recentWins || []), ...patch.recentWins].slice(-6);
+  }
+  if (patch.recentStruggles) {
+    next.recentStruggles = [...(prev?.recentStruggles || []), ...patch.recentStruggles].slice(-6);
+  }
+  if (patch.coachingNotes) {
+    next.coachingNotes = [...(prev?.coachingNotes || []), ...patch.coachingNotes].slice(-6);
+  }
+  return next;
 }

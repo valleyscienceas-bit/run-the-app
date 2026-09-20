@@ -3,6 +3,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { MODULES } from './generate_modules_data.js';
 
 function renderModuleHTML(m: any): string {
@@ -1494,7 +1495,13 @@ function initCosmicBackground() {
 }
 
 // 2-Second Cinematic Interstellar Transition
+let stepTransitionInFlight = false;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
+  if (stepTransitionInFlight) {
+    if (onComplete) onComplete();
+    return;
+  }
+  stepTransitionInFlight = true;
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
   const numberText = document.getElementById('transition-step-number');
@@ -1607,6 +1614,7 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
       overlay.classList.remove('active');
       overlay.style.transform = 'translate(0px, 0px)';
       ctx.clearRect(0, 0, width, height);
+      stepTransitionInFlight = false;
       if (onComplete) onComplete();
     }
   }
@@ -1807,10 +1815,24 @@ function updateTelemetryDisplay() {
   document.getElementById('metric-val-3').textContent = Math.abs(derivedMetric).toFixed(2);
   document.getElementById('metric-val-4').textContent = (Math.abs(derivedMetric) * 1.5).toFixed(2);
 
+  const leftSpan = ${m.leftControl.max - m.leftControl.min};
+  const rightSpan = ${m.rightControl.max - m.rightControl.min};
+  const sameScale = ${JSON.stringify(
+    m.leftControl.unit === m.rightControl.unit &&
+      m.leftControl.min === m.rightControl.min &&
+      m.leftControl.max === m.rightControl.max
+  )};
+  const balanceTol = Math.max(2, leftSpan * 0.05);
+  const leftMoved = Math.abs(labState.valLeft - ${m.leftControl.defaultVal}) >= leftSpan * 0.15;
+  const rightMoved = Math.abs(labState.valRight - ${m.rightControl.defaultVal}) >= rightSpan * 0.15;
+  const goalMet = sameScale
+    ? Math.abs(derivedMetric) <= balanceTol
+    : (leftMoved && rightMoved);
+
   const statusPill = document.getElementById('status-main-pill');
-  if (Math.abs(derivedMetric) <= 2) {
+  if (goalMet) {
     statusPill.className = 'status-pill nominal';
-    statusPill.textContent = 'EQUILIBRIUM / BALANCED';
+    statusPill.textContent = sameScale ? 'EQUILIBRIUM / BALANCED' : 'TARGET CONDITION MET';
   } else {
     statusPill.className = 'status-pill';
     statusPill.textContent = 'DYNAMIC VARIATION';
@@ -1821,14 +1843,16 @@ function updateTelemetryDisplay() {
     setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>${m.leftControl.title}</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
   } else if (labState.currentStep === 3 && labState.isSimRunning) {
     const confirmContainer = document.getElementById('balance-confirmation-container');
-    if (Math.abs(derivedMetric) <= 2) {
-      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>${m.targetVocab[0]}</em> and <em>${m.targetVocab[1]}</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
+    if (goalMet) {
+      setTutorMessage("<strong>Target Condition Achieved!</strong><br><br>Notice how adjusting <em>${m.targetVocab[0]}</em> and <em>${m.targetVocab[1]}</em> changes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
       if (!document.getElementById('btn-confirm-balance')) {
         confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
         document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
       }
     } else {
-      setTutorMessage("Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity.");
+      setTutorMessage(sameScale
+        ? "Fine-tune the controls using the +/- nudge buttons until both parameters reach balanced parity."
+        : "Adjust <strong>both</strong> controls away from their starting values to gather comparative evidence.");
       confirmContainer.innerHTML = '';
     }
   }
@@ -2215,6 +2239,14 @@ function buildResultsSummary() {
     : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: ${m.targetVocab.join(', ')}.";
 
   document.getElementById('tutor-final-summary').textContent = finalSummaryText;
+
+  try {
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'valley-lab-complete', moduleId: String(${m.id}), score: scorePercentage }, '*');
+    }
+  } catch (err) {
+    /* ignore cross-origin */
+  }
 }
 
 function renderScoreRing(percentage) {
@@ -2312,19 +2344,49 @@ function launchCelebrationParticles() {
   render();
 }
 
-// Valerie Socratic AI Stub
+// Valerie Socratic AI
 const valerieAI = {
-  isEnabled: false,
+  isEnabled: true,
   apiEndpoint: '/api/chat',
   apiKey: '',
   chatHistory: [],
   async callTutorAPI(userMessage) {
-    return {
-      success: false,
-      reply: "Valerie Socratic Tutor is analyzing your query on ${m.conceptTitle}. Remember to cite: ${m.targetVocab.slice(0, 2).join(' and ')}."
-    };
+    try {
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.apiKey ? { 'Authorization': 'Bearer ' + this.apiKey } : {})
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          history: this.chatHistory,
+          moduleContext: 'Module ${m.id}: ${m.title}. Concept: ${m.conceptTitle}. Target vocab: ${m.targetVocab.join(', ')}.'
+        })
+      });
+      if (!response.ok) throw new Error('status ' + response.status);
+      const data = await response.json();
+      return { success: true, reply: data.response || data.reply || 'What do you notice in the lab?' };
+    } catch (err) {
+      return {
+        success: false,
+        reply: "Valerie is analyzing your query on ${m.conceptTitle}. Remember to cite: ${m.targetVocab.slice(0, 2).join(' and ')}."
+      };
+    }
   }
 };
+
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data && event.data.type === 'vs-auth-token' && typeof event.data.token === 'string') {
+    valerieAI.apiKey = event.data.token;
+  }
+});
+
+try {
+  const stashed = localStorage.getItem('vs-auth-token');
+  if (stashed) valerieAI.apiKey = stashed;
+} catch (e) { /* ignore */ }
 
 // Wire Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -2430,7 +2492,7 @@ document.addEventListener('DOMContentLoaded', () => {
       labState.valRight = Math.max(${m.rightControl.min}, Math.min(${m.rightControl.max}, labState.valRight + delta));
     }
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= ${m.leftControl.min + (m.leftControl.max - m.leftControl.min) * 0.55}) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2448,7 +2510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('slider-left').disabled) return;
     labState.valLeft = parseFloat(e.target.value);
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= ${m.leftControl.min + (m.leftControl.max - m.leftControl.min) * 0.55}) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2527,10 +2589,11 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 // Generate all modules from 3001 through 3020
-console.log(`Generating 20 modules...`);
+const outDir = path.dirname(fileURLToPath(import.meta.url));
+console.log(`Generating 20 modules into ${outDir}...`);
 for (const m of MODULES) {
   const filename = `module${m.id}fulltesting.html`;
-  const filePath = path.join('/workspace/sandbox', filename);
+  const filePath = path.join(outDir, filename);
   
   // Note: For module 3001, we preserve the existing tested canvas physics loop while adding any missing features (e.g. Enter to submit / prev question already integrated)
   if (m.id === 3001 && fs.existsSync(filePath)) {

@@ -10,7 +10,7 @@ export type EmailSender = (opts: {
   html: string;
   text: string;
   context: string;
-}) => Promise<{ sent: boolean; simulated: boolean }>;
+}) => Promise<{ sent: boolean; simulated: boolean; error?: string; hint?: string }>;
 
 export type ProvisionParentParams = {
   studentUid: string;
@@ -28,6 +28,10 @@ export type ProvisionParentResult = {
   parentUid: string;
   parentDocId: string;
   created: boolean;
+  emailSent?: boolean;
+  emailSimulated?: boolean;
+  emailError?: string;
+  emailHint?: string;
 };
 
 export async function provisionParentForStudent(
@@ -128,7 +132,9 @@ export async function provisionParentForStudent(
     { merge: true }
   );
 
-  const shouldEmail = sendWelcomeEmail && (createdAuth || existingParent?.hasLoggedInBefore !== true);
+  // Only email once. Do NOT re-send on every login/payment while hasLoggedInBefore is still false.
+  const alreadyEmailed = existingParent?.welcomeEmailSentAt != null;
+  const shouldEmail = Boolean(sendWelcomeEmail) && !alreadyEmailed;
   if (shouldEmail) {
     const resetLink = await auth.generatePasswordResetLink(normalizedEmail);
     const accessPath = (existingParent?.path || path) as ParentAccessPath;
@@ -140,6 +146,7 @@ export async function provisionParentForStudent(
       <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 520px;">
         <h2 style="color: #0f172a;">Your Valley Science Parent Account is Ready</h2>
         <p>A parent monitoring account has been created for you to track <strong>${studentName || "your student"}'s</strong> science progress.</p>
+        <p><strong>Password tip:</strong> Use at least 8 characters with a letter and a number (same rules as student accounts).</p>
         <p>Click the button below to set your password and access your dashboard:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${resetLink}" style="background: #ec4899; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px;">Set Your Password</a>
@@ -157,13 +164,29 @@ export async function provisionParentForStudent(
       </div>
     `;
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: normalizedEmail,
       subject: `${studentName || "Your student"} — Set up your Valley Science parent account`,
       html: emailHtml,
-      text: `Set your Valley Science parent password: ${resetLink}`,
+      text: `Set your Valley Science parent password (8+ chars, letter + number): ${resetLink}`,
       context: accessPath === "district" ? "provision-district-parent" : "provision-parent",
     });
+
+    if (emailResult.sent || emailResult.simulated) {
+      const sentAt = new Date().toISOString();
+      await db.collection("users").doc(parentAuthUid).set({ welcomeEmailSentAt: sentAt }, { merge: true });
+      await db.collection("users").doc(parentDocId).set({ welcomeEmailSentAt: sentAt }, { merge: true });
+    }
+
+    return {
+      parentUid: parentAuthUid,
+      parentDocId,
+      created: createdAuth,
+      emailSent: emailResult.sent,
+      emailSimulated: emailResult.simulated,
+      emailError: emailResult.error,
+      emailHint: emailResult.hint,
+    };
   }
 
   return { parentUid: parentAuthUid, parentDocId, created: createdAuth };

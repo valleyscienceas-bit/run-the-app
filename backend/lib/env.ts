@@ -59,8 +59,14 @@ export function validateEnv(options?: {
     warnings.push("SMTP not configured — emails will be simulated (logged only)");
   }
 
-  if (!env.GEMINI_API_KEY?.trim() && !env.OPENROUTER_API_KEY?.trim()) {
-    warnings.push("No AI API key (GEMINI_API_KEY or OPENROUTER_API_KEY) — Socratic chat will fail");
+  if (
+    !env.GEMINI_API_KEY?.trim() &&
+    !env.OPENROUTER_API_KEY?.trim() &&
+    !env.LOCAL_LLM_BASE_URL?.trim()
+  ) {
+    warnings.push(
+      "No AI provider configured (LOCAL_LLM_BASE_URL, GEMINI_API_KEY, or OPENROUTER_API_KEY) — Socratic chat will fail"
+    );
   }
 
   if (!env.CRON_SECRET?.trim()) {
