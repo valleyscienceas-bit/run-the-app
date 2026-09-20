@@ -63,6 +63,59 @@ Do **one track at a time**. Do **not** merge into `main` until you are ready to 
 
 ---
 
+## Step 1b — Merge a short `ui/*` branch into `feature/ui` (not the hub)
+
+Use this when a one-off UI branch (for example `ui/lab-polish`) is done and should land on the **long-lived UI track** first. Do **not** open the PR against the hub here — hub still receives UI via `feature/ui` → hub (Step 1).
+
+### Why
+
+Short `ui/…` branches are disposable polish/experiment branches. Folding them into `feature/ui` keeps the UI track as the single source of UI history, then you merge `feature/ui` into the hub when that track is ready.
+
+### Commands (example: `ui/lab-polish` → `feature/ui`)
+
+```bash
+# On the short UI branch, after your work is committed:
+git push -u origin HEAD
+
+# Open a PR into the UI track — base is feature/ui, NOT the hub
+gh pr create --base feature/ui --head ui/lab-polish \
+  --title "Merge ui/lab-polish into feature/ui" \
+  --body "$(cat <<'EOF'
+## Summary
+- …
+
+## Test plan
+- [ ] …
+EOF
+)"
+```
+
+### After the PR is merged on GitHub
+
+```bash
+git switch feature/ui
+git pull
+
+# Optional: delete the short branch locally and on origin
+git branch -d ui/lab-polish
+git push origin --delete ui/lab-polish
+```
+
+When you later want this UI work on the hub, use **Step 1** (`feature/ui` → hub).
+
+### Plain English
+
+| Command | Meaning |
+|--|--|
+| `gh pr create --base feature/ui --head ui/…` | Merge the short UI branch into the UI track only |
+| `--base feature/ui` | Destination is the long-lived UI branch — **not** hub, **not** `main` |
+| `--head ui/…` | Source short branch |
+| Later Step 1 | Move accumulated UI track work into the hub |
+
+Same idea works for other short prefixes if you add them later (for example a disposable `ci/…` into `feature/app-ci-and-tests`): always PR into the matching long-lived `feature/*` track, never straight into the hub unless you intentionally want that.
+
+---
+
 ## Step 2 — Option A: Sync only `docs/prompt-queue.md` via cherry-pick
 
 Use this when you updated the prompt queue on the hub and want the **same commit** on UI / CI / Modules — **not** on `main`.
