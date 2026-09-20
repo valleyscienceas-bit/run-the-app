@@ -1,0 +1,114 @@
+# Merge tracks into hub + sync prompt queue
+
+Recipes for the four long-lived tracks. Hub = `feature/ai-functions-frontend-backend`.
+
+Flow: **UI / CI / Modules → hub → main (only when shipping).**
+
+---
+
+## Step 1 — Option A: Merge a side track into the hub via PR
+
+Use this after you commit and push work on `feature/ui`, `feature/modules`, or `feature/app-ci-and-tests`.
+
+### Why
+
+A pull request reviews the whole track’s commits before they land on the hub. Prefer this over a raw local merge.
+
+### Commands (example: UI → hub)
+
+```bash
+# On the side branch, after your work is committed:
+git push -u origin HEAD
+
+# Open a PR into the hub (change --head for modules / CI)
+gh pr create --base feature/ai-functions-frontend-backend --head feature/ui \
+  --title "Merge UI into hub" \
+  --body "$(cat <<'EOF'
+## Summary
+- …
+
+## Test plan
+- [ ] …
+EOF
+)"
+```
+
+Same pattern for the other tracks:
+
+| Track | `--head` value |
+|--|--|
+| UI | `feature/ui` |
+| Modules | `feature/modules` |
+| CI | `feature/app-ci-and-tests` |
+
+### After the PR is merged on GitHub
+
+```bash
+git switch feature/ai-functions-frontend-backend
+git pull
+```
+
+That updates your local hub to include the merge.
+
+### Plain English
+
+| Command | Meaning |
+|--|--|
+| `gh pr create --base … --head …` | Ask GitHub to merge the side branch into the hub |
+| `--base` | Destination branch (hub) |
+| `--head` | Source branch (UI / Modules / CI) |
+| `git switch` + `git pull` | Go to hub locally and download the merged result |
+
+Do **one track at a time**. Do **not** merge into `main` until you are ready to release.
+
+---
+
+## Step 2 — Option A: Sync only `docs/prompt-queue.md` via cherry-pick
+
+Use this when you updated the prompt queue on the hub and want the **same commit** on UI / CI / Modules — **not** on `main`.
+
+### Why
+
+A full branch merge would drag unrelated code. Cherry-pick replays **one commit**. Keep the prompt-queue edit in its **own commit** (no other files) so the cherry-pick stays clean.
+
+### On the hub first
+
+```bash
+git switch feature/ai-functions-frontend-backend
+# edit docs/prompt-queue.md, then:
+git add docs/prompt-queue.md
+git commit -m "Update prompt queue"
+git push
+
+COMMIT=$(git rev-parse HEAD)
+```
+
+`COMMIT=$(git rev-parse HEAD)` saves that commit’s ID for the loop below.
+
+### Copy to every track except `main`
+
+```bash
+for b in feature/ui feature/app-ci-and-tests feature/modules; do
+  git switch "$b"
+  git pull
+  git cherry-pick "$COMMIT"
+  git push
+done
+
+git switch feature/ai-functions-frontend-backend
+```
+
+`main` is intentionally **not** in that list.
+
+### Plain English
+
+| Command | Meaning |
+|--|--|
+| `git add` + `git commit` | Snapshot only the prompt-queue file on the hub |
+| `git push` | Upload that commit |
+| `COMMIT=$(git rev-parse HEAD)` | Remember this commit’s ID |
+| `for b in …; do …; done` | Repeat the same steps for each side branch |
+| `git cherry-pick "$COMMIT"` | Replay that one commit onto the current branch |
+| Final `git switch` hub | Return to the hub when finished |
+
+If cherry-pick conflicts, fix the file, `git add docs/prompt-queue.md`, then `git cherry-pick --continue` (or `git cherry-pick --abort` to cancel).
