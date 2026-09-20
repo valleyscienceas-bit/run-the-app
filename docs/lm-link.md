@@ -10,13 +10,36 @@ Related: [local-ai.md](./local-ai.md) (solo Phi-4-mini on 8GB).
 
 ## Right model (his iMac only)
 
-Download on **his** computer, not yours:
+Download on **his** computer, not yours.
+
+### Exact LM Studio download (use this)
+
+1. On **his** iMac, open LM Studio → **Discover** / Search.
+2. Paste this exact repo name:
+
+   `Qwen/Qwen2.5-14B-Instruct-GGUF`
+
+   That is the **official Qwen** GGUF (Alibaba / Qwen team).  
+   Hugging Face: https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF
+
+3. In the file list, download:
+
+   **`Qwen2.5-14B-Instruct-Q4_K_M.gguf`** (~8.99 GB)
+
+### Also fine in LM Studio (community packaging of the same model)
+
+If the Qwen repo doesn’t show cleanly in Discover, search:
+
+`lmstudio-community/Qwen2.5-14B-Instruct-GGUF`
+
+Same base model (`Qwen/Qwen2.5-14B-Instruct`), packaged for LM Studio. Still pick the **Q4_K_M** file (~8.99 GB).
 
 | Field | Value |
 | ----- | ----- |
-| Search | `Qwen2.5-14B-Instruct` |
-| Quant | **Q4_K_M** GGUF (~9 GB) |
-| Prefer | Official / `lmstudio-community` (or bartowski) — **not** random forks |
+| Official repo | `Qwen/Qwen2.5-14B-Instruct-GGUF` |
+| Alt (LM Studio community) | `lmstudio-community/Qwen2.5-14B-Instruct-GGUF` |
+| File | `Qwen2.5-14B-Instruct-Q4_K_M.gguf` |
+| Size | ~8.99 GB |
 
 **Do not download:**
 
@@ -24,7 +47,7 @@ Download on **his** computer, not yours:
 - `…Uncensored…` third-party forks (e.g. `roleplaiapp/…`)
 - Anything showing **Likely too large** on *your* laptop — that warning is about **your** RAM. Download on **his** 32GB iMac instead.
 
-If his Mac feels too slow with 14B, use **Llama-3.1-8B-Instruct Q4_K_M** instead.
+If his Mac feels too slow with 14B, use **`lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF`** → **Q4_K_M** instead.
 
 Your machine keeps **Phi-4-mini** (or your 3B) for solo use.
 
@@ -63,10 +86,9 @@ Flow:
 
 ### 3. Download the model on his iMac only
 
-1. On **his** machine: Discover / Search → `Qwen2.5-14B-Instruct`.  
-2. Pick **Q4_K_M** from a trusted publisher (see table above).  
-3. Download (~9 GB).  
-4. Leave LM Studio open with LM Link on.
+1. On **his** machine: Discover / Search → paste `Qwen/Qwen2.5-14B-Instruct-GGUF`.  
+2. Download **`Qwen2.5-14B-Instruct-Q4_K_M.gguf`** (~8.99 GB).  
+3. Leave LM Studio open with LM Link on.
 
 ### 4. On your computer: load HIS model
 
