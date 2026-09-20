@@ -1,6 +1,7 @@
 /** Experiment palettes for the color-palette branch (60/30/10 mapped onto app tokens). */
 
 export type PaletteId =
+  | 'valley-classic'
   | 'linear'
   | 'brilliant'
   | 'pro-dev'
@@ -35,6 +36,26 @@ export type PaletteTheme = {
 };
 
 export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
+  'valley-classic': {
+    id: 'valley-classic',
+    name: '0. Valley Science (current)',
+    vibe: 'Original brand — cream, soft pink, sage',
+    cream: '#FFFDD0',
+    softPink: '#FADADD',
+    sageGreen: '#87A96B',
+    surface: '#FFFFFF',
+    text: '#111827',
+    mutedText: '#6B7280',
+    border: '#FADADD',
+    font: '"Inter", -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif',
+    radiusCard: '16px',
+    radiusButton: '12px',
+    shadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+    chartHigh: '#87A96B',
+    chartHighDark: '#a3c97a',
+    chartMid: '#FADADD',
+    chartMidDark: '#f5b8c0',
+  },
   linear: {
     id: 'linear',
     name: '1. Authentic Linear / Notion',
@@ -179,6 +200,7 @@ export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
 };
 
 export const PALETTE_ORDER: PaletteId[] = [
+  'valley-classic',
   'linear',
   'brilliant',
   'pro-dev',
