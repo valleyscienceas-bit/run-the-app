@@ -2,6 +2,8 @@
 
 Valley Science talks to AI models through the backend (`POST /api/chat`). You can run a model on your laptop with **LM Studio**, or fall back to cloud keys.
 
+Using your partner’s stronger Mac over LM Link? See [lm-link.md](./lm-link.md).
+
 ## Exact model (8GB machines)
 
 1. Install [LM Studio](https://lmstudio.ai).
