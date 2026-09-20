@@ -8,8 +8,8 @@ import {
 } from './paletteThemes';
 
 describe('paletteThemes', () => {
-  it('defines all seven experiment palettes', () => {
-    expect(PALETTE_ORDER).toHaveLength(7);
+  it('defines all experiment palettes', () => {
+    expect(PALETTE_ORDER).toHaveLength(8);
     for (const id of PALETTE_ORDER) {
       expect(PALETTE_THEMES[id].id).toBe(id);
       expect(PALETTE_THEMES[id].cream).toMatch(/^#/);
