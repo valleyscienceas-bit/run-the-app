@@ -30,6 +30,16 @@ describe("checkAiEnv", () => {
   it("detects gemini key", () => {
     expect(checkAiEnv({ GEMINI_API_KEY: "abc" }).message).toBe("gemini configured");
   });
+
+  it("detects local LM Studio config", () => {
+    expect(
+      checkAiEnv({
+        AI_PROVIDER: "local",
+        LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+        LOCAL_LLM_MODEL: "phi-4-mini-instruct",
+      }).message
+    ).toContain("local configured");
+  });
 });
 
 describe("runHealthChecks", () => {

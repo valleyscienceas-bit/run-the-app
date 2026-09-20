@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { NGSSModule, ChatMessage, Lesson, Topic } from '../types';
-import { Send, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { auth, db, doc, setDoc, onSnapshot } from '../lib/firebase';
 import { ValerieMascot } from './ValerieMascot';
@@ -8,10 +8,14 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ICON_GHOST_BUTTON_CLASS } from '../lib/buttonStyles';
 import { getSubmitErrorMessage, parseApiError } from '../utils/formSubmit';
+import { authJsonHeaders, openSandboxLab } from '../lib/authHeaders';
+import { renderChatMarkdown } from '../lib/chatMarkdown';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const LEARNING_BANNER_KEY = 'vs-valerie-learning-banner-dismissed';
 
 interface SocraticChatProps {
   selectedModule: NGSSModule | null;
@@ -42,6 +46,13 @@ export function SocraticChat({
   const [isLoading, setIsLoading] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [failedMessage, setFailedMessage] = useState<string | null>(null);
+  const [showLearningBanner, setShowLearningBanner] = useState(() => {
+    try {
+      return localStorage.getItem(LEARNING_BANNER_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
@@ -53,11 +64,19 @@ export function SocraticChat({
       if (!userId) return;
       const seconds = Math.floor((Date.now() - sessionStartRef.current) / 1000);
       if (seconds < 5) return;
-      fetch('/api/track-time', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: userId, sessionSeconds: seconds })
-      }).catch(() => {});
+      auth.currentUser
+        ?.getIdToken()
+        .then((idToken) =>
+          fetch('/api/track-time', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ uid: userId, sessionSeconds: seconds }),
+          })
+        )
+        .catch(() => {});
     };
   }, []);
 
@@ -66,18 +85,25 @@ export function SocraticChat({
     const userId = auth.currentUser?.uid;
     if (!userId) return;
 
+    const labDone =
+      !selectedModule?.sandboxHtml ||
+      Boolean(studentContext?.includes('HAS completed the interactive lab'));
+
     const chatDoc = doc(db, 'chat_history', userId);
-    const unsubscribe = onSnapshot(chatDoc, (doc) => {
-      if (doc.exists()) {
-        setMessages(doc.data().messages || []);
+    const unsubscribe = onSnapshot(chatDoc, (docSnap) => {
+      if (docSnap.exists()) {
+        setMessages(docSnap.data().messages || []);
       } else {
-        // Initial message
-        const initialMsg: ChatMessage = { 
-          role: 'model', 
+        const initialMsg: ChatMessage = {
+          role: 'model',
           text: activeTopic && selectedModule
-            ? `Hi! Let's explore "${activeTopic.title}" in ${selectedModule.title}. ${activeTopic.description || 'What do you already know about this idea?'}`
-            : selectedModule 
-            ? `Hi! I'm Valerie. I see you're starting the "${selectedModule.title}" module. Let's build a mental model for this together! What's your current understanding of ${selectedModule.title.toLowerCase()}?`
+            ? labDone
+              ? `Hi! Let's explore "${activeTopic.title}" in ${selectedModule.title}. ${activeTopic.description || ''} What stood out to you so far — from the lab or from your own ideas?`
+              : `Hi! Let's explore "${activeTopic.title}" in ${selectedModule.title}. ${activeTopic.description || ''} You can try the lab when you're ready, or tell me what you already wonder about this idea.`
+            : selectedModule
+            ? labDone
+              ? `Hi! I'm Valerie. You're in "${selectedModule.title}." What did you notice, and what are you still figuring out?`
+              : `Hi! I'm Valerie. You're starting "${selectedModule.title}." ${selectedModule.sandboxHtml ? 'When you try the lab, we can talk about what you see. For now — ' : ''}what do you already wonder about this topic?`
             : "Hi! I'm Valerie. I'm here to help you build mental models for science. What's on your mind today?",
           timestamp: new Date().toISOString()
         };
@@ -87,7 +113,9 @@ export function SocraticChat({
     });
 
     return () => unsubscribe();
-  }, [selectedModule, activeTopic?.id]);
+    // studentContext is only read for first greeting; avoid re-subscribing every parent render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModule?.id, selectedModule?.sandboxHtml, activeTopic?.id, activeTopic?.title, activeTopic?.description]);
 
   useEffect(() => {
     if (activeTopic && onChatTopic) {
@@ -100,6 +128,15 @@ export function SocraticChat({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const dismissLearningBanner = () => {
+    setShowLearningBanner(false);
+    try {
+      localStorage.setItem(LEARNING_BANNER_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+  };
 
   const sendMessage = async (
     messageText: string,
@@ -121,16 +158,28 @@ export function SocraticChat({
 
     try {
       const moduleContext = selectedModule
-        ? `Module: ${selectedModule.title}. Gap to repair: ${selectedModule.gap}${
+        ? [
+            `Module: ${selectedModule.title} (${selectedModule.code}).`,
+            `About: ${selectedModule.description}.`,
+            `Gap to repair: ${selectedModule.gap}.`,
+            selectedModule.ahHaGoal ? `Target ah-ha: ${selectedModule.ahHaGoal}.` : '',
+            selectedModule.sandboxHtml
+              ? (studentContext?.includes('HAS completed the interactive lab')
+                  ? 'Lab status: COMPLETED for this module — ask about observations from THIS lab only.'
+                  : 'Lab status: NOT completed — do NOT ask what happened in a lab yet; invite them to try it or discuss the topic conceptually.')
+              : 'No interactive lab for this module.',
             activeLesson && activeTopic
-              ? `. Current lesson: ${activeLesson.title}. Current topic: ${activeTopic.title}. ${activeTopic.description || ''}`
-              : ''
-          }`
-        : undefined;
+              ? `Current lesson: ${activeLesson.title}. Current topic: ${activeTopic.title}. ${activeTopic.description || ''}`
+              : 'No lesson/topic selected yet — keep questions open and do not invent prior work.',
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : 'No module selected. Open-ended science chat. Do NOT invent a specific lab or prior experiment.';
 
+      const headers = await authJsonHeaders(attempt > 0);
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           history: historyMessages.map(m => ({ role: m.role, text: m.text })),
           message: messageText,
@@ -250,10 +299,41 @@ export function SocraticChat({
         )}
       </div>
 
-      {activeTopic && onCompleteTopic && !topicComplete && (
+      {showLearningBanner && (
+        <div className="px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/40 flex items-start justify-between gap-3">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Valerie remembers what you’ve been working on and changes her questions to fit you — like a tutor getting to know a student. The same Valerie helps everyone; she just uses your progress notes so her questions match you.
+          </p>
+          <button
+            type="button"
+            onClick={dismissLearningBanner}
+            className={cn(ICON_GHOST_BUTTON_CLASS, 'shrink-0')}
+            aria-label="Dismiss"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {selectedModule?.sandboxHtml && (
+        <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 flex items-center justify-between gap-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Lab available — reopen anytime for observations
+          </p>
+          <button
+            type="button"
+            onClick={() => selectedModule.sandboxHtml && openSandboxLab(selectedModule.sandboxHtml)}
+            className="text-[10px] font-black uppercase tracking-widest text-soft-pink"
+          >
+            Open lab
+          </button>
+        </div>
+      )}
+
+      {activeTopic && onCompleteTopic && !topicComplete && messages.some((m) => m.role === 'user') && (
         <div className="px-6 py-3 bg-sage-green/10 dark:bg-sage-green/10 border-b border-sage-green/20 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
-            Finished exploring <span className="font-black">{activeTopic.title}</span>? Mark it complete to unlock the next step.
+            After chatting with Valerie about <span className="font-black">{activeTopic.title}</span>, mark it complete to unlock the next step.
           </p>
           <button
             type="button"
@@ -264,6 +344,12 @@ export function SocraticChat({
             <CheckCircle2 size={14} />
             {completingTopic ? 'Saving…' : 'Mark topic complete'}
           </button>
+        </div>
+      )}
+
+      {activeTopic && onCompleteTopic && !topicComplete && !messages.some((m) => m.role === 'user') && (
+        <div className="px-6 py-3 bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300">
+          Chat with Valerie about this topic before you can mark it complete.
         </div>
       )}
 
@@ -292,10 +378,10 @@ export function SocraticChat({
             <div className={cn(
               "max-w-[80%] p-6 rounded-[32px] font-medium leading-relaxed shadow-sm",
               msg.role === 'user' 
-                ? "bg-slate-900 dark:bg-slate-700 text-white rounded-tr-none" 
+                ? "bg-slate-900 dark:bg-slate-700 text-white rounded-tr-none whitespace-pre-wrap" 
                 : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-100 dark:border-slate-700 rounded-tl-none"
             )}>
-              {msg.text}
+              {msg.role === 'model' ? renderChatMarkdown(msg.text) : msg.text}
             </div>
           </motion.div>
         ))}

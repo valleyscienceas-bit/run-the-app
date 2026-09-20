@@ -31,6 +31,57 @@ export function getModuleProgress(
     completedTopicIds: base?.completedTopicIds || [],
     currentLessonId: base?.currentLessonId,
     currentTopicId: base?.currentTopicId,
+    labCompleted: Boolean(base?.labCompleted),
+  };
+}
+
+export function isLabComplete(
+  progress: StudentLearningProgress | undefined,
+  module: NGSSModule
+): boolean {
+  if (!module.sandboxHtml) return true;
+  return getModuleProgress(progress, module.id).labCompleted === true;
+}
+
+export function applyLabCompletion(
+  progress: StudentLearningProgress | undefined,
+  moduleId: string
+): StudentLearningProgress {
+  const prev = normalizeLearningProgress(progress);
+  const mp = getModuleProgress(prev, moduleId);
+  return {
+    ...prev,
+    byModule: {
+      ...prev.byModule,
+      [moduleId]: { ...mp, labCompleted: true },
+    },
+  };
+}
+
+/** Credit full module progress after a passing skip / module check. */
+export function applyModuleCreditFromTest(
+  progress: StudentLearningProgress | undefined,
+  module: NGSSModule
+): StudentLearningProgress {
+  const prev = normalizeLearningProgress(progress);
+  const mp = getModuleProgress(prev, module.id);
+  const completedLessonIds = sortedLessons(module).map((l) => l.id);
+  const completedTopicIds = sortedLessons(module).flatMap((l) => sortedTopics(l).map((t) => t.id));
+  const completedModuleIds = prev.completedModuleIds.includes(module.id)
+    ? prev.completedModuleIds
+    : [...prev.completedModuleIds, module.id];
+  return {
+    ...prev,
+    byModule: {
+      ...prev.byModule,
+      [module.id]: {
+        ...mp,
+        labCompleted: true,
+        completedLessonIds,
+        completedTopicIds,
+      },
+    },
+    completedModuleIds,
   };
 }
 
@@ -74,6 +125,7 @@ export function isLessonUnlocked(
   module: NGSSModule,
   lesson: Lesson
 ): boolean {
+  if (module.sandboxHtml && !isLabComplete(progress, module)) return false;
   const lessons = sortedLessons(module);
   const idx = lessons.findIndex(l => l.id === lesson.id);
   if (idx <= 0) return true;

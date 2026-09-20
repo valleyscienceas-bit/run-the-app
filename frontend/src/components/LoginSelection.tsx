@@ -52,6 +52,7 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
   const [error, setError] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailDeliveryNote, setEmailDeliveryNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!resumeMfaLogin) return;
@@ -318,6 +319,19 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
           const err = await codeRes.json();
           throw new Error(err.error || 'Failed to send verification code.');
         }
+        const codeData = await codeRes.json();
+        if (codeData.emailSent) {
+          setEmailDeliveryNote(null);
+        } else if (codeData.simulated) {
+          setEmailDeliveryNote(
+            'SMTP is not configured. Use the verification code printed in the backend terminal.'
+          );
+        } else {
+          setEmailDeliveryNote(
+            codeData.emailHint ||
+              'We could not deliver the email (Gmail login rejected). Check backend/.env SMTP App Password — see docs/email-setup.md. For now, use the code printed in the backend terminal.'
+          );
+        }
         
         setTwoFACode('');
         setStep('2fa');
@@ -414,13 +428,48 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
 
         const profileRes = await fetch('/api/create-profile', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${await user.getIdToken()}`,
+          },
           body: JSON.stringify({ uid: user.uid, profile })
         });
         if (!profileRes.ok) {
           const err = await profileRes.json();
           throw new Error(err.error || 'Failed to create profile');
         }
+
+        // Individual track: provision parent as soon as the student signs up (not only after payment)
+        if (profile.role === 'student' && profile.parentEmail) {
+          try {
+            const provisionRes = await fetch('/api/provision-parent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${await user.getIdToken()}`,
+              },
+              body: JSON.stringify({
+                studentUid: user.uid,
+                studentName: profile.name,
+                parentEmail: profile.parentEmail,
+                studentGrade: profile.grade,
+                path: 'individual',
+              }),
+            });
+            const provisionData = await provisionRes.json().catch(() => ({}));
+            if (!provisionRes.ok) {
+              console.error('Parent provisioning at signup failed:', provisionData);
+            } else if (!provisionData.emailSent) {
+              console.warn(
+                '[PROVISION] Parent account created but welcome email was not delivered:',
+                provisionData.emailHint || provisionData.emailError
+              );
+            }
+          } catch (provisionErr) {
+            console.error('Parent provisioning at signup failed:', provisionErr);
+          }
+        }
+
         onLogin('individual', profile.role, profile);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
@@ -490,7 +539,20 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
         const err = await res.json();
         throw new Error(err.error || 'Failed to resend code.');
       }
-      setMessage({ type: 'success', text: 'A new code has been sent. It expires in 10 minutes.' });
+      const data = await res.json();
+      if (data.emailSent) {
+        setEmailDeliveryNote(null);
+        setMessage({ type: 'success', text: 'A new code has been sent. It expires in 10 minutes.' });
+      } else {
+        setEmailDeliveryNote(
+          data.emailHint ||
+            'Email delivery failed. Use the new code printed in the backend terminal. See docs/email-setup.md.'
+        );
+        setMessage({
+          type: 'error',
+          text: 'Code generated, but email delivery failed. Check the backend terminal for the code.',
+        });
+      }
       setTwoFACode('');
     } catch (err: any) {
       setFormError(err.message);
@@ -924,8 +986,16 @@ export function LoginSelection({ onBack, onLogin, initialMode = 'login', resumeM
             <div className="space-y-8">
               <h2 className="text-4xl font-black text-slate-900 dark:text-slate-100">Verify Your Email</h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                We've sent a verification code to <span className="text-slate-900 dark:text-slate-100 font-bold">{formData.email}</span>. Codes expire in 10 minutes.
+                {emailDeliveryNote
+                  ? <>We tried to email <span className="text-slate-900 dark:text-slate-100 font-bold">{formData.email}</span>, but delivery failed.</>
+                  : <>We've sent a verification code to <span className="text-slate-900 dark:text-slate-100 font-bold">{formData.email}</span>. Codes expire in 10 minutes.</>}
               </p>
+
+              {emailDeliveryNote && (
+                <div className="rounded-2xl border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/30 p-4 text-sm font-medium text-orange-900 dark:text-orange-200 leading-relaxed">
+                  {emailDeliveryNote}
+                </div>
+              )}
 
               <FormError message={error} shake={errorShake} />
 

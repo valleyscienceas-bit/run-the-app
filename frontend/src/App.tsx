@@ -36,12 +36,15 @@ import {
   findModuleForGap,
   getModuleById,
   getUnitById,
+  mergeValerieLearnerProfile,
+  PASSING_MODULE_SCORE,
 } from './lib/learningContext';
 import { decideFirstLoginTourOffer, shouldOfferTourAfterPlacementComplete } from './lib/firstLoginTour';
 import { resolveAchievementIdsForTest } from './lib/points';
 import {
   findNextLearningItem,
   getOrderedUnitsForGrade,
+  isModuleComplete,
   isTopicComplete,
   isTopicUnlocked,
   NextLearningItem,
@@ -66,6 +69,7 @@ export default function App() {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null);
   const [completingTopic, setCompletingTopic] = useState(false);
+  const [completingLab, setCompletingLab] = useState(false);
   const [showPlacementPopup, setShowPlacementPopup] = useState(false);
   const [isTakingTest, setIsTakingTest] = useState<{ type: 'placement' | 'unit' | 'grade', target?: any } | null>(null);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
@@ -385,16 +389,23 @@ export default function App() {
     }
 
     // 2. Dual-Provisioning: Create Parent Account via backend (Admin SDK)
-    if (updatedProfile.parentEmail) {
+    if (updatedProfile.parentEmail && user) {
       try {
+        const idToken = await user.getIdToken();
         await fetch('/api/provision-parent', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
           body: JSON.stringify({
             studentUid: updatedProfile.uid,
             studentName: updatedProfile.name,
             parentEmail: updatedProfile.parentEmail,
-            studentGrade: updatedProfile.grade
+            studentGrade: updatedProfile.grade,
+            path: 'individual',
+            // Signup already emailed the parent once — do not send a second setup email on payment.
+            sendWelcomeEmail: false,
           })
         });
         console.log(`[DUAL-PROVISIONING] Parent provisioned for ${updatedProfile.parentEmail}`);
@@ -500,6 +511,30 @@ export default function App() {
           }
         }
 
+        // Passing module check credits lab + lessons (skip-ahead or post-path verification)
+        if (testType === 'placement' && selectedModule && score >= PASSING_MODULE_SCORE) {
+          const idToken = await user.getIdToken();
+          const creditRes = await fetch('/api/update-learning-progress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+              moduleId: selectedModule.id,
+              action: 'credit_module_from_test',
+            }),
+          });
+          if (creditRes.ok) {
+            const data = await creditRes.json();
+            void persistLearningResume({
+              learningProgress: data.learningProgress,
+              lastModuleId: selectedModule.id,
+              lastModuleTitle: selectedModule.title,
+            });
+          }
+        }
+
         const awardTargetId = testType === 'unit' ? testTarget?.id : appState.grade;
         await tryAwardPoints(testType, score, {
           targetId: awardTargetId,
@@ -520,9 +555,14 @@ export default function App() {
     score?: number;
   }) => {
     try {
+      if (!user) return;
+      const idToken = await user.getIdToken();
       await fetch('/api/update-assignment-progress', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify(payload),
       });
     } catch (err) {
@@ -847,17 +887,62 @@ export default function App() {
         return;
       }
       const data = await res.json();
+      const learnerProfile = mergeValerieLearnerProfile(appState.profile?.valerieLearnerProfile, {
+        recentWins: [`Completed topic: ${activeTopic.title} in ${selectedModule.title}`],
+        prefersShortQuestions: true,
+      });
       void persistLearningResume({
         learningProgress: data.learningProgress,
         lastModuleId: selectedModule.id,
         lastModuleTitle: selectedModule.title,
         lastLessonId: activeLesson.id,
         lastTopicId: activeTopic.id,
+        valerieLearnerProfile: learnerProfile,
       });
     } catch (err) {
       console.error('Complete topic error:', err);
     } finally {
       setCompletingTopic(false);
+    }
+  };
+
+  const handleCompleteLab = async (module: NGSSModule) => {
+    if (!user) return;
+    setCompletingLab(true);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/update-learning-progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          moduleId: module.id,
+          action: 'complete_lab',
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Failed to complete lab:', err.error || res.statusText);
+        return;
+      }
+      const data = await res.json();
+      const learnerProfile = mergeValerieLearnerProfile(appState.profile?.valerieLearnerProfile, {
+        recentWins: [`Completed lab for ${module.title}`],
+        prefersAnalogies: true,
+        coachingNotes: [`Use observations from the ${module.title} lab when asking questions.`],
+      });
+      void persistLearningResume({
+        learningProgress: data.learningProgress,
+        lastModuleId: module.id,
+        lastModuleTitle: module.title,
+        valerieLearnerProfile: learnerProfile,
+      });
+    } catch (err) {
+      console.error('Complete lab error:', err);
+    } finally {
+      setCompletingLab(false);
     }
   };
 
@@ -947,6 +1032,27 @@ export default function App() {
     const interval = setInterval(() => loadStudentNotifications(user.uid), 30000);
     return () => clearInterval(interval);
   }, [appState.role, appState.path, user?.uid, activeTab]);
+
+  // Sandbox labs post this when the student finishes the in-lab quiz.
+  useEffect(() => {
+    if (!user || appState.role !== 'student') return;
+
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || data.type !== 'valley-lab-complete' || typeof data.moduleId !== 'string') return;
+      const raw = data.moduleId;
+      const mod =
+        getModuleById(raw) ||
+        getModuleById(`3-${raw}`) ||
+        FULL_CURRICULUM.find((m) => m.sandboxHtml?.includes(`module${raw}`)) ||
+        detailModule;
+      if (!mod) return;
+      void handleCompleteLab(mod);
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [user, appState.role, detailModule]);
 
   const handleModuleTourComplete = () => {
     if (selectedModule) {
@@ -1045,16 +1151,36 @@ export default function App() {
 
   const { openGaps, closedGaps } = computeOpenAndClosedGaps(testResults);
   const latestPlacement = [...testResults].reverse().find(r => r.type === 'placement');
+  const labCompleted = selectedModule
+    ? (!selectedModule.sandboxHtml ||
+        Boolean(appState.profile?.learningProgress?.byModule?.[selectedModule.id]?.labCompleted))
+    : false;
+  const sessionPhase = !selectedModule
+    ? 'open_chat'
+    : selectedModule.sandboxHtml && !labCompleted
+      ? 'pre_lab'
+      : isModuleComplete(appState.profile?.learningProgress, selectedModule)
+        ? 'ready_for_check'
+        : 'post_lab_lessons';
   const studentChatContext = buildStudentChatContext({
     grade: appState.grade || appState.profile?.grade,
     moduleTitle: selectedModule?.title,
     moduleCode: selectedModule?.code,
     moduleGap: selectedModule?.gap,
+    moduleDescription: selectedModule?.description,
+    ahHaGoal: selectedModule?.ahHaGoal,
+    hasLab: Boolean(selectedModule?.sandboxHtml),
+    labCompleted,
+    lessonTitle: activeLesson?.title,
+    topicTitle: activeTopic?.title,
+    topicDescription: activeTopic?.description,
+    sessionPhase,
     openGaps,
     closedGaps,
     placementScore: latestPlacement?.score ?? null,
     assignmentTitle: activeAssignmentTitle || undefined,
     lastChatTopic: appState.profile?.lastChatTopic,
+    learnerProfile: appState.profile?.valerieLearnerProfile,
   });
 
   const handleDeleteStudent = async () => {
@@ -1241,6 +1367,8 @@ export default function App() {
                 setSelectedModule(module);
                 handleStartTest('placement');
               }}
+              onCompleteLab={handleCompleteLab}
+              completingLab={completingLab}
             />
           ) : selectedUnit ? (
             <UnitView

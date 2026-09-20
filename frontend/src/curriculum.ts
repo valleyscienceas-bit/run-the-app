@@ -106,7 +106,99 @@ export const FULL_CURRICULUM: NGSSModule[] = [
       { id: 'q1', type: 'multiple-choice', text: 'How do we know air is matter?', options: ['It is invisible', 'It has mass and takes up space', 'It is cold'], correctAnswer: 1, concept: 'Visualizing air as matter with mass.' },
       { id: 'q2', type: 'free-response', text: 'Describe what happens to the particles in a balloon when you squeeze it.', sampleAnswer: 'The particles are pushed closer together, increasing pressure.', concept: 'Visualizing air as matter with mass.' }
     ]
-  }
+  },
+  // Grade 3 — Utah SEEd sandbox labs (progress + Valerie ready)
+  {
+    id: '3-3001',
+    gradeLevel: '3',
+    unitId: '3-U3',
+    order: 1,
+    code: '3.3.1',
+    title: 'Balanced Forces & Equilibrium',
+    gap: 'Equal opposite forces mean zero net force (ΣF = 0).',
+    achievementId: '3-3001-master',
+    pointsAwarded: 25,
+    minScoreForPoints: 70,
+    achievementLabel: 'Mastered Balanced Forces',
+    description: 'Calibrate opposing thrusters to reach equilibrium and verify that balanced forces keep motion steady.',
+    sandboxHtml: '/sandbox/module3001fulltesting.html',
+    ahHaGoal: 'Equal opposite forces cancel — the cart does not accelerate when net force is zero.',
+    lessons: [
+      lesson('3-3001-L1', 'Forces as Vectors', 1, [
+        { id: '3-3001-L1-T1', title: 'Pushes and pulls have direction', description: 'Describe force as a push or pull with magnitude and direction.' },
+        { id: '3-3001-L1-T2', title: 'Opposing thrusters', description: 'Compare left and right force magnitudes on the lab cart.' },
+      ]),
+      lesson('3-3001-L2', 'Net Force & Equilibrium', 2, [
+        { id: '3-3001-L2-T1', title: 'What is net force?', description: 'Combine opposite forces to find ΣF.' },
+        { id: '3-3001-L2-T2', title: 'Reach ΣF = 0', description: 'Tune thrusters until the cart is in equilibrium.' },
+      ]),
+      lesson('3-3001-L3', 'Inertia Check', 3, [
+        { id: '3-3001-L3-T1', title: 'Steady motion', description: 'Explain why balanced forces can mean still or constant velocity.' },
+        { id: '3-3001-L3-T2', title: 'Open the Space Lab', description: 'Run the Module 3001 interactive lab and explain your ah-ha to Valerie.' },
+      ]),
+    ],
+    placementTest: [
+      { id: 'q1', type: 'multiple-choice', text: 'Two thrusters push 30 N left and 30 N right. Net force is…', options: ['60 N', '0 N', '30 N'], correctAnswer: 1, concept: 'Equal opposite forces mean zero net force (ΣF = 0).' },
+    ],
+  },
+  {
+    id: '3-3002',
+    gradeLevel: '3',
+    unitId: '3-U1',
+    order: 1,
+    code: '3.1.1',
+    title: 'Atmospheric Thermodynamics & Weather Patterns',
+    gap: 'Weather is short-term; instruments measure air conditions.',
+    achievementId: '3-3002-master',
+    pointsAwarded: 25,
+    minScoreForPoints: 70,
+    achievementLabel: 'Mastered Weather Patterns',
+    description: 'Explore how temperature and pressure relate to weather patterns using lab instrumentation.',
+    sandboxHtml: '/sandbox/module3002fulltesting.html',
+    ahHaGoal: 'Temperature and pressure measurements help describe weather patterns, not climate alone.',
+    lessons: [
+      lesson('3-3002-L1', 'Weather vs Climate', 1, [
+        { id: '3-3002-L1-T1', title: 'What is weather?', description: 'Describe today’s air conditions.' },
+        { id: '3-3002-L1-T2', title: 'What is climate?', description: 'Contrast weather with long-term patterns.' },
+      ]),
+      lesson('3-3002-L2', 'Lab Measurements', 2, [
+        { id: '3-3002-L2-T1', title: 'Temperature & pressure', description: 'Use lab controls to change ambient conditions.' },
+        { id: '3-3002-L2-T2', title: 'Read the telemetry', description: 'Connect instrument readings to a weather story.' },
+      ]),
+    ],
+    placementTest: [
+      { id: 'q1', type: 'multiple-choice', text: 'Climate is best described as…', options: ['Today’s rain', 'Usual weather over many years', 'One windy afternoon'], correctAnswer: 1, concept: 'Weather is short-term; climate is a long-term pattern.' },
+    ],
+  },
+  {
+    id: '3-3007',
+    gradeLevel: '3',
+    unitId: '3-U1',
+    order: 2,
+    code: '3.1.3',
+    title: 'Severe Meteorological Hazards & Vortex Dynamics',
+    gap: 'Severe weather forms from strong updrafts and wind patterns.',
+    achievementId: '3-3007-master',
+    pointsAwarded: 25,
+    minScoreForPoints: 70,
+    achievementLabel: 'Mastered Severe Weather Basics',
+    description: 'Investigate how updrafts and shear contribute to severe weather hazards.',
+    sandboxHtml: '/sandbox/module3007fulltesting.html',
+    ahHaGoal: 'Strong rising air and wind shear can organize dangerous storms.',
+    lessons: [
+      lesson('3-3007-L1', 'Storm Ingredients', 1, [
+        { id: '3-3007-L1-T1', title: 'Updraft power', description: 'Describe rising air in a storm.' },
+        { id: '3-3007-L1-T2', title: 'Wind shear', description: 'Explain how changing winds with height matter.' },
+      ]),
+      lesson('3-3007-L2', 'Hazard Lab', 2, [
+        { id: '3-3007-L2-T1', title: 'Tune the vortex lab', description: 'Explore Module 3007 controls safely.' },
+        { id: '3-3007-L2-T2', title: 'Safety takeaway', description: 'State one way families stay safe in severe weather.' },
+      ]),
+    ],
+    placementTest: [
+      { id: 'q1', type: 'multiple-choice', text: 'An updraft is…', options: ['Air sinking fast', 'Air rising in a storm', 'Ocean current'], correctAnswer: 1, concept: 'Severe weather forms from strong updrafts and wind patterns.' },
+    ],
+  },
 ];
 
 function modulesForUnit(unitId: string): NGSSModule[] {
@@ -146,5 +238,35 @@ export const UNITS: Unit[] = [
     unitTest: [
       { id: 'u5-1', type: 'multiple-choice', text: 'Which state of matter has particles that slide past each other?', options: ['Solid', 'Liquid', 'Gas'], correctAnswer: 1 }
     ]
-  }
+  },
+  {
+    id: '3-U1',
+    gradeLevel: '3',
+    order: 1,
+    title: 'Weather and Climate',
+    description: 'Measure weather, spot patterns, and explore severe storms (Utah SEEd Strand 1).',
+    achievementId: '3-U1-master',
+    pointsAwarded: 50,
+    minScoreForPoints: 70,
+    achievementLabel: 'Unit mastery: Weather and Climate',
+    modules: modulesForUnit('3-U1'),
+    unitTest: [
+      { id: 'u3-1', type: 'multiple-choice', text: 'Weather is…', options: ['Long-term average only', 'Short-term air conditions', 'Only temperature'], correctAnswer: 1 },
+    ],
+  },
+  {
+    id: '3-U3',
+    gradeLevel: '3',
+    order: 2,
+    title: 'Force Affects Motion',
+    description: 'Balanced and unbalanced forces, equilibrium, and inertia (Utah SEEd Strand 3).',
+    achievementId: '3-U3-master',
+    pointsAwarded: 50,
+    minScoreForPoints: 70,
+    achievementLabel: 'Unit mastery: Force Affects Motion',
+    modules: modulesForUnit('3-U3'),
+    unitTest: [
+      { id: 'u3-3', type: 'multiple-choice', text: 'Equal opposite forces mean…', options: ['Huge acceleration', 'Zero net force', 'No inertia'], correctAnswer: 1 },
+    ],
+  },
 ];

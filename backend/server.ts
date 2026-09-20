@@ -2,7 +2,6 @@ import express, { type Request, type Response } from "express";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
 import { getFirestore, type DocumentSnapshot } from "firebase-admin/firestore";
@@ -10,7 +9,7 @@ import fs from "fs";
 import crypto from "crypto";
 import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
 import QRCode from "qrcode";
-import { getSocraticResponse } from "./services/gemini.js";
+import { describeActiveAi, getSocraticResponse } from "./services/gemini.js";
 import {
   buildAchievementCatalog,
   computeTotalPoints,
@@ -25,6 +24,8 @@ import { computeOpenAndClosedGaps } from "./lib/gapLogic.js";
 import { computeNextAssignmentSubmission } from "./lib/assignmentProgress.js";
 import { getPasswordValidationError } from "./lib/passwordValidation.js";
 import {
+  applyLabCompletionServer,
+  applyModuleCreditFromTestServer,
   applyTopicCompletionServer,
   canCompleteTopicServer,
   emptyProgress,
@@ -42,6 +43,11 @@ import {
   authorizeDistrictParentLink,
   unlinkStudentFromParent,
 } from "./lib/linkDistrictParent.js";
+import {
+  createMailTransporter,
+  explainSmtpFailure,
+  readSmtpConfig,
+} from "./lib/smtp.js";
 import {
   SANDBOX_VERSION,
   SANDBOX_TEACHER_EMAIL,
@@ -116,18 +122,7 @@ async function verifyAuthHeader(req: Request): Promise<AuthUser | null> {
   }
 }
 
-async function getMailTransporter() {
-  return nodemailer.createTransport({
-    service: process.env.SMTP_SERVICE,
-    host: process.env.SMTP_HOST || "smtp.ethereal.email",
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === "true" || Number(process.env.SMTP_PORT) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    tls: { rejectUnauthorized: false }
-  });
-}
-
-type EmailSendResult = { sent: boolean; simulated: boolean; error?: string };
+type EmailSendResult = { sent: boolean; simulated: boolean; error?: string; hint?: string };
 
 async function sendValleyScienceEmail(opts: {
   to: string;
@@ -145,16 +140,17 @@ async function sendValleyScienceEmail(opts: {
     return { sent: false, simulated: false, error: "missing recipient" };
   }
 
-  if (!process.env.SMTP_USER) {
+  const smtp = readSmtpConfig();
+  if (!smtp) {
     console.log(`[EMAIL] NOT SENT to ${to} | reason: no SMTP configured | subject: ${opts.subject} | context: ${context}`);
     if (opts.text) console.log(`[EMAIL] Body (dev): ${opts.text}`);
     return { sent: false, simulated: true };
   }
 
   try {
-    const transporter = await getMailTransporter();
+    const transporter = createMailTransporter(smtp);
     const info = await transporter.sendMail({
-      from: `"Valley Science" <${process.env.SMTP_USER}>`,
+      from: `"Valley Science" <${smtp.user}>`,
       to,
       subject: opts.subject,
       text: opts.text,
@@ -164,8 +160,10 @@ async function sendValleyScienceEmail(opts: {
     console.log(`[EMAIL] SENT to ${to} | subject: ${opts.subject} | context: ${context} | messageId: ${info.messageId || "n/a"}`);
     return { sent: true, simulated: false };
   } catch (err: any) {
+    const hint = explainSmtpFailure(err.message || String(err));
     console.error(`[EMAIL] FAILED to ${to} | subject: ${opts.subject} | context: ${context} | error: ${err.message}`);
-    return { sent: false, simulated: false, error: err.message };
+    console.error(`[EMAIL] HINT: ${hint}`);
+    return { sent: false, simulated: false, error: err.message, hint };
   }
 }
 
@@ -251,11 +249,15 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Grade 3 HTML labs (proxied from Vite as /sandbox/*)
+  app.use("/sandbox", express.static(path.join(__dirname, "../sandbox")));
+
   app.get("/api/health", async (_req, res) => {
     try {
       const health = await runHealthChecks(adminDb);
       res.status(health.ok ? 200 : 503).json({
         ...health,
+        aiProvider: describeActiveAi(),
         port: PORT,
         pid: process.pid,
       });
@@ -269,6 +271,7 @@ async function startServer() {
           smtp: { ok: false, message: "unavailable" },
           ai: { ok: false, message: "unavailable" },
         },
+        aiProvider: describeActiveAi(),
         timestamp: new Date().toISOString(),
         port: PORT,
         pid: process.pid,
@@ -326,7 +329,9 @@ async function startServer() {
       res.json({
         success: true,
         emailSent: emailResult.sent,
-        simulated: emailResult.simulated
+        simulated: emailResult.simulated,
+        emailError: emailResult.error || null,
+        emailHint: emailResult.hint || null,
       });
     } catch (error: any) {
       console.error("Send verification code error:", error);
@@ -362,10 +367,16 @@ async function startServer() {
       }
 
       const accountEmail = await resolveAuthEmail(authUser);
+      const profile = profileSnap.data();
+      const label =
+        (typeof profile?.username === "string" && profile.username.trim()) ||
+        accountEmail ||
+        profile?.email ||
+        authUser.uid;
       const secret = generateSecret();
       const otpauthUrl = generateURI({
         issuer: "Valley Science",
-        label: accountEmail || profileSnap.data()?.email || authUser.uid,
+        label,
         secret,
         strategy: "totp"
       });
@@ -617,6 +628,11 @@ async function startServer() {
   // SOCRATIC AI ROUTE
   // ==========================================
   app.post("/api/chat", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { history, message, moduleContext, studentContext } = req.body;
 
     if (!message) {
@@ -629,7 +645,7 @@ async function startServer() {
         : [{ role: "user", text: message }];
 
       const response = await getSocraticResponse(messages, moduleContext, studentContext);
-      res.json({ response });
+      res.json({ response, uid: authUser.uid });
     } catch (error: any) {
       console.error("Gemini Chat Error:", error);
       res.status(500).json({ error: error.message });
@@ -640,19 +656,48 @@ async function startServer() {
   // CREATE USER PROFILE ROUTE (Admin SDK bypasses Firestore rules)
   // ==========================================
   app.post("/api/create-profile", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { uid, profile } = req.body;
 
     if (!uid || !profile) {
       return res.status(400).json({ error: "uid and profile are required" });
     }
+    if (uid !== authUser.uid) {
+      return res.status(403).json({ error: "Cannot create a profile for another user" });
+    }
 
     try {
-      if (profile.role === 'parent') {
-        return res.status(403).json({ error: "Parent profiles cannot be created via this endpoint. Parent accounts are provisioned automatically when a student signs up." });
+      if (profile.role === "parent") {
+        return res.status(403).json({
+          error:
+            "Parent profiles cannot be created via this endpoint. Parent accounts are provisioned automatically when a student signs up.",
+        });
       }
-      await adminDb.collection("users").doc(uid).set(profile);
-      await syncAuthUserRoleLabels(adminAuth, uid, profile.role, profile.name);
-      res.json({ success: true });
+
+      const role = profile.role === "teacher" ? "teacher" : "student";
+      const safeProfile = {
+        uid: authUser.uid,
+        name: String(profile.name || "").slice(0, 120),
+        username: String(profile.username || "").slice(0, 80),
+        email: (authUser.email || String(profile.email || "")).toLowerCase(),
+        parentEmail: profile.parentEmail ? String(profile.parentEmail).toLowerCase().slice(0, 200) : "",
+        role,
+        path: profile.path === "district" ? "district" : "individual",
+        grade: profile.grade || null,
+        xp: 0,
+        isFirstTime: true,
+        isPaid: false,
+        hasLoggedInBefore: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      await adminDb.collection("users").doc(authUser.uid).set(safeProfile, { merge: true });
+      await syncAuthUserRoleLabels(adminAuth, authUser.uid, safeProfile.role, safeProfile.name);
+      res.json({ success: true, profile: safeProfile });
     } catch (error: any) {
       console.error("Create profile error:", error);
       res.status(500).json({ error: error.message });
@@ -663,10 +708,18 @@ async function startServer() {
   // PROVISION PARENT ACCOUNT ROUTE
   // ==========================================
   app.post("/api/provision-parent", async (req, res) => {
-    const { studentUid, studentName, parentEmail, studentGrade, path, districtId } = req.body;
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { studentUid, studentName, parentEmail, studentGrade, path, districtId, sendWelcomeEmail } = req.body;
 
     if (!studentUid || !parentEmail) {
       return res.status(400).json({ error: "studentUid and parentEmail are required" });
+    }
+    if (studentUid !== authUser.uid) {
+      return res.status(403).json({ error: "Students can only provision a parent for their own account" });
     }
 
     try {
@@ -678,9 +731,18 @@ async function startServer() {
         studentGrade,
         path: accessPath,
         districtId: accessPath === "district" ? districtId : undefined,
+        sendWelcomeEmail: sendWelcomeEmail !== false,
       });
       console.log(`[PROVISION] Created/updated parent profile at Auth UID: ${result.parentUid}`);
-      res.json({ success: true, parentDocId: result.parentDocId, parentUid: result.parentUid });
+      res.json({
+        success: true,
+        parentDocId: result.parentDocId,
+        parentUid: result.parentUid,
+        emailSent: result.emailSent ?? false,
+        emailSimulated: result.emailSimulated ?? false,
+        emailError: result.emailError || null,
+        emailHint: result.emailHint || null,
+      });
     } catch (error: any) {
       console.error("Parent provisioning error:", error);
       res.status(500).json({ error: error.message });
@@ -831,10 +893,18 @@ async function startServer() {
   // TRACK LEARNING TIME ROUTE
   // ==========================================
   app.post("/api/track-time", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
     const { uid, sessionSeconds } = req.body;
-    if (!uid || sessionSeconds === undefined) return res.status(400).json({ error: "uid and sessionSeconds are required" });
+    const targetUid = uid || authUser.uid;
+    if (targetUid !== authUser.uid) {
+      return res.status(403).json({ error: "Cannot update another user's learning time" });
+    }
+    if (sessionSeconds === undefined) return res.status(400).json({ error: "sessionSeconds is required" });
     try {
-      const ref = adminDb.collection("stats").doc(uid);
+      const ref = adminDb.collection("stats").doc(targetUid);
       const snap = await ref.get();
       const current = snap.exists ? (snap.data()?.totalSeconds || 0) : 0;
       await ref.set({ totalSeconds: current + sessionSeconds, lastUpdated: new Date().toISOString() }, { merge: true });
@@ -2412,11 +2482,19 @@ async function startServer() {
 
   /** Mark assignment started / module completed for a student (district path). */
   app.post("/api/update-assignment-progress", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { studentUid, assignmentId, moduleId, completedModuleId, score } = req.body;
-    if (!studentUid) return res.status(400).json({ error: "studentUid required" });
+    const uid = studentUid || authUser.uid;
+    if (uid !== authUser.uid) {
+      return res.status(403).json({ error: "Cannot update another student's assignment progress" });
+    }
 
     try {
-      const studentSnap = await adminDb.collection("users").doc(studentUid).get();
+      const studentSnap = await adminDb.collection("users").doc(uid).get();
       if (!studentSnap.exists) return res.status(404).json({ error: "Student not found" });
       const classroomIds: string[] = studentSnap.data()?.classroomIds || [];
       const classroomId = classroomIds[0];
@@ -2441,7 +2519,7 @@ async function startServer() {
         const moduleIds: string[] = data.moduleIds || [];
         if (moduleIds.length === 0) continue;
 
-        const prev = data.submissions?.[studentUid] || { status: "not_started", progress: 0, completedModuleIds: [] };
+        const prev = data.submissions?.[uid] || { status: "not_started", progress: 0, completedModuleIds: [] };
         if (prev.status === "completed") {
           updated.push({ id: d.id, status: prev.status, progress: prev.progress || 100 });
           continue;
@@ -2458,7 +2536,7 @@ async function startServer() {
         });
         // Dot-notation updates only this student's entry, avoiding lost writes when
         // classmates update the same assignment document concurrently.
-        await d.ref.update({ [`submissions.${studentUid}`]: next });
+        await d.ref.update({ [`submissions.${uid}`]: next });
         updated.push({ id: d.id, status: next.status, progress: next.progress });
       }
 
@@ -2472,6 +2550,10 @@ async function startServer() {
   /** Persist lesson/topic completion with sequential-order validation. */
   app.post("/api/update-learning-progress", async (req, res) => {
     const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { studentUid, moduleId, lessonId, topicId, action } = req.body as {
       studentUid?: string;
       moduleId?: string;
@@ -2480,13 +2562,14 @@ async function startServer() {
       action?: string;
     };
 
-    const uid = studentUid || authUser?.uid;
-    if (!uid) return res.status(401).json({ error: "Authentication required" });
-    if (authUser && authUser.uid !== uid) {
+    const uid = studentUid || authUser.uid;
+    if (authUser.uid !== uid) {
       return res.status(403).json({ error: "Cannot update another student's progress" });
     }
-    if (action !== "complete_topic" || !moduleId || !lessonId || !topicId) {
-      return res.status(400).json({ error: "moduleId, lessonId, topicId, and action=complete_topic required" });
+    if (!moduleId || (action !== "complete_topic" && action !== "complete_lab" && action !== "credit_module_from_test")) {
+      return res.status(400).json({
+        error: "moduleId and action=complete_topic|complete_lab|credit_module_from_test required",
+      });
     }
 
     try {
@@ -2499,6 +2582,29 @@ async function startServer() {
       }
 
       const prev: StudentLearningProgress = studentData.learningProgress || emptyProgress();
+
+      if (action === "complete_lab") {
+        const next = applyLabCompletionServer(prev, moduleId);
+        await studentRef.update({
+          learningProgress: next,
+          lastModuleId: moduleId,
+        });
+        return res.json({ success: true, learningProgress: next });
+      }
+
+      if (action === "credit_module_from_test") {
+        const next = applyModuleCreditFromTestServer(prev, moduleId);
+        await studentRef.update({
+          learningProgress: next,
+          lastModuleId: moduleId,
+        });
+        return res.json({ success: true, learningProgress: next });
+      }
+
+      if (!lessonId || !topicId) {
+        return res.status(400).json({ error: "lessonId and topicId required for complete_topic" });
+      }
+
       const check = canCompleteTopicServer(prev, moduleId, lessonId, topicId);
       if (!check.ok) return res.status(400).json({ error: check.reason || "Cannot complete topic" });
 

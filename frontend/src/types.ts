@@ -62,6 +62,8 @@ export interface UserProfile {
   lastLessonId?: string;
   lastTopicId?: string;
   lastChatTopic?: string;
+  /** How Valerie should personalize tutoring for this student (NOT model weight training) */
+  valerieLearnerProfile?: ValerieLearnerProfile;
   /** Sequential lesson/topic progress across modules */
   learningProgress?: StudentLearningProgress;
   activeAssignmentId?: string;
@@ -154,6 +156,21 @@ export interface UserState {
 
 export type GradeLevel = '3' | '4' | '5' | '6' | '7' | '8';
 
+/** Lightweight per-student tutoring preferences stored on the user profile */
+export interface ValerieLearnerProfile {
+  /** e.g. analogies, short-questions, step-by-step */
+  prefersAnalogies?: boolean;
+  prefersShortQuestions?: boolean;
+  prefersStepByStep?: boolean;
+  /** Short notes Valerie should remember (max a few) */
+  coachingNotes?: string[];
+  /** Things the student recently struggled with */
+  recentStruggles?: string[];
+  /** Things the student recently explained well */
+  recentWins?: string[];
+  updatedAt?: string;
+}
+
 export interface Topic {
   id: string;
   title: string;
@@ -173,6 +190,8 @@ export interface ModuleLearningProgress {
   completedTopicIds: string[];
   currentLessonId?: string;
   currentTopicId?: string;
+  /** Step 1 of module flow: interactive lab / observations complete */
+  labCompleted?: boolean;
 }
 
 export interface StudentLearningProgress {
@@ -192,6 +211,10 @@ export interface NGSSModule extends AchievementConfig {
   description: string;
   placementTest?: Question[];
   lessons: Lesson[];
+  /** Optional standalone sandbox HTML lab path (served at /sandbox/...) */
+  sandboxHtml?: string;
+  /** Short “ah-ha” learning goal for Valerie moduleContext */
+  ahHaGoal?: string;
 }
 
 export type QuestionType = 'multiple-choice' | 'free-response';
