@@ -116,6 +116,68 @@ Same idea works for other short prefixes if you add them later (for example a di
 
 ---
 
+## Step 1c — Merge (approve + land) an open PR
+
+Creating a PR (Step 1 / 1b) does **not** land the code. You still have to **merge** it on GitHub.
+
+### Prefers: GitHub CLI (`gh`)
+
+From any branch, with `gh` logged into the right account (`gh auth status`):
+
+```bash
+# List open PRs for this repo
+gh pr list
+
+# Optional: review the diff / checks
+gh pr view 3
+gh pr checks 3
+
+# Merge it (squash keeps history tidy for short ui/* → feature/ui)
+gh pr merge 3 --squash --delete-branch
+```
+
+Replace `3` with the PR number. Useful flags:
+
+| Flag | Meaning |
+|--|--|
+| `--squash` | One commit on the base branch (good for short `ui/*` polish) |
+| `--merge` | Classic merge commit (fine for long track → hub) |
+| `--delete-branch` | Delete the head branch on GitHub after merge |
+| `--admin` | Only if you must bypass branch protection (prefer not to) |
+
+If `gh` is missing: `brew install gh` then `gh auth login` (use the account that owns this org/repo).
+
+### Alternate: GitHub website
+
+1. Open the PR URL (or **Pull requests** on the repo).
+2. Confirm **base** is correct (`feature/ui` for a `ui/*` PR; hub for a track PR — never `main` until release).
+3. Wait for required checks if any.
+4. Click **Merge pull request** (or **Squash and merge**).
+5. Confirm, then optionally **Delete branch**.
+
+### After it lands — update your local clone
+
+```bash
+# Switch to the base branch you merged into, then pull
+git switch feature/ui          # or: feature/ai-functions-frontend-backend for hub PRs
+git pull
+
+# If you still have the short branch locally and used --delete-branch on origin:
+git branch -d ui/lab-polish    # only after it is merged / deleted on origin
+```
+
+### Plain English
+
+| Action | Meaning |
+|--|--|
+| `gh pr list` / open PR in browser | Find the open pull request |
+| `gh pr merge …` / **Merge** button | Actually apply the branch onto the base |
+| `git switch` + `git pull` on the **base** | Download the merge so your laptop matches GitHub |
+
+Do **not** merge into `main` here. Short UI work: merge into `feature/ui`. Track work: merge into the hub. Hub → `main` only when shipping.
+
+---
+
 ## Step 2 — Option A: Sync only `docs/prompt-queue.md` via cherry-pick
 
 Use this when you updated the prompt queue on the hub and want the **same commit** on UI / CI / Modules — **not** on `main`.
