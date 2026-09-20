@@ -87,18 +87,25 @@ COMMIT=$(git rev-parse HEAD)
 
 ### Copy to every track except `main`
 
+Restore lockfiles before each switch so a post-checkout `npm install` hook cannot block the next branch:
+
 ```bash
 for b in feature/ui feature/app-ci-and-tests feature/modules; do
+  git restore backend/package-lock.json frontend/package-lock.json 2>/dev/null || true
   git switch "$b"
+  git restore backend/package-lock.json frontend/package-lock.json 2>/dev/null || true
   git pull
   git cherry-pick "$COMMIT"
   git push
 done
 
+git restore backend/package-lock.json frontend/package-lock.json 2>/dev/null || true
 git switch feature/ai-functions-frontend-backend
 ```
 
 `main` is intentionally **not** in that list.
+
+The same cherry-pick loop works for other **single-file doc** commits (for example `docs/merge-and-sync.md`) — keep that edit in its own commit too.
 
 ### Plain English
 
@@ -107,8 +114,40 @@ git switch feature/ai-functions-frontend-backend
 | `git add` + `git commit` | Snapshot only the prompt-queue file on the hub |
 | `git push` | Upload that commit |
 | `COMMIT=$(git rev-parse HEAD)` | Remember this commit’s ID |
+| `git restore …package-lock.json` | Discard lockfile noise from the branch-switch npm hook |
 | `for b in …; do …; done` | Repeat the same steps for each side branch |
 | `git cherry-pick "$COMMIT"` | Replay that one commit onto the current branch |
 | Final `git switch` hub | Return to the hub when finished |
 
 If cherry-pick conflicts, fix the file, `git add docs/prompt-queue.md`, then `git cherry-pick --continue` (or `git cherry-pick --abort` to cancel).
+
+### If a switch fails mid-loop (lockfiles)
+
+You may see:
+
+```text
+error: Your local changes to the following files would be overwritten by checkout:
+        backend/package-lock.json
+        frontend/package-lock.json
+```
+
+or get stuck with `You are currently cherry-picking…` / `cannot switch branch while cherry-picking`.
+
+Fix, then continue:
+
+```bash
+git restore backend/package-lock.json frontend/package-lock.json
+
+# If Git says you are still cherry-picking and the commit is already on this branch:
+git cherry-pick --skip
+# Or if you need to cancel entirely:
+# git cherry-pick --abort
+
+# Then finish any remaining branches in the loop, e.g. modules:
+git switch feature/modules
+git pull
+git cherry-pick "$COMMIT"
+git push
+
+git switch feature/ai-functions-frontend-backend
+```
