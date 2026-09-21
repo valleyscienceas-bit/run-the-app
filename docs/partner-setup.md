@@ -87,6 +87,14 @@ git pull origin feature/ai-functions-frontend-backend
 
 ## 4) Run the app locally
 
+Copy env examples once (do **not** commit real secrets):
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Fill in Firebase credentials and SMTP. For Gmail you **must** use an App Password — see [email-setup.md](./email-setup.md). Without SMTP, signup still works: the verification code is printed in the backend terminal.
+
 If these fail, ask for the current commands:
 
 ```bash
@@ -105,6 +113,7 @@ npm run dev
 
 Open the local URL (often `http://localhost:5173`).
 
+**Both partners:** use Node **22** (matches GitHub Actions). `npm ci` on Node 24 can hide lockfile problems that break CI.
 ## 5) How we work (one folder, switch branches)
 
 Keep **one** Cursor window on this folder. Change branches when the job changes.

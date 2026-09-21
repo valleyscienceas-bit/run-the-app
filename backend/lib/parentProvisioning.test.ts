@@ -226,4 +226,22 @@ describe("provisionParentForStudent", () => {
       expect.arrayContaining(["student_old", "student_new"])
     );
   });
+
+  it("rejects weak initial passwords with the same rules as signup", async () => {
+    const { auth } = createMockAuth();
+    const { db } = createMockFirestore();
+
+    await expect(
+      provisionParentForStudent(auth, db, sendEmail, {
+        studentUid: "student_pw",
+        parentEmail: "parent@example.com",
+        path: "district",
+        districtId: "lasd",
+        initialPassword: "short",
+        sendWelcomeEmail: false,
+      })
+    ).rejects.toThrow(/8 characters/);
+
+    expect(auth.createUser).not.toHaveBeenCalled();
+  });
 });
