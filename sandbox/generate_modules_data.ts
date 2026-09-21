@@ -1,23 +1,18 @@
 /**
- * Valley Science - Batch Module Generator
- * Generates 20 standalone offline-capable interactive science simulations (modules 3001 through 3020)
- * Aligned with Utah SEEd 3rd Grade Standards, V7 Hybrid Design, Academic Vocabulary Enforcement,
- * 2s Interstellar Cinematic Transitions, In-Lab Controls (2:3 layout), Frosted Overlays, and Enter-key submissions.
+ * Valley Science — Module content (kid-friendly, Grade 3 / age ~10)
+ * Experiments / canvas types stay the same. Language + ~5 unit keywords only.
  */
 
-import fs from 'fs';
-import path from 'path';
-
-interface ModuleDef {
+export interface ModuleDef {
   id: number;
-  code: string; // e.g. "3.1.1"
-  standard: string; // e.g. "Utah SEEd 3.1.1 · Grade 3"
-  strand: string; // e.g. "Strand 1: Weather and Climate"
+  code: string;
+  standard: string;
+  strand: string;
   title: string;
   conceptTitle: string;
   briefScenario: string;
   challengeObjective: string;
-  targetVocab: string[]; // 4 core Tier-2/Tier-3 terms
+  targetVocab: string[];
   hypPrompt: string;
   hypPlaceholder: string;
   stepLabels: string[];
@@ -57,1007 +52,1092 @@ interface ModuleDef {
   }[];
   discoveryLogPrompt: string;
   takeaway: string;
-  canvasType: string; // e.g. 'weather_station', 'climate_zones', 'flood_barrier', 'life_cycle', etc.
+  canvasType: string;
+  obs1Prompt: string;
+  step2Tutor: string;
+  step3Tutor: string;
+  step5Tutor: string;
+  doneTutor: string;
 }
 
 export const MODULES: ModuleDef[] = [
-  // Module 3001: Forces and Motion (Reference Prototype)
   {
     id: 3001,
     code: "3.3.1",
     standard: "Utah SEEd 3.3.1 · Grade 3 · Module 3001",
     strand: "Strand 3: Force Affects Motion",
-    title: "Balanced Forces & Equilibrium",
+    title: "Balanced Forces",
     conceptTitle: "Balanced Forces",
-    briefScenario: "Orbital Tug-Bot 3001 is suspended on a frictionless linear test track. Opposing thrusters apply continuous vector magnitudes — yet sensor telemetry confirms the cart maintains steady equilibrium.",
-    challengeObjective: "Calibrate both vector thrusters to establish zero net force (ΣF = 0 N) and verify Newton's First Law of Motion.",
-    targetVocab: ["Equilibrium", "Net Force", "Vector Magnitude", "Inertia"],
-    hypPrompt: "What physical outcome occurs when opposing forces exert identical vector magnitude on an object?",
-    hypPlaceholder: "I hypothesize the net force will reach equilibrium because...",
-    stepLabels: ["1. System Calibration", "2. Vector Escalation", "3. Dynamic Deviation", "4. Equilibrium Alignment", "5. Balanced State Verification", "6. Empirical Synthesis"],
-    leftControl: { title: "Port Vector Thruster", label: "Left Vector Magnitude", unit: "N", min: 0, max: 100, defaultVal: 0, step: 1 },
-    rightControl: { title: "Starboard Vector Thruster", label: "Right Vector Magnitude", unit: "N", min: 0, max: 100, defaultVal: 0, step: 1 },
-    telemetry: { label1: "Net Force ΣF", label2: "Acceleration", label3: "Velocity Vector", label4: "Displacement" },
+    briefScenario: "Two space rockets are hooked to a robot on a super-smooth track. Sometimes it zooms — sometimes it sits still even when both rockets fire!",
+    challengeObjective: "Move both rocket sliders until the robot stops speeding up. That means the forces are balanced.",
+    targetVocab: ["balanced forces", "net force", "cancel out", "zero", "push"],
+    hypPrompt: "What will happen to the robot when both rockets pull with the exact same strength?",
+    hypPlaceholder: "I think the robot will... because...",
+    stepLabels: ["1. Get Ready", "2. Fire Left Rocket", "3. What Happened?", "4. Balance the Rockets", "5. Zero Net Force!", "6. What You Learned"],
+    leftControl: { title: "Left Rocket", label: "Left Force", unit: "N", min: 0, max: 100, defaultVal: 0, step: 1 },
+    rightControl: { title: "Right Rocket", label: "Right Force", unit: "N", min: 0, max: 100, defaultVal: 0, step: 1 },
+    telemetry: { label1: "Net Force", label2: "Speed Change", label3: "Speed", label4: "How Far" },
     video: {
-      title: "Balanced Forces & Equilibrium in Physical Systems",
-      subtitle: "Deterministic analysis of vector summation in dynamic and static frames",
+      title: "What Are Balanced Forces?",
+      subtitle: "Equal pushes that cancel out",
       captions: [
-        { start: 0, end: 5, text: "Forces possess vector magnitude and directional orientation." },
-        { start: 5, end: 10, text: "Opposing vector forces undergoing vector summation cancel each other out." },
-        { start: 10, end: 15, text: "When ΣF = 0 N, the system achieves mechanical equilibrium." },
-        { start: 15, end: 21, text: "In equilibrium, acceleration is zero, preserving velocity inertia." },
-        { start: 21, end: 30, text: "Newton's First Law: No net force produces zero acceleration." }
+        { start: 0, end: 5, text: "A force is a push or a pull." },
+        { start: 5, end: 10, text: "Two equal pushes the other way cancel out." },
+        { start: 10, end: 15, text: "When they cancel, the net force is zero." },
+        { start: 15, end: 21, text: "Zero net force means no speeding up or slowing down." },
+        { start: 21, end: 30, text: "That's Newton's First Law!" }
       ]
     },
     quiz: [
       {
-        question: "Define 'mechanical equilibrium' using the term 'net force vector'. What mathematical condition must be satisfied?",
-        hint: "Reference ΣF = F_right - F_left and its relation to zero acceleration.",
-        keywords: ["equilibrium", "net force", "zero", "vector", "cancel", "acceleration"]
+        question: "In your own words, what does balanced forces mean? What is the net force?",
+        hint: "Think about what happened when both rockets showed the same number.",
+        keywords: ["equal", "same", "cancel", "zero", "balanced", "net force"]
       },
       {
-        question: "A spacecraft drifts through deep interstellar space at a constant velocity of 500 m/s with thrusters off. Are the forces in equilibrium? Explain using 'inertia'.",
-        hint: "Consider Newton's First Law: does constant velocity require a net force?",
-        keywords: ["equilibrium", "balanced", "inertia", "constant velocity", "zero net force", "no acceleration"]
+        question: "A book sits still on your desk. Are the forces balanced? How do you know?",
+        hint: "Is the book speeding up or slowing down?",
+        keywords: ["balanced", "zero", "still", "net force", "not moving"]
       },
       {
-        question: "In the experiment, when both thrusters fired at 60 N in opposite vectors, why was the resultant acceleration vector exactly 0.00 m/s²?",
-        hint: "Apply Newton's Second Law formula a = ΣF / m with opposing 60 N vectors.",
-        keywords: ["net force", "cancel", "equal", "opposite", "zero", "acceleration", "vector magnitude"]
+        question: "Both rockets pulled with 60 N. Why didn't the robot speed up?",
+        hint: "What is 60 minus 60?",
+        keywords: ["zero", "cancel", "balanced", "equal", "opposite"]
       }
     ],
-    discoveryLogPrompt: "Synthesize empirical evidence: Explain why opposing 60 N force vectors produce zero net acceleration, citing mechanical equilibrium.",
-    takeaway: "Opposing vector forces with equal magnitude cancel completely (ΣF = 0 N). Zero net force produces zero acceleration, proving Newton's First Law.",
-    canvasType: "tugbot_linear"
+    discoveryLogPrompt: "Both rockets fire with the same strength, but the robot does not speed up. Why?",
+    takeaway: "Equal pushes in opposite directions cancel out. Net force = 0 means no speeding up.",
+    canvasType: "tugbot_linear",
+    obs1Prompt: "The left rocket pulled hard. What do you think happens if the right rocket pulls just as hard the other way?",
+    step2Tutor: "<strong>Step 2: Fire the Left Rocket!</strong><br><br>Drag the <strong>Left</strong> slider up past <strong>60</strong>. Watch which way the robot moves!",
+    step3Tutor: "<strong>Look at that!</strong><br><br>The robot sped up one way. Write what you noticed below — you can still watch the experiment!",
+    step5Tutor: "<strong>Balanced!</strong><br><br>Both sides match and the net force is zero. Write what you discovered.",
+    doneTutor: "<strong>You did it!</strong><br><br>Equal opposite pushes cancel. Net force = 0 means no speeding up."
   },
 
-  // Module 3002: Weather Patterns & Atmospheric Conditions (SEEd 3.1.1)
   {
     id: 3002,
     code: "3.1.1",
     standard: "Utah SEEd 3.1.1 · Grade 3 · Module 3002",
     strand: "Strand 1: Weather and Climate",
-    title: "Atmospheric Thermodynamics & Weather Patterns",
+    title: "Weather Patterns",
     conceptTitle: "Weather Patterns",
-    briefScenario: "Meteorologists in Salt Lake City observe rapid atmospheric shifts over the Wasatch Front. Air mass temperature differentials and barometric pressure drops trigger localized precipitation cycles.",
-    challengeObjective: "Regulate thermal energy and barometric air pressure to analyze how atmospheric variables dictate condensation and precipitation patterns.",
-    targetVocab: ["Atmosphere", "Barometric Pressure", "Precipitation", "Meteorologist"],
-    hypPrompt: "How does a sudden drop in barometric pressure combined with low thermal temperature affect precipitation states?",
-    hypPlaceholder: "I predict precipitation will transition into snow because lower atmospheric temperature...",
-    stepLabels: ["1. Weather Station Setup", "2. Thermal Escalation", "3. Pressure Deviation", "4. Frontal Convergence", "5. Precipitation Analysis", "6. Meteorological Synthesis"],
-    leftControl: { title: "Atmospheric Temperature", label: "Ambient Temp (°C)", unit: "°C", min: -20, max: 40, defaultVal: 15, step: 1 },
-    rightControl: { title: "Barometric Pressure", label: "Pressure (kPa)", unit: "kPa", min: 85, max: 105, defaultVal: 101, step: 1 },
-    telemetry: { label1: "Relative Humidity", label2: "Dew Point", label3: "Precipitation Rate", label4: "Air Density" },
+    briefScenario: "Outside your window, the sky can change fast — sunny, then rainy, then cold. Weather is what the air is doing right now.",
+    challengeObjective: "Move the temperature and air-pressure sliders. Watch how rain or snow shows up.",
+    targetVocab: ["weather", "temperature", "air pressure", "rain", "snow"],
+    hypPrompt: "What kind of weather do you get when air pressure drops and it gets cold?",
+    hypPlaceholder: "I think it will... because...",
+    stepLabels: ["1. Get Ready", "2. Change Temperature", "3. What Happened?", "4. Change Pressure", "5. Weather Result", "6. What You Learned"],
+    leftControl: { title: "Temperature", label: "Temp", unit: "°C", min: -20, max: 40, defaultVal: 15, step: 1 },
+    rightControl: { title: "Air Pressure", label: "Pressure", unit: "kPa", min: 85, max: 105, defaultVal: 101, step: 1 },
+    telemetry: { label1: "Humidity", label2: "Dew Point", label3: "Rain / Snow", label4: "Air Density" },
     video: {
-      title: "Atmospheric Thermodynamics & Frontal Systems",
-      subtitle: "Monitoring thermodynamic phase transitions in meteorological systems",
+      title: "What Makes Weather?",
+      subtitle: "Temperature, pressure, and precipitation",
       captions: [
-        { start: 0, end: 5, text: "The atmosphere is a dynamic envelope of gases surrounding Earth." },
-        { start: 5, end: 10, text: "Barometric pressure gradients drive wind vectors and air mass motion." },
-        { start: 10, end: 15, text: "When warm, humid air masses cool below dew point, condensation occurs." },
-        { start: 15, end: 21, text: "Precipitation takes the form of rain, snow, sleet, or hail." },
-        { start: 21, end: 30, text: "Meteorologists interpret barometric drops to forecast severe storm tracks." }
+        { start: 0, end: 5, text: "Weather is what the air is doing today." },
+        { start: 5, end: 10, text: "Air pressure pushing down can rise or fall." },
+        { start: 10, end: 15, text: "Warm wet air that cools can make clouds." },
+        { start: 15, end: 21, text: "Clouds can drop rain or snow." },
+        { start: 21, end: 30, text: "Falling air pressure often means a storm is coming." }
       ]
     },
     quiz: [
       {
-        question: "Explain how a meteorologist utilizes barometric pressure measurements to predict upcoming atmospheric precipitation.",
-        hint: "Connect falling air pressure to rising humid air and cloud condensation.",
-        keywords: ["barometric pressure", "meteorologist", "precipitation", "atmosphere", "density", "condensation"]
+        question: "How can checking air pressure help you guess if it will rain?",
+        hint: "Think about what happens when pressure goes down.",
+        keywords: ["air pressure", "rain", "weather", "drop", "storm"]
       },
       {
-        question: "When atmospheric temperature plummets below 0°C during an active storm, what phase transition alters the precipitation state?",
-        hint: "Describe liquid water freezing into crystalline solid ice or snow.",
-        keywords: ["freezing", "solid", "precipitation", "snow", "temperature", "phase transition"]
+        question: "If it is below freezing during a storm, what falls from the sky instead of rain?",
+        hint: "Water can freeze into ice crystals.",
+        keywords: ["snow", "freeze", "cold", "temperature", "ice"]
       },
       {
-        question: "Distinguish between daily atmospheric weather and long-term seasonal averages using exact meteorological terminology.",
-        hint: "Differentiate short-term hourly/daily fluctuations from multi-decade climatic patterns.",
-        keywords: ["weather", "atmosphere", "climate", "short-term", "temperature", "meteorologist"]
+        question: "What is the difference between weather and climate in kid words?",
+        hint: "Weather is today. Climate is the usual pattern for many years.",
+        keywords: ["weather", "climate", "today", "years", "pattern"]
       }
     ],
-    discoveryLogPrompt: "Document the thermodynamic correlation between dropping barometric pressure and elevated precipitation rates.",
-    takeaway: "Atmospheric instability caused by low barometric pressure and cooling temperatures accelerates condensation, producing heavy precipitation.",
-    canvasType: "atmosphere_cloud"
+    discoveryLogPrompt: "When pressure went down and it got colder, what weather did you see? Why?",
+    takeaway: "Temperature and air pressure work together to make rain, snow, or clear skies.",
+    canvasType: "atmosphere_cloud",
+    obs1Prompt: "You changed the temperature. What changed in the sky or on the numbers?",
+    step2Tutor: "<strong>Step 2: Warm it up or cool it down!</strong><br><br>Move the <strong>Temperature</strong> slider past the middle. Watch the sky!",
+    step3Tutor: "<strong>Nice work watching!</strong><br><br>Write what you saw. Keep looking at the experiment while you write.",
+    step5Tutor: "<strong>Weather locked in!</strong><br><br>Write how temperature and air pressure changed the weather.",
+    doneTutor: "<strong>Great job!</strong><br><br>You saw how temp and pressure make different weather."
   },
 
-  // Module 3003: Collecting Weather Data & Instruments (SEEd 3.1.1)
   {
     id: 3003,
-    code: "3.1.1",
-    standard: "Utah SEEd 3.1.1 · Grade 3 · Module 3003",
+    code: "3.1.2",
+    standard: "Utah SEEd 3.1.2 · Grade 3 · Module 3003",
     strand: "Strand 1: Weather and Climate",
-    title: "Meteorological Instrumentation & Data Acquisition",
-    conceptTitle: "Weather Instruments",
-    briefScenario: "An automated alpine weather station on Mt. Olympus deploys anemometers, hygrometers, and sounding balloons to transmit sensor telemetry to regional forecast centers.",
-    challengeObjective: "Calibrate cup anemometer rotation and weather balloon radiosonde altitude to construct accurate empirical atmospheric data tables.",
-    targetVocab: ["Anemometer", "Radiosonde", "Telemetry", "Data Acquisition"],
-    hypPrompt: "How does wind velocity vector magnitude correlate with structural wind resistance recorded by telemetry instruments?",
-    hypPlaceholder: "I hypothesize the anemometer angular frequency increases linearly with wind speed because...",
-    stepLabels: ["1. Sensor Baseline", "2. Wind Velocity Sweep", "3. Balloon Ascent", "4. Telemetry Calibration", "5. Empirical Data Capture", "6. Instrument Synthesis"],
-    leftControl: { title: "Wind Velocity Generator", label: "Wind Velocity (m/s)", unit: "m/s", min: 0, max: 50, defaultVal: 5, step: 1 },
-    rightControl: { title: "Sounding Balloon Altitude", label: "Balloon Altitude (m)", unit: "m", min: 0, max: 5000, defaultVal: 500, step: 50 },
-    telemetry: { label1: "Wind Velocity", label2: "Air Temp (°C)", label3: "Barometric kPa", label4: "Telemetry Sync" },
+    title: "Weather Tools",
+    conceptTitle: "Weather Tools",
+    briefScenario: "Scientists use tools to measure wind and send balloons high into the sky to learn about the air.",
+    challengeObjective: "Spin up the wind tool and raise the balloon. Collect clear weather numbers.",
+    targetVocab: ["anemometer", "balloon", "wind", "data", "measure"],
+    hypPrompt: "What happens to your wind reading when you make the wind stronger?",
+    hypPlaceholder: "I think the number will... because...",
+    stepLabels: ["1. Get Ready", "2. Spin the Wind Tool", "3. What Happened?", "4. Raise the Balloon", "5. Check the Data", "6. What You Learned"],
+    leftControl: { title: "Wind Speed", label: "Wind", unit: "m/s", min: 0, max: 50, defaultVal: 5, step: 1 },
+    rightControl: { title: "Balloon Height", label: "Height", unit: "m", min: 0, max: 5000, defaultVal: 500, step: 50 },
+    telemetry: { label1: "Wind Reading", label2: "Balloon Height", label3: "Air Temp Up High", label4: "Data Points" },
     video: {
-      title: "Scientific Data Collection with Weather Instruments",
-      subtitle: "High-precision instrumentation capturing atmospheric parameters across altitude gradients",
+      title: "Tools That Measure Weather",
+      subtitle: "Wind cups and weather balloons",
       captions: [
-        { start: 0, end: 5, text: "Accurate forecasting requires continuous meteorological data acquisition." },
-        { start: 5, end: 10, text: "Anemometers quantify wind speed; weather vanes establish directional vectors." },
-        { start: 10, end: 15, text: "Sounding balloons ascend into the stratosphere carrying radiosondes." },
-        { start: 15, end: 21, text: "Sensor telemetry streams temperature, pressure, and moisture gradients." },
-        { start: 21, end: 30, text: "Empirical sensor data feeds predictive supercomputer climate models." }
+        { start: 0, end: 5, text: "An anemometer spins to measure wind." },
+        { start: 5, end: 10, text: "Faster spin means stronger wind." },
+        { start: 10, end: 15, text: "Weather balloons carry sensors into the sky." },
+        { start: 15, end: 21, text: "Sensors send data back to Earth." },
+        { start: 21, end: 30, text: "Good measurements help us trust the forecast." }
       ]
     },
     quiz: [
       {
-        question: "Explain the functional distinction between an anemometer and a barometer in meteorological data acquisition.",
-        hint: "One measures mechanical kinetic energy of wind; the other measures gas force per unit area.",
-        keywords: ["anemometer", "barometer", "wind velocity", "pressure", "data acquisition", "atmosphere"]
+        question: "What does an anemometer measure?",
+        hint: "Think about the spinning cups in the wind.",
+        keywords: ["wind", "anemometer", "speed", "measure"]
       },
       {
-        question: "Why do scientists deploy radiosonde weather balloons rather than relying solely on terrestrial surface weather stations?",
-        hint: "Consider how atmospheric conditions change with vertical altitude.",
-        keywords: ["radiosonde", "altitude", "troposphere", "atmosphere", "telemetry", "vertical"]
+        question: "Why send a balloon high into the sky?",
+        hint: "Air high up is different from air near the ground.",
+        keywords: ["balloon", "high", "data", "air", "measure"]
       },
       {
-        question: "What failure in scientific validity occurs if a weather station's telemetry sensor is poorly calibrated during a blizzard?",
-        hint: "Discuss measurement error, inaccurate forecasting, and systematic data skew.",
-        keywords: ["telemetry", "calibration", "data", "error", "accuracy", "meteorological"]
+        question: "Why do scientists write down measurements carefully?",
+        hint: "Mistakes in numbers can lead to wrong forecasts.",
+        keywords: ["data", "measure", "accurate", "careful", "numbers"]
       }
     ],
-    discoveryLogPrompt: "Analyze the altitude gradient data: How do barometric pressure and ambient temperature shift systematically as balloon altitude increases?",
-    takeaway: "Atmospheric sounding reveals that temperature and pressure decrease predictably with altitude, captured via high-precision telemetry instruments.",
-    canvasType: "anemometer_station"
+    discoveryLogPrompt: "What did your wind tool and balloon teach you about collecting weather data?",
+    takeaway: "Tools like anemometers and balloons help us measure the air so we can trust our numbers.",
+    canvasType: "anemometer_station",
+    obs1Prompt: "You sped up the wind. What changed on the wind reading?",
+    step2Tutor: "<strong>Step 2: Make wind!</strong><br><br>Drag the <strong>Wind</strong> slider higher. Watch the cups spin.",
+    step3Tutor: "<strong>Data time!</strong><br><br>Write what you saw. The experiment stays visible.",
+    step5Tutor: "<strong>Nice data!</strong><br><br>Write how wind and balloon height helped you measure the air.",
+    doneTutor: "<strong>Awesome!</strong><br><br>You used real weather tools to gather data."
   },
 
-  // Module 3004: Weather Forecasts & Data Analysis (SEEd 3.1.1)
   {
     id: 3004,
-    code: "3.1.1",
-    standard: "Utah SEEd 3.1.1 · Grade 3 · Module 3004",
+    code: "3.1.3",
+    standard: "Utah SEEd 3.1.3 · Grade 3 · Module 3004",
     strand: "Strand 1: Weather and Climate",
-    title: "Synoptic Forecasting & Barometric Analysis",
+    title: "Weather Forecasts",
     conceptTitle: "Weather Forecasts",
-    briefScenario: "Regional meteorologists cross-examine multi-day historical data arrays in Salt Lake City, tracking pre-frontal wind shear and pressure drops before an incoming blizzard.",
-    challengeObjective: "Isolate pre-storm data anomalies across temperature, wind velocity, and barometric trends to predict storm arrival windows.",
-    targetVocab: ["Weather Forecast", "Air Pressure", "Wind Vector", "Data Analysis"],
-    hypPrompt: "What specific pattern in air pressure and wind vector magnitude precedes a severe winter storm?",
-    hypPlaceholder: "I predict that as a cold front approaches, air pressure will plummet while wind speed...",
-    stepLabels: ["1. Data Matrix Review", "2. Vector Tracking", "3. Pressure Drop Isobars", "4. Frontal Interception", "5. Forecast Calculation", "6. Predictive Synthesis"],
-    leftControl: { title: "Frontal Approach Distance", label: "Front Proximity (km)", unit: "km", min: 10, max: 300, defaultVal: 200, step: 5 },
-    rightControl: { title: "Isobar Pressure Gradient", label: "Pressure Delta (hPa)", unit: "hPa", min: 0, max: 30, defaultVal: 5, step: 1 },
-    telemetry: { label1: "Forecast Probability", label2: "Wind Shear Vector", label3: "Arrival Window", label4: "Confidence Index" },
+    briefScenario: "A storm is coming toward Salt Lake City. Forecasters look at pressure and how close the front is.",
+    challengeObjective: "Move the storm closer and change the pressure gap. Predict what weather arrives.",
+    targetVocab: ["forecast", "air pressure", "storm", "wind", "pattern"],
+    hypPrompt: "If air pressure falls fast and a storm front gets closer, what weather do you expect?",
+    hypPlaceholder: "I think we will get... because...",
+    stepLabels: ["1. Get Ready", "2. Move the Front", "3. What Happened?", "4. Change Pressure", "5. Make a Forecast", "6. What You Learned"],
+    leftControl: { title: "Storm Distance", label: "Distance", unit: "km", min: 10, max: 300, defaultVal: 200, step: 5 },
+    rightControl: { title: "Pressure Change", label: "Pressure Drop", unit: "hPa", min: 0, max: 30, defaultVal: 5, step: 1 },
+    telemetry: { label1: "Storm Chance", label2: "Wind Guess", label3: "Temp Trend", label4: "Hours Away" },
     video: {
-      title: "Mathematical Foundations of Weather Forecasting",
-      subtitle: "Decoding multi-variable data patterns to build reliable probability models",
+      title: "How Forecasts Work",
+      subtitle: "Patterns in the numbers",
       captions: [
-        { start: 0, end: 5, text: "A weather forecast is an evidence-based probability prediction." },
-        { start: 5, end: 10, text: "Meteorologists track isobars—lines of equal barometric air pressure." },
-        { start: 10, end: 15, text: "Steep pressure gradients generate high-velocity wind vectors." },
-        { start: 15, end: 21, text: "Approaching cold fronts force warm air upward, spawning frontal squalls." },
-        { start: 21, end: 30, text: "Synthesizing multi-day sensor arrays maximizes forecast reliability." }
+        { start: 0, end: 5, text: "A forecast is a smart weather guess." },
+        { start: 5, end: 10, text: "Falling pressure often means a storm." },
+        { start: 10, end: 15, text: "Closer storm fronts mean stronger winds." },
+        { start: 15, end: 21, text: "Looking at many numbers makes better guesses." },
+        { start: 21, end: 30, text: "Forecasts can be wrong — weather is tricky!" }
       ]
     },
     quiz: [
       {
-        question: "How does a steep isobaric pressure gradient generate high-magnitude wind vectors during storm development?",
-        hint: "Air flows rapidly from high-pressure zones to low-pressure zones.",
-        keywords: ["pressure", "wind vector", "gradient", "isobar", "air pressure", "velocity"]
+        question: "What often happens to the weather when air pressure drops quickly?",
+        hint: "Think storms, not sunny calm days.",
+        keywords: ["pressure", "storm", "drop", "forecast", "wind"]
       },
       {
-        question: "Why is a weather forecast termed a 'probabilistic prediction' rather than an absolute mathematical guarantee?",
-        hint: "Explain non-linear atmospheric variables, unexpected trajectory shifts, and localized geography.",
-        keywords: ["forecast", "probability", "data analysis", "variable", "atmosphere", "uncertainty"]
+        question: "Why do forecasters look at more than one number?",
+        hint: "One clue is not enough for a good guess.",
+        keywords: ["forecast", "pattern", "data", "many", "numbers"]
       },
       {
-        question: "Based on Salt Lake City data arrays, what combination of barometric shift and wind vector signals immediate snow onset?",
-        hint: "Reference falling barometric pressure paired with intensifying northerly wind vectors.",
-        keywords: ["falling pressure", "wind vector", "temperature drop", "snow", "front", "data"]
+        question: "If a storm is 50 km away instead of 250 km, what changes?",
+        hint: "Closer usually means sooner and stronger.",
+        keywords: ["closer", "storm", "sooner", "wind", "strong"]
       }
     ],
-    discoveryLogPrompt: "Examine your simulated isobar model: Conclude why air masses rush violently toward zones of lowest barometric pressure.",
-    takeaway: "Steep barometric pressure differentials drive high wind vector velocities and force frontal collisions, allowing reliable weather forecasts.",
-    canvasType: "isobar_map"
+    discoveryLogPrompt: "Using distance and pressure, what forecast would you give? Why?",
+    takeaway: "Forecasts use patterns in pressure, wind, and storm distance — not just one number.",
+    canvasType: "isobar_map",
+    obs1Prompt: "You moved the storm closer. What changed on the forecast numbers?",
+    step2Tutor: "<strong>Step 2: Bring the storm closer!</strong><br><br>Slide <strong>Storm Distance</strong> down. Watch the map.",
+    step3Tutor: "<strong>What did you notice?</strong><br><br>Write it down. Keep watching the map.",
+    step5Tutor: "<strong>Time to forecast!</strong><br><br>Write your weather prediction and why.",
+    doneTutor: "<strong>Nice forecast!</strong><br><br>You used patterns like a real weather scientist."
   },
 
-  // Module 3005: Global Climate Patterns & Zones (SEEd 3.1.2)
   {
     id: 3005,
-    code: "3.1.2",
-    standard: "Utah SEEd 3.1.2 · Grade 3 · Module 3005",
+    code: "3.1.4",
+    standard: "Utah SEEd 3.1.4 · Grade 3 · Module 3005",
     strand: "Strand 1: Weather and Climate",
-    title: "Global Biomes & Climate Pattern Dynamics",
-    conceptTitle: "Climate Patterns",
-    briefScenario: "Earth-observing satellite radiometers map planetary thermal radiation. Equatorial continents absorb dense solar irradiance, while high-latitude polar ice sheets reflect solar energy back into space.",
-    challengeObjective: "Manipulate planetary solar insolation angles and precipitation baselines to delineate 30-year climate zones across continental landmasses.",
-    targetVocab: ["Climate Zone", "Solar Irradiance", "Seasonal Precipitation", "Latitude"],
-    hypPrompt: "Why does the annual average temperature of a geographic region depend directly on its latitude relative to the equator?",
-    hypPlaceholder: "I hypothesize equatorial regions maintain higher temperatures because solar irradiance strikes at...",
-    stepLabels: ["1. Equatorial Alignment", "2. Insolation Sweep", "3. Precipitation Mapping", "4. Regional Comparison", "5. 30-Year Averaging", "6. Climatological Synthesis"],
-    leftControl: { title: "Geographic Latitude", label: "Latitude (°N/S)", unit: "°", min: 0, max: 90, defaultVal: 40, step: 1 },
-    rightControl: { title: "Annual Insolation Flux", label: "Solar Flux (W/m²)", unit: "W/m²", min: 80, max: 400, defaultVal: 240, step: 5 },
-    telemetry: { label1: "30-Yr Mean Temp", label2: "Solar Incident Angle", label3: "Annual Rainfall", label4: "Climate Class" },
+    title: "Climate Zones",
+    conceptTitle: "Climate Zones",
+    briefScenario: "Near the equator it stays hot. Near the poles it stays cold. Climate is the usual weather over many years.",
+    challengeObjective: "Change latitude and sunlight strength. See which climate zone you create.",
+    targetVocab: ["climate", "latitude", "sunlight", "zone", "average"],
+    hypPrompt: "If you move closer to the North Pole, what happens to the climate?",
+    hypPlaceholder: "I think it will get... because...",
+    stepLabels: ["1. Get Ready", "2. Change Latitude", "3. What Happened?", "4. Change Sunlight", "5. Name the Zone", "6. What You Learned"],
+    leftControl: { title: "Latitude", label: "Latitude", unit: "°", min: 0, max: 90, defaultVal: 40, step: 1 },
+    rightControl: { title: "Sunlight", label: "Sun Power", unit: "W/m²", min: 80, max: 400, defaultVal: 240, step: 5 },
+    telemetry: { label1: "Avg Temp", label2: "Climate Zone", label3: "Sun Angle", label4: "Year Rain" },
     video: {
-      title: "Global Climate Patterns & Planetary Solar Flux",
-      subtitle: "How orbital mechanics and axial tilt determine 30-year regional climate baselines",
+      title: "Climate vs Weather",
+      subtitle: "Years of usual weather",
       captions: [
-        { start: 0, end: 5, text: "Climate represents the statistical 30-year weather average of a region." },
-        { start: 5, end: 10, text: "Equatorial latitudes receive direct, perpendicular solar irradiance." },
-        { start: 10, end: 15, text: "Polar latitudes receive oblique, dispersed solar rays across broad areas." },
-        { start: 15, end: 21, text: "Atmospheric convection cells redistribute heat toward temperate zones." },
-        { start: 21, end: 30, text: "Consistent long-term precipitation and thermal metrics define climate zones." }
+        { start: 0, end: 5, text: "Climate is the usual weather over many years." },
+        { start: 5, end: 10, text: "Latitude tells how far you are from the equator." },
+        { start: 10, end: 15, text: "More direct sunlight means warmer places." },
+        { start: 15, end: 21, text: "Poles get weaker sunlight, so they stay cold." },
+        { start: 21, end: 30, text: "Earth has different climate zones." }
       ]
     },
     quiz: [
       {
-        question: "Differentiate scientific 'climate' from daily 'weather' using duration and statistical averaging in your answer.",
-        hint: "Weather is measured hourly/daily; climate requires 30-year empirical records.",
-        keywords: ["climate", "weather", "30-year", "average", "statistical", "seasonal precipitation"]
+        question: "How is climate different from weather?",
+        hint: "One is today. One is many years.",
+        keywords: ["climate", "weather", "years", "average", "usual"]
       },
       {
-        question: "How does solar irradiance angle at 0° latitude compare with 80° latitude, and how does this dictate regional climate?",
-        hint: "Perpendicular rays concentrate thermal energy, while oblique rays scatter energy over wider surface area.",
-        keywords: ["solar irradiance", "latitude", "perpendicular", "equator", "polar", "angle"]
+        question: "Why is it hotter near the equator than near the poles?",
+        hint: "Think about how sunlight hits Earth.",
+        keywords: ["sunlight", "equator", "latitude", "angle", "warm"]
       },
       {
-        question: "Why would comparing New York City and San Diego climate data require 30 years of temperature curves rather than one January afternoon?",
-        hint: "Individual weather anomalies can deviate, but multi-decade curves reveal true systemic climate.",
-        keywords: ["climate zone", "30-year", "data", "average", "weather anomaly", "seasonal"]
+        question: "If a place is cold most years, what kind of climate zone is it?",
+        hint: "Think poles and ice.",
+        keywords: ["polar", "cold", "climate", "zone", "years"]
       }
     ],
-    discoveryLogPrompt: "Document how increasing geographic latitude from 0° to 85° systematically degrades thermal equilibrium and solar flux.",
-    takeaway: "Planetary curvature causes solar irradiance to scatter at higher latitudes, establishing distinct 30-year thermal and precipitation climate zones.",
-    canvasType: "globe_insolation"
+    discoveryLogPrompt: "What climate zone did your latitude and sunlight create? Why does that make sense?",
+    takeaway: "Climate zones depend on latitude and how strong the sunlight is over many years.",
+    canvasType: "globe_insolation",
+    obs1Prompt: "You changed latitude. Did it get warmer or colder? Why?",
+    step2Tutor: "<strong>Step 2: Travel the globe!</strong><br><br>Move the <strong>Latitude</strong> slider toward the pole or equator.",
+    step3Tutor: "<strong>Cool change!</strong><br><br>Write what happened to the climate. Keep watching.",
+    step5Tutor: "<strong>Name that zone!</strong><br><br>Write which climate zone you made and why.",
+    doneTutor: "<strong>Planet explorer!</strong><br><br>You linked latitude and sunlight to climate."
   },
 
-  // Module 3006: The Five Main Climate Types (SEEd 3.1.2)
   {
     id: 3006,
-    code: "3.1.2",
-    standard: "Utah SEEd 3.1.2 · Grade 3 · Module 3006",
+    code: "3.1.5",
+    standard: "Utah SEEd 3.1.5 · Grade 3 · Module 3006",
     strand: "Strand 1: Weather and Climate",
-    title: "Classification of Planetary Climate Systems",
-    conceptTitle: "The Five Climate Types",
-    briefScenario: "Climatologists categorize Earth's landmasses into five primary regimes: Tropical, Arid/Dry, Temperate, Continental, and Polar, defined by strict precipitation and thermal thresholds.",
-    challengeObjective: "Classify unknown continental test biomes by measuring seasonal precipitation volumes and annual thermal swings against Köppen standards.",
-    targetVocab: ["Tropical Climate", "Continental Climate", "Polar Climate", "Arid Climate"],
-    hypPrompt: "What environmental trait distinguishes continental climate zones from coastal temperate zones at the same latitude?",
-    hypPlaceholder: "I hypothesize that continental climates experience extreme seasonal temperature ranges because...",
-    stepLabels: ["1. Biome Sampling", "2. Thermal Range Test", "3. Precipitation Audit", "4. Köppen Classification", "5. Continental Boundary", "6. Biome Synthesis"],
-    leftControl: { title: "Ocean Proximity Offset", label: "Distance to Ocean (km)", unit: "km", min: 0, max: 1500, defaultVal: 500, step: 25 },
-    rightControl: { title: "Annual Moisture Budget", label: "Precipitation (cm)", unit: "cm", min: 5, max: 350, defaultVal: 80, step: 5 },
-    telemetry: { label1: "Thermal Oscillation", label2: "Dry Season Index", label3: "Climate Regime", label4: "Biome Match" },
+    title: "Types of Climates",
+    conceptTitle: "Types of Climates",
+    briefScenario: "Deserts are dry. Rainforests are wet. Oceans nearby can make temperatures milder.",
+    challengeObjective: "Change distance from the ocean and yearly rain. Match the place to a climate type.",
+    targetVocab: ["desert", "tropical", "polar", "rain", "ocean"],
+    hypPrompt: "If a place is far from the ocean and gets almost no rain, what climate is it?",
+    hypPlaceholder: "I think it is a... because...",
+    stepLabels: ["1. Get Ready", "2. Move From Ocean", "3. What Happened?", "4. Change Rain", "5. Name the Climate", "6. What You Learned"],
+    leftControl: { title: "Distance to Ocean", label: "Ocean Distance", unit: "km", min: 0, max: 1500, defaultVal: 500, step: 25 },
+    rightControl: { title: "Yearly Rain", label: "Rain", unit: "cm", min: 5, max: 350, defaultVal: 80, step: 5 },
+    telemetry: { label1: "Climate Type", label2: "Dry / Wet", label3: "Temp Swing", label4: "Plant Clue" },
     video: {
-      title: "The Five Primary Global Climate Classifications",
-      subtitle: "Analyzing precipitation patterns and seasonal thermal oscillations across continental plates",
+      title: "Five Big Climate Types",
+      subtitle: "Wet, dry, mild, cold",
       captions: [
-        { start: 0, end: 5, text: "Earth exhibits five major climate zones based on thermal energy and rainfall." },
-        { start: 5, end: 10, text: "Tropical zones remain persistently warm with intense convective rainfall." },
-        { start: 10, end: 15, text: "Arid deserts experience severe moisture deficits under 25 cm annually." },
-        { start: 15, end: 21, text: "Continental interiors face scorching summers and freezing winters." },
-        { start: 21, end: 30, text: "Polar zones endure sustained sub-zero temperatures and cryospheric ice." }
+        { start: 0, end: 5, text: "Earth has several main climate types." },
+        { start: 5, end: 10, text: "Deserts get very little rain." },
+        { start: 10, end: 15, text: "Tropical places stay warm and often wet." },
+        { start: 15, end: 21, text: "Oceans help keep nearby land milder." },
+        { start: 21, end: 30, text: "Polar climates stay freezing cold." }
       ]
     },
     quiz: [
       {
-        question: "Define the thermal and precipitation characteristics that classify an ecosystem as an 'arid climate'.",
-        hint: "Note annual rainfall below 25 cm (10 inches) and high evapotranspiration.",
-        keywords: ["arid climate", "precipitation", "desert", "dry", "evaporation", "deficit"]
+        question: "What climate has almost no rain?",
+        hint: "Think cactus and sand.",
+        keywords: ["desert", "dry", "rain", "arid"]
       },
       {
-        question: "Why do continental climates experience far wider seasonal temperature oscillations than maritime temperate climates?",
-        hint: "Water has high specific heat capacity, stabilizing coastal air, while continental land heats and cools rapidly.",
-        keywords: ["continental climate", "temperate", "ocean", "specific heat", "thermal oscillation", "landmass"]
+        question: "How can living near an ocean change the climate?",
+        hint: "Oceans warm and cool slowly.",
+        keywords: ["ocean", "mild", "temperature", "climate"]
       },
       {
-        question: "Identify the critical environmental constraint preventing dense vegetative canopy growth in polar climate zones.",
-        hint: "Sustained sub-freezing temperatures, permafrost, and minimal liquid precipitation.",
-        keywords: ["polar climate", "freezing", "permafrost", "precipitation", "temperature", "vegetation"]
+        question: "What is a polar climate like?",
+        hint: "Ice, cold, little plant life.",
+        keywords: ["polar", "cold", "freezing", "ice"]
       }
     ],
-    discoveryLogPrompt: "Synthesize why continental landmasses far from ocean bodies undergo dramatic winter-to-summer thermal extremes.",
-    takeaway: "Maritime oceans buffer temperate climates, whereas vast continental landmasses produce extreme seasonal thermal swings.",
-    canvasType: "climate_zones_strip"
+    discoveryLogPrompt: "Which climate type matches your ocean distance and rain? Explain.",
+    takeaway: "Rain amount and ocean distance help sort places into climate types like desert or tropical.",
+    canvasType: "climate_zones_strip",
+    obs1Prompt: "You moved farther from the ocean. What changed?",
+    step2Tutor: "<strong>Step 2: Leave the coast!</strong><br><br>Drag <strong>Distance to Ocean</strong> higher.",
+    step3Tutor: "<strong>Interesting!</strong><br><br>Write what changed. Keep looking at the map.",
+    step5Tutor: "<strong>Classify it!</strong><br><br>Write the climate type and your reason.",
+    doneTutor: "<strong>Climate sorter!</strong><br><br>You matched rain and oceans to climate types."
   },
 
-  // Module 3007: Severe Weather Hazards (SEEd 3.1.3)
   {
     id: 3007,
-    code: "3.1.3",
-    standard: "Utah SEEd 3.1.3 · Grade 3 · Module 3007",
+    code: "3.1.6",
+    standard: "Utah SEEd 3.1.6 · Grade 3 · Module 3007",
     strand: "Strand 1: Weather and Climate",
-    title: "Severe Meteorological Hazards & Vortex Dynamics",
-    conceptTitle: "Severe Weather Hazards",
-    briefScenario: "A multi-cell thunderstorm over the Salt Lake Valley undergoes explosive supercell cyclogenesis. Intense updrafts generate rotating mesocyclones capable of spawning destructive tornadoes and flash floods.",
-    challengeObjective: "Analyze convective available potential energy (CAPE) and wind shear vectors to predict vortex formation and structural hazard risks.",
-    targetVocab: ["Severe Weather", "Mesocyclone", "Tornado", "Flash Flood"],
-    hypPrompt: "What thermodynamic interaction between rapid atmospheric updrafts and rotating wind shear generates a tornado?",
-    hypPlaceholder: "I hypothesize that when rising warm updrafts encounter perpendicular horizontal wind shear...",
-    stepLabels: ["1. Supercell Ingestion", "2. Updraft Acceleration", "3. Mesocyclone Spin", "4. Funnel Touchdown", "5. Hazard Radius Mapping", "6. Safety Protocol Synthesis"],
-    leftControl: { title: "Convective Updraft Power", label: "Updraft Velocity (m/s)", unit: "m/s", min: 10, max: 70, defaultVal: 35, step: 1 },
-    rightControl: { title: "Rotational Wind Shear", label: "Helicity Shear (m²/s²)", unit: "m²/s²", min: 50, max: 450, defaultVal: 200, step: 5 },
-    telemetry: { label1: "Vortex Intensity", label2: "Fujita Rating", label3: "Flash Flood Risk", label4: "Alert Status" },
+    title: "Severe Weather",
+    conceptTitle: "Severe Weather",
+    briefScenario: "Some storms spin into tornadoes. Heavy rain can cause flash floods. These are dangerous.",
+    challengeObjective: "Raise updraft and spin. See when a tornado or flood risk appears.",
+    targetVocab: ["tornado", "flood", "severe weather", "storm", "warning"],
+    hypPrompt: "What happens when a storm has a strong upward wind and lots of spin?",
+    hypPlaceholder: "I think a... might form because...",
+    stepLabels: ["1. Get Ready", "2. Boost Updraft", "3. What Happened?", "4. Add Spin", "5. Hazard Check", "6. What You Learned"],
+    leftControl: { title: "Updraft", label: "Updraft", unit: "m/s", min: 10, max: 70, defaultVal: 35, step: 1 },
+    rightControl: { title: "Spin", label: "Spin", unit: "idx", min: 50, max: 450, defaultVal: 200, step: 5 },
+    telemetry: { label1: "Tornado Risk", label2: "Flood Risk", label3: "Wind Speed", label4: "Warning Level" },
     video: {
-      title: "Atmospheric Physics of Severe Weather Hazards",
-      subtitle: "Unraveling the thermodynamic energy driving tornadoes, supercells, and flash floods",
+      title: "Dangerous Storms",
+      subtitle: "Tornadoes and flash floods",
       captions: [
-        { start: 0, end: 5, text: "Severe weather encompasses dangerous atmospheric phenomena causing destruction." },
-        { start: 5, end: 10, text: "Supercell storms harbor powerful vertical updrafts exceeding 50 m/s." },
-        { start: 10, end: 15, text: "Wind shear tilts rotating columns of air into vertical mesocyclones." },
-        { start: 15, end: 21, text: "Tornado funnels descend, concentrating kinetic energy at ground contact." },
-        { start: 21, end: 30, text: "Torrential convective rainfall saturates river basins, triggering flash floods." }
+        { start: 0, end: 5, text: "Severe weather can hurt people and homes." },
+        { start: 5, end: 10, text: "Strong upward winds help storms grow." },
+        { start: 10, end: 15, text: "Spinning air can become a tornado." },
+        { start: 15, end: 21, text: "Too much rain too fast causes flash floods." },
+        { start: 21, end: 30, text: "Warnings help you get to a safe place." }
       ]
     },
     quiz: [
       {
-        question: "Define 'severe weather' and explain why tornadoes are classified among the most catastrophic meteorological hazards.",
-        hint: "Discuss rotational kinetic energy, destructive pressure drops, and wind speeds exceeding 200 mph.",
-        keywords: ["severe weather", "tornado", "hazard", "wind velocity", "destruction", "kinetic energy"]
+        question: "What kind of storm is a spinning funnel cloud that touches the ground?",
+        hint: "It looks like a spinning tube.",
+        keywords: ["tornado", "spin", "storm", "severe"]
       },
       {
-        question: "How does rapid convective rainfall over compacted urban soils produce sudden flash flood hazards?",
-        hint: "Water influx surpasses soil absorption capacity, causing rapid surface runoff into rivers.",
-        keywords: ["flash flood", "precipitation", "runoff", "saturation", "basin", "severe weather"]
+        question: "What can happen if lots of rain falls very fast?",
+        hint: "Water rises quickly in streets and streams.",
+        keywords: ["flood", "rain", "flash flood", "water"]
       },
       {
-        question: "What protective action should citizens execute immediately upon issuance of a formal Doppler tornado warning?",
-        hint: "Seek subterranean shelter or lowest interior structural room away from exterior glass.",
-        keywords: ["tornado", "shelter", "basement", "warning", "protection", "severe weather"]
+        question: "Where should you go during a tornado warning?",
+        hint: "Think lowest floor, away from windows.",
+        keywords: ["basement", "safe", "warning", "shelter", "tornado"]
       }
     ],
-    discoveryLogPrompt: "Describe how elevating updraft velocity and rotational wind shear transforms a standard thunderstorm into a tornadic mesocyclone.",
-    takeaway: "Intense vertical atmospheric updrafts combined with rotational wind shear generate destructive mesocyclones, demanding early warning systems.",
-    canvasType: "vortex_tornado"
+    discoveryLogPrompt: "When did tornado or flood risk get high? What slider settings caused it?",
+    takeaway: "Strong updrafts and spin raise tornado risk. Heavy rain raises flood risk. Warnings keep you safe.",
+    canvasType: "vortex_tornado",
+    obs1Prompt: "You boosted the updraft. What changed in the storm?",
+    step2Tutor: "<strong>Step 2: Power the storm!</strong><br><br>Raise the <strong>Updraft</strong> slider. Watch the clouds.",
+    step3Tutor: "<strong>Whoa!</strong><br><br>Write what you saw. Keep watching the storm.",
+    step5Tutor: "<strong>Hazard check!</strong><br><br>Write when it got dangerous and why.",
+    doneTutor: "<strong>Storm smart!</strong><br><br>You learned how severe weather forms — and why warnings matter."
   },
 
-  // Module 3008: Engineering Solutions for Weather Hazards (SEEd 3.1.3)
   {
     id: 3008,
-    code: "3.1.3",
-    standard: "Utah SEEd 3.1.3 · Grade 3 · Module 3008",
+    code: "3.1.7",
+    standard: "Utah SEEd 3.1.7 · Grade 3 · Module 3008",
     strand: "Strand 1: Weather and Climate",
-    title: "Structural Engineering Against Hydrological Hazards",
-    conceptTitle: "Engineering for Weather Hazards",
-    briefScenario: "Cedar Rapids, Iowa faces historic Cedar River cresting. Civil engineers must evaluate structural flood mitigation prototypes—sandbag levees, architectural stilts, and river diversion dams—under strict economic constraints.",
-    challengeObjective: "Optimize structural flood barrier prototypes to achieve complete hydrological containment while satisfying strict criteria and budgetary constraints.",
-    targetVocab: ["Criteria", "Constraints", "Prototype", "Mitigation"],
-    hypPrompt: "Which engineering solution best satisfies the criteria of total residential flood protection while operating within a $3M budget constraint?",
-    hypPlaceholder: "I hypothesize that architectural stilts will satisfy criteria better than river dams because their capital cost...",
-    stepLabels: ["1. Problem Definition", "2. Criteria & Constraints", "3. Barrier Simulation", "4. Hydrostatic Stress Test", "5. Economic Audit", "6. Engineering Decision"],
-    leftControl: { title: "River Flood Crest Surge", label: "Hydrostatic Height (m)", unit: "m", min: 1, max: 8, defaultVal: 4, step: 0.5 },
-    rightControl: { title: "Structural Budget Allocation", label: "Capital Expenditure ($M)", unit: "$M", min: 1, max: 6, defaultVal: 3, step: 0.5 },
-    telemetry: { label1: "Containment Efficiency", label2: "Structural Stress", label3: "Budget Adherence", label4: "Environmental Score" },
+    title: "Flood Protection",
+    conceptTitle: "Flood Protection",
+    briefScenario: "A river is rising. Engineers must build a barrier, but money is limited.",
+    challengeObjective: "Raise flood height and spend budget on a wall. Stop the flood without going broke.",
+    targetVocab: ["flood", "barrier", "budget", "prototype", "protect"],
+    hypPrompt: "If the river rises higher than your wall, what happens to the town?",
+    hypPlaceholder: "I think the town will... because...",
+    stepLabels: ["1. Get Ready", "2. Raise the River", "3. What Happened?", "4. Build the Wall", "5. Did It Hold?", "6. What You Learned"],
+    leftControl: { title: "Flood Height", label: "Water Height", unit: "m", min: 1, max: 8, defaultVal: 4, step: 0.5 },
+    rightControl: { title: "Build Budget", label: "Budget", unit: "$M", min: 1, max: 6, defaultVal: 3, step: 0.5 },
+    telemetry: { label1: "Wall Height", label2: "Money Left", label3: "Town Safe?", label4: "Leak Risk" },
     video: {
-      title: "Civil Engineering for Severe Weather Hazard Mitigation",
-      subtitle: "Iterative prototype testing against real-world criteria and resource constraints",
+      title: "Building Against Floods",
+      subtitle: "Goals, limits, and testing",
       captions: [
-        { start: 0, end: 5, text: "Engineers design solutions to protect human communities from natural hazards." },
-        { start: 5, end: 10, text: "Criteria are required performance targets, such as complete water exclusion." },
-        { start: 10, end: 15, text: "Constraints are physical limits, including financial budget and construction time." },
-        { start: 15, end: 21, text: "Prototypes undergo simulated hydrodynamic stress testing before deployment." },
-        { start: 21, end: 30, text: "Optimizing balance between cost, ecology, and structural resilience achieves success." }
+        { start: 0, end: 5, text: "A prototype is a first try of a design." },
+        { start: 5, end: 10, text: "Criteria are the goals you must meet." },
+        { start: 10, end: 15, text: "Constraints are the limits, like budget." },
+        { start: 15, end: 21, text: "Sandbags and walls can block flood water." },
+        { start: 21, end: 30, text: "Test, fix, and test again!" }
       ]
     },
     quiz: [
       {
-        question: "In engineering design, rigorously distinguish between project 'criteria' and project 'constraints'.",
-        hint: "Criteria represent success goals; constraints represent boundaries like budget, time, and materials.",
-        keywords: ["criteria", "constraints", "prototype", "budget", "goals", "limits"]
+        question: "What is a constraint in engineering?",
+        hint: "Something that limits what you can do.",
+        keywords: ["budget", "limit", "constraint", "money"]
       },
       {
-        question: "Why was the $5 million river diversion dam rejected despite high containment efficiency in the Cedar Rapids case study?",
-        hint: "It exceeded the non-negotiable $3 million municipal budget constraint and damaged riverine ecosystems.",
-        keywords: ["constraints", "budget", "cost", "criteria", "environment", "dam"]
+        question: "What is a criterion (goal) for a flood wall?",
+        hint: "What must the wall successfully do?",
+        keywords: ["protect", "stop", "flood", "safe", "goal"]
       },
       {
-        question: "Explain why temporary sandbag barriers, while inexpensive ($1M), require continuous iterative maintenance during prolonged floods.",
-        hint: "Sandbags are permeable under hydrostatic pressure and degrade over multi-week floods.",
-        keywords: ["prototype", "sandbags", "mitigation", "hydrostatic", "criteria", "failure"]
+        question: "Why test a prototype before building the real thing?",
+        hint: "Finding problems early saves money and keeps people safer.",
+        keywords: ["test", "prototype", "fix", "improve"]
       }
     ],
-    discoveryLogPrompt: "Synthesize the engineering trade-offs: Why do architectural stilts meet the $3M budget constraint and long-term durability criteria better than sandbags?",
-    takeaway: "Successful engineering hazard solutions balance operational performance criteria against non-negotiable financial and temporal constraints.",
-    canvasType: "flood_levee"
+    discoveryLogPrompt: "Did your wall stop the flood within budget? What would you change?",
+    takeaway: "Good designs meet safety goals and stay inside limits like budget.",
+    canvasType: "flood_levee",
+    obs1Prompt: "You raised the river. What happened to the town?",
+    step2Tutor: "<strong>Step 2: Raise the river!</strong><br><br>Move <strong>Flood Height</strong> up. Watch the water.",
+    step3Tutor: "<strong>Oh no!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Did the wall hold?</strong><br><br>Write whether your design worked and why.",
+    doneTutor: "<strong>Engineer mode!</strong><br><br>You balanced safety goals with budget limits."
   },
 
-  // Module 3009: Animal and Plant Life Cycles (SEEd 3.2.1)
   {
     id: 3009,
     code: "3.2.1",
     standard: "Utah SEEd 3.2.1 · Grade 3 · Module 3009",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Biological Life Cycles & Reproductive Continuity",
+    title: "Life Cycles",
     conceptTitle: "Life Cycles",
-    briefScenario: "Ecologists track amphibians and angiosperm flora across Great Salt Lake riparian wetlands, mapping the universal cyclical progression of birth, developmental growth, reproduction, and mortality.",
-    challengeObjective: "Model developmental progression and gamete pollination to maintain population carrying capacity across generations.",
-    targetVocab: ["Life Cycle", "Reproduction", "Organism", "Extinction"],
-    hypPrompt: "What universal biological consequence occurs to a species population if environmental hazards disrupt the reproduction phase?",
-    hypPlaceholder: "I hypothesize that if organisms fail to reach reproductive maturity, the population will...",
-    stepLabels: ["1. Germination & Birth", "2. Biomass Growth", "3. Reproductive Maturation", "4. Seed Dispersal & Oviposition", "5. Generation Transition", "6. Biological Synthesis"],
-    leftControl: { title: "Nutrient & Hydration Flux", label: "Nutrient Availability (%)", unit: "%", min: 10, max: 100, defaultVal: 70, step: 1 },
-    rightControl: { title: "Reproductive Mating Rate", label: "Fertility Index (%)", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
-    telemetry: { label1: "Organism Population", label2: "Growth Velocity", label3: "Generational Turnover", label4: "Mortality Rate" },
+    briefScenario: "Living things are born, grow, can make babies, and eventually die. That loop is a life cycle.",
+    challengeObjective: "Change food/water and baby-making rate. Keep the population going.",
+    targetVocab: ["life cycle", "birth", "grow", "reproduce", "organism"],
+    hypPrompt: "If animals never reproduce, what happens to the population over time?",
+    hypPlaceholder: "I think the population will... because...",
+    stepLabels: ["1. Get Ready", "2. Add Food & Water", "3. What Happened?", "4. Change Baby Rate", "5. Population Check", "6. What You Learned"],
+    leftControl: { title: "Food & Water", label: "Nutrients", unit: "%", min: 10, max: 100, defaultVal: 70, step: 1 },
+    rightControl: { title: "Baby Rate", label: "Reproduce", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
+    telemetry: { label1: "Population", label2: "Babies Born", label3: "Growth Stage", label4: "Survival %" },
     video: {
-      title: "The Universal Biological Progression of Life Cycles",
-      subtitle: "Tracing continuity from embryonic birth through developmental growth to reproductive renewal",
+      title: "The Life Cycle Loop",
+      subtitle: "Birth, growth, babies, death",
       captions: [
-        { start: 0, end: 5, text: "All living organisms undergo a repeating developmental life cycle." },
-        { start: 5, end: 10, text: "The universal sequence spans birth, growth, reproduction, and death." },
-        { start: 10, end: 15, text: "Plants develop roots and foliage from seeds; animals mature into adults." },
-        { start: 15, end: 21, text: "Reproduction ensures genetic transmission to subsequent generations." },
-        { start: 21, end: 30, text: "Failure to reproduce across successive generations results in biological extinction." }
+        { start: 0, end: 5, text: "Every organism has a life cycle." },
+        { start: 5, end: 10, text: "Living things are born and grow." },
+        { start: 10, end: 15, text: "Many living things reproduce." },
+        { start: 15, end: 21, text: "Babies continue the cycle." },
+        { start: 21, end: 30, text: "Without babies, a group can disappear." }
       ]
     },
     quiz: [
       {
-        question: "State the four universal sequential phases of an organism's life cycle and define the evolutionary significance of 'reproduction'.",
-        hint: "Birth, growth, reproduction, death; reproduction transmits genetic traits and prevents extinction.",
-        keywords: ["life cycle", "birth", "growth", "reproduction", "death", "organism"]
+        question: "Name the main parts of a life cycle in order.",
+        hint: "Start with birth.",
+        keywords: ["birth", "grow", "reproduce", "death", "life cycle"]
       },
       {
-        question: "How does the life cycle of an apple tree compare to that of an amphibian (frog), despite physical structural differences?",
-        hint: "Both progress from embryonic seed/egg through vegetative/tadpole growth to reproductive adult.",
-        keywords: ["life cycle", "plant", "animal", "reproduction", "seed", "egg"]
+        question: "Do plants and animals both have life cycles?",
+        hint: "Seeds and eggs are starts of life.",
+        keywords: ["yes", "plant", "animal", "life cycle", "seed"]
       },
       {
-        question: "What ecological catastrophe threatens an organism population if mortality rates permanently outpace reproductive output?",
-        hint: "Declining carrying capacity terminating in species extinction.",
-        keywords: ["extinction", "mortality", "reproduction", "population", "survival", "life cycle"]
+        question: "Why is reproduction important for a species?",
+        hint: "Think about what happens if no babies are born.",
+        keywords: ["reproduce", "babies", "continue", "survive", "population"]
       }
     ],
-    discoveryLogPrompt: "Document how environmental nutrient availability accelerates the transition from developmental growth to reproductive viability.",
-    takeaway: "Every organism follows the invariant cycle of birth, growth, reproduction, and death; reproductive success is mandatory to avert species extinction.",
-    canvasType: "tree_frog_cycle"
+    discoveryLogPrompt: "How did food/water and baby rate change the population?",
+    takeaway: "Life cycles keep species going: birth, growth, reproduction, and death.",
+    canvasType: "life_cycle",
+    obs1Prompt: "You changed food and water. What happened to the living things?",
+    step2Tutor: "<strong>Step 2: Feed them!</strong><br><br>Raise <strong>Food & Water</strong>. Watch them grow.",
+    step3Tutor: "<strong>Growing!</strong><br><br>Write what you noticed. Keep watching.",
+    step5Tutor: "<strong>Population check!</strong><br><br>Write how the life cycle kept going — or stalled.",
+    doneTutor: "<strong>Life cycle pro!</strong><br><br>You saw how birth and babies keep life going."
   },
 
-  // Module 3010: Insect Metamorphosis (SEEd 3.2.1)
   {
     id: 3010,
-    code: "3.2.1",
-    standard: "Utah SEEd 3.2.1 · Grade 3 · Module 3010",
+    code: "3.2.2",
+    standard: "Utah SEEd 3.2.2 · Grade 3 · Module 3010",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Complete Holometabolous Metamorphosis",
-    conceptTitle: "Insect Metamorphosis",
-    briefScenario: "Entomologists monitor Monarch butterfly cohorts through four discrete developmental stages: embryonic egg, voracious larval caterpillar, chrysalis pupa, and reproductive winged imago.",
-    challengeObjective: "Regulate hormonal ecdysone levels and food consumption to transition an insect through complete metamorphosis without pupal mortality.",
-    targetVocab: ["Metamorphosis", "Larva", "Pupa", "Chrysalis"],
-    hypPrompt: "How does the complete anatomical restructuring during the pupal chrysalis phase enable ecological resource partitioning between larva and adult?",
-    hypPlaceholder: "I hypothesize the pupal phase reconfigures mouthparts and locomotion so adult butterflies do not compete with...",
-    stepLabels: ["1. Oviposition Egg", "2. Larval Feeding Phase", "3. Pupal Chrysalis Formation", "4. Cellular Histolysis & Restructuring", "5. Imago Eclosion", "6. Entomological Synthesis"],
-    leftControl: { title: "Larval Foliage Ingestion", label: "Caloric Intake (g)", unit: "g", min: 0, max: 50, defaultVal: 25, step: 1 },
-    rightControl: { title: "Juvenile Hormone Delta", label: "Hormone Level (µg)", unit: "µg", min: 0, max: 100, defaultVal: 50, step: 1 },
-    telemetry: { label1: "Developmental Phase", label2: "Histoblast Density", label3: "Biomass Mass", label4: "Eclosion Readiness" },
+    title: "Butterfly Metamorphosis",
+    conceptTitle: "Metamorphosis",
+    briefScenario: "A caterpillar does not stay a caterpillar. It changes into a butterfly through metamorphosis.",
+    challengeObjective: "Change how much the caterpillar eats and hormone level. Reach the adult butterfly stage.",
+    targetVocab: ["metamorphosis", "larva", "pupa", "egg", "adult"],
+    hypPrompt: "What stage comes after the caterpillar before it becomes a butterfly?",
+    hypPlaceholder: "I think the next stage is... because...",
+    stepLabels: ["1. Get Ready", "2. Feed the Caterpillar", "3. What Happened?", "4. Change Hormones", "5. New Stage!", "6. What You Learned"],
+    leftControl: { title: "Caterpillar Food", label: "Food", unit: "g", min: 0, max: 50, defaultVal: 25, step: 1 },
+    rightControl: { title: "Hormone Level", label: "Hormone", unit: "µg", min: 0, max: 100, defaultVal: 50, step: 1 },
+    telemetry: { label1: "Life Stage", label2: "Size", label3: "Days Left", label4: "Ready %" },
     video: {
-      title: "Cellular Mechanics of Holometabolous Metamorphosis",
-      subtitle: "Examining total morphological transformation across four discrete life stages",
+      title: "Complete Metamorphosis",
+      subtitle: "Egg → larva → pupa → adult",
       captions: [
-        { start: 0, end: 5, text: "Metamorphosis describes profound anatomical changes during insect maturation." },
-        { start: 5, end: 10, text: "The larva emerges from the egg dedicated exclusively to biomass accumulation." },
-        { start: 10, end: 15, text: "Upon reaching critical mass, the larva encases in a protective chrysalis as a pupa." },
-        { start: 15, end: 21, text: "Inside the pupa, larval tissues dissolve and imaginal discs form adult anatomy." },
-        { start: 21, end: 30, text: "The winged adult emerges specialized for dispersal, pollination, and reproduction." }
+        { start: 0, end: 5, text: "Butterflies change form completely." },
+        { start: 5, end: 10, text: "The egg hatches into a larva (caterpillar)." },
+        { start: 10, end: 15, text: "The pupa is a resting change stage." },
+        { start: 15, end: 21, text: "Inside the pupa, the body rebuilds." },
+        { start: 21, end: 30, text: "An adult butterfly comes out with wings." }
       ]
     },
     quiz: [
       {
-        question: "Define 'complete metamorphosis' and identify the four sequential stages in order from oviposition to maturity.",
-        hint: "Egg, larva (caterpillar), pupa (chrysalis), adult (imago).",
-        keywords: ["metamorphosis", "larva", "pupa", "chrysalis", "egg", "adult"]
+        question: "List the four stages of complete metamorphosis.",
+        hint: "Egg is first.",
+        keywords: ["egg", "larva", "pupa", "adult", "metamorphosis"]
       },
       {
-        question: "What critical physiological process occurs within the chrysalis while the pupa is outwardly motionless?",
-        hint: "Larval cells undergo enzymatic breakdown and imaginal discs construct wings, legs, and reproductive organs.",
-        keywords: ["pupa", "chrysalis", "cellular", "reorganize", "wings", "metamorphosis"]
+        question: "What is another name for the butterfly pupa stage?",
+        hint: "It often hangs in a hard case.",
+        keywords: ["chrysalis", "pupa", "case"]
       },
       {
-        question: "How does metamorphic specialization prevent ecological food competition between larval caterpillars and adult butterflies?",
-        hint: "Larvae chew vegetative foliage; adults feed on liquid floral nectar.",
-        keywords: ["larva", "caterpillar", "nectar", "foliage", "competition", "metamorphosis"]
+        question: "Why must a caterpillar eat a lot?",
+        hint: "Growing and changing takes energy.",
+        keywords: ["food", "grow", "energy", "larva", "eat"]
       }
     ],
-    discoveryLogPrompt: "Record observations of the transformation from larval caterpillar into pupa: How does cellular restructuring in the chrysalis produce winged anatomy?",
-    takeaway: "Complete metamorphosis completely transforms larval body plans inside the pupal chrysalis into winged reproductive adults.",
-    canvasType: "butterfly_morph"
+    discoveryLogPrompt: "Which settings helped the caterpillar reach the butterfly stage? Why?",
+    takeaway: "Metamorphosis is a big body change: egg, larva, pupa, adult.",
+    canvasType: "butterfly_morph",
+    obs1Prompt: "You fed the caterpillar more. What changed?",
+    step2Tutor: "<strong>Step 2: Feed the larva!</strong><br><br>Raise <strong>Caterpillar Food</strong>. Watch it grow.",
+    step3Tutor: "<strong>Growing fast!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Stage change!</strong><br><br>Write which stage you reached and how.",
+    doneTutor: "<strong>Butterfly scientist!</strong><br><br>You guided complete metamorphosis."
   },
 
-  // Module 3011: Inherited Traits & Family Patterns (SEEd 3.2.2)
   {
     id: 3011,
-    code: "3.2.2",
-    standard: "Utah SEEd 3.2.2 · Grade 3 · Module 3011",
+    code: "3.2.3",
+    standard: "Utah SEEd 3.2.3 · Grade 3 · Module 3011",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Genetic Inheritance & Phenotypic Patterns",
+    title: "Inherited Traits",
     conceptTitle: "Inherited Traits",
-    briefScenario: "Geneticists at the Hogle Zoo analyze pedigree charts for primate family groups, tracking facial pigment, fur coloration, and phalange dimensions transmitted from parents to offspring.",
-    challengeObjective: "Track parental trait transmission across multigenerational data arrays to identify dominant inherited physical characteristics in offspring.",
-    targetVocab: ["Inherited Trait", "Offspring", "Phenotype", "Genetics"],
-    hypPrompt: "Why does an offspring exhibit a mosaic of inherited traits from both maternal and paternal organisms rather than an exact replica of one?",
-    hypPlaceholder: "I hypothesize that offspring inherit genetic information from both parents, causing physical traits to...",
-    stepLabels: ["1. Parental Phenotyping", "2. Allele Transmission", "3. Offspring Trait Expression", "4. Pedigree Correlation", "5. Variation Mapping", "6. Genetic Synthesis"],
-    leftControl: { title: "Maternal Trait Expression", label: "Maternal Pigment Index", unit: "%", min: 0, max: 100, defaultVal: 40, step: 1 },
-    rightControl: { title: "Paternal Trait Expression", label: "Paternal Pigment Index", unit: "%", min: 0, max: 100, defaultVal: 80, step: 1 },
-    telemetry: { label1: "Inherited Fur Color", label2: "Facial Pigment Match", label3: "Phalange Dimension", label4: "Parental Alignment" },
+    briefScenario: "Baby animals often look like their parents. Traits like fur color can be passed down.",
+    challengeObjective: "Set mom and dad trait sliders. See what the baby looks like.",
+    targetVocab: ["inherit", "trait", "offspring", "parent", "genes"],
+    hypPrompt: "If both parents have dark fur, what fur do you expect in the baby?",
+    hypPlaceholder: "I think the baby will have... because...",
+    stepLabels: ["1. Get Ready", "2. Set Mom Trait", "3. What Happened?", "4. Set Dad Trait", "5. Baby Traits", "6. What You Learned"],
+    leftControl: { title: "Mom Trait", label: "Mom Color", unit: "%", min: 0, max: 100, defaultVal: 40, step: 1 },
+    rightControl: { title: "Dad Trait", label: "Dad Color", unit: "%", min: 0, max: 100, defaultVal: 80, step: 1 },
+    telemetry: { label1: "Baby Color", label2: "From Mom", label3: "From Dad", label4: "Match Score" },
     video: {
-      title: "Biological Foundations of Inherited Physical Traits",
-      subtitle: "Tracing hereditary information transfer across generations of organisms",
+      title: "Traits From Parents",
+      subtitle: "What babies inherit",
       captions: [
-        { start: 0, end: 5, text: "Traits are physical or behavioral characteristics passed from parent to offspring." },
-        { start: 5, end: 10, text: "To inherit means to receive genetic information from biological forebears." },
-        { start: 10, end: 15, text: "Offspring receive roughly half their inherited information from each parent." },
-        { start: 15, end: 21, text: "Eye coloration, leaf morphology, and fur patterns reflect inherited traits." },
-        { start: 21, end: 30, text: "Pedigree analysis reveals predictable patterns of genetic transmission." }
+        { start: 0, end: 5, text: "A trait is a feature of a living thing." },
+        { start: 5, end: 10, text: "Some traits come from parents." },
+        { start: 10, end: 15, text: "Offspring means the babies." },
+        { start: 15, end: 21, text: "Fur color can be inherited." },
+        { start: 21, end: 30, text: "Family patterns help us see inheritance." }
       ]
     },
     quiz: [
       {
-        question: "Define what it means for an organism to 'inherit' a physical trait from its parents.",
-        hint: "Transmission of biological genetic instructions from maternal and paternal ancestors.",
-        keywords: ["inherit", "inherited trait", "parents", "offspring", "genetic", "characteristics"]
+        question: "What does it mean to inherit a trait?",
+        hint: "It comes from mom and/or dad.",
+        keywords: ["inherit", "parent", "offspring", "trait", "from"]
       },
       {
-        question: "In the Hogle Zoo monkey pedigree data, why did offspring #4 possess black fur when the mother had brown fur?",
-        hint: "The offspring inherited paternal genetic information for black fur pigmentation.",
-        keywords: ["inherit", "paternal", "father", "offspring", "fur color", "trait"]
+        question: "Give one example of an inherited trait.",
+        hint: "Think eye color, fur color, or leaf shape.",
+        keywords: ["color", "fur", "eyes", "trait", "inherit"]
       },
       {
-        question: "Name two inherited traits visible in botanical saplings that verify parentage with a mature oak tree.",
-        hint: "Leaf lobe morphology, bark texture, and acorn fruit type.",
-        keywords: ["leaf shape", "inherited trait", "sapling", "oak tree", "offspring", "botanical"]
+        question: "Can a baby plant inherit traits from parent plants?",
+        hint: "Seeds carry parent information.",
+        keywords: ["yes", "plant", "seed", "inherit", "parent"]
       }
     ],
-    discoveryLogPrompt: "Synthesize empirical pedigree data: How do inherited traits mathematically reflect contributions from both parental organisms?",
-    takeaway: "Offspring inherit combinations of physical traits from both biological parents, creating distinct familial phenotypic patterns.",
-    canvasType: "primate_pedigree"
+    discoveryLogPrompt: "How did mom and dad traits show up in the offspring?",
+    takeaway: "Offspring inherit traits from their parents.",
+    canvasType: "primate_pedigree",
+    obs1Prompt: "You changed the mom trait. What changed for the family?",
+    step2Tutor: "<strong>Step 2: Set mom's trait!</strong><br><br>Move the <strong>Mom</strong> slider. Watch the family chart.",
+    step3Tutor: "<strong>Family clue!</strong><br><br>Write what you noticed. Keep watching.",
+    step5Tutor: "<strong>Baby check!</strong><br><br>Write how the offspring got traits from parents.",
+    doneTutor: "<strong>Inheritance detective!</strong><br><br>You tracked traits from parents to babies."
   },
 
-  // Module 3012: Variations in Traits (SEEd 3.2.2)
   {
     id: 3012,
-    code: "3.2.2",
-    standard: "Utah SEEd 3.2.2 · Grade 3 · Module 3012",
+    code: "3.2.4",
+    standard: "Utah SEEd 3.2.4 · Grade 3 · Module 3012",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Intraspecies Variation & Trait Distributions",
-    conceptTitle: "Variations in Traits",
-    briefScenario: "Agronomists examine a monoculture field of 10,000 sunflowers. Despite sharing identical parentage, individual plants exhibit measurable phenotypic variation in stem height, petal morphology, and seed yield.",
-    challengeObjective: "Quantify and graph normal trait distribution curves to prove that biological siblings naturally exhibit physical variations.",
-    targetVocab: ["Variation", "Trait", "Phenotype", "Distribution"],
-    hypPrompt: "Why do biological siblings from identical parents exhibit distinct physical variations rather than cloned traits?",
-    hypPlaceholder: "I hypothesize that offspring receive different combinations of inherited parental information, resulting in...",
-    stepLabels: ["1. Population Sampling", "2. Height Distribution", "3. Pigment Variance", "4. Petal Morphology Plot", "5. Statistical Spread", "6. Variation Synthesis"],
-    leftControl: { title: "Genetic Shuffling Index", label: "Allele Recombination (%)", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
-    rightControl: { title: "Sample Cohort Size", label: "Sample Cohort (N)", unit: "plants", min: 10, max: 500, defaultVal: 100, step: 10 },
-    telemetry: { label1: "Mean Stem Height", label2: "Variance σ²", label3: "Standard Deviation", label4: "Distribution Spread" },
+    title: "Variation in a Species",
+    conceptTitle: "Variation",
+    briefScenario: "Even in one field of sunflowers, some are taller and some are shorter. That difference is variation.",
+    challengeObjective: "Change genetic mix and sample size. See how spread-out the heights become.",
+    targetVocab: ["variation", "trait", "species", "difference", "sample"],
+    hypPrompt: "If you look at more plants, do you expect more differences or fewer?",
+    hypPlaceholder: "I think I will see... because...",
+    stepLabels: ["1. Get Ready", "2. Mix Genes", "3. What Happened?", "4. Grow Sample Size", "5. Spot Variation", "6. What You Learned"],
+    leftControl: { title: "Gene Mix", label: "Mix", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
+    rightControl: { title: "Sample Size", label: "Plants", unit: "N", min: 10, max: 500, defaultVal: 100, step: 10 },
+    telemetry: { label1: "Avg Height", label2: "Shortest", label3: "Tallest", label4: "Spread" },
     video: {
-      title: "Biological Drivers of Variation within Species",
-      subtitle: "Why genetic shuffling produces unique phenotypic differences among siblings",
+      title: "Why Siblings Differ",
+      subtitle: "Variation inside a species",
       captions: [
-        { start: 0, end: 5, text: "Variation refers to differences in traits among individuals of the same species." },
-        { start: 5, end: 10, text: "Even offspring from the same parents inherit unique combinations of traits." },
-        { start: 10, end: 15, text: "Puppies in a single litter display varying coat markings, paw sizes, and mass." },
-        { start: 15, end: 21, text: "Sunflowers in a single meadow exhibit variance in petal count and stem height." },
-        { start: 21, end: 30, text: "Trait variation provides the raw foundation for natural selection and survival." }
+        { start: 0, end: 5, text: "Variation means differences in traits." },
+        { start: 5, end: 10, text: "Members of one species are not identical." },
+        { start: 10, end: 15, text: "Gene mixing creates unique combinations." },
+        { start: 15, end: 21, text: "Bigger samples show the full range." },
+        { start: 21, end: 30, text: "Variation helps some survive when conditions change." }
       ]
     },
     quiz: [
       {
-        question: "Define biological 'variation' and provide one concrete example from a litter of canine offspring.",
-        hint: "Differences in physical characteristics like coat color, ear floppiness, or snout length among siblings.",
-        keywords: ["variation", "traits", "offspring", "litter", "difference", "inherited"]
+        question: "What is variation?",
+        hint: "Differences between living things of the same kind.",
+        keywords: ["difference", "variation", "trait", "same species"]
       },
       {
-        question: "Why is natural variation within a plant population advantageous if a novel fungal pathogen infects the meadow?",
-        hint: "Some variant individuals may possess traits granting natural immunity, preventing total population collapse.",
-        keywords: ["variation", "survival", "pathogen", "population", "immunity", "trait"]
+        question: "Can two puppies from the same litter look different?",
+        hint: "Yes — variation is normal.",
+        keywords: ["yes", "variation", "different", "litter", "trait"]
       },
       {
-        question: "Explain why sunflowers sharing the same parents do not grow to the exact same millimeter height.",
-        hint: "Unique genetic combinations paired with subtle micro-environmental variance produce trait distributions.",
-        keywords: ["variation", "height", "genetic", "distribution", "parents", "phenotype"]
+        question: "Why look at many plants instead of one?",
+        hint: "One plant cannot show the whole pattern.",
+        keywords: ["sample", "many", "pattern", "variation", "range"]
       }
     ],
-    discoveryLogPrompt: "Analyze the bell curve distribution: Conclude why phenotypic variation is ubiquitous across all sexually reproducing populations.",
-    takeaway: "Genetic shuffling ensures no two offspring are identical, producing measurable variations across every biological population.",
-    canvasType: "sunflower_bellcurve"
+    discoveryLogPrompt: "How did gene mix and sample size change the height spread?",
+    takeaway: "Variation means individuals of the same species can have different traits.",
+    canvasType: "sunflower_bellcurve",
+    obs1Prompt: "You changed the gene mix. What happened to the height differences?",
+    step2Tutor: "<strong>Step 2: Mix it up!</strong><br><br>Move the <strong>Gene Mix</strong> slider. Watch the chart.",
+    step3Tutor: "<strong>Differences!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Variation spotted!</strong><br><br>Write how spread-out the traits became.",
+    doneTutor: "<strong>Variation expert!</strong><br><br>You proved same species can look different."
   },
 
-  // Module 3013: Environmental Influences on Traits (SEEd 3.2.3)
   {
     id: 3013,
-    code: "3.2.3",
-    standard: "Utah SEEd 3.2.3 · Grade 3 · Module 3013",
+    code: "3.2.5",
+    standard: "Utah SEEd 3.2.5 · Grade 3 · Module 3013",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Environmental Factors & Phenotypic Plasticity",
-    conceptTitle: "Environmental Traits",
-    briefScenario: "The Garza family cultivates identical genetic carrot seeds across two garden planter boxes. Planter Box 1 receives daily irrigation; Planter Box 2 suffers drought, stunting taproot biomass.",
-    challengeObjective: "Isolate irrigation frequency and soil compaction variables to prove that external environmental conditions physically modify organism phenotypes.",
-    targetVocab: ["Environmental Trait", "Stunting", "Phenotypic Plasticity", "Organism"],
-    hypPrompt: "How does insufficient water availability stunt physical trait development in genetically identical plants?",
-    hypPlaceholder: "I hypothesize that without adequate water, cellular expansion is halted, causing stunted...",
-    stepLabels: ["1. Soil Preparation", "2. Hydration Regimes", "3. Biomass Accumulation", "4. Taproot Extraction", "5. Comparative Morphology", "6. Environmental Synthesis"],
-    leftControl: { title: "Irrigation Frequency", label: "Weekly Watering (Days)", unit: "days", min: 1, max: 7, defaultVal: 4, step: 1 },
-    rightControl: { title: "Soil Mineral Density", label: "Nutrient Saturation (%)", unit: "%", min: 10, max: 100, defaultVal: 60, step: 1 },
-    telemetry: { label1: "Root Biomass (g)", label2: "Root Length (cm)", label3: "Stunting Factor", label4: "Foliage Density" },
+    title: "Environment Changes Traits",
+    conceptTitle: "Environment & Traits",
+    briefScenario: "Same carrot seeds, two gardens: one watered well, one too dry. The plants grow differently.",
+    challengeObjective: "Change watering days and soil nutrients. See how plant size changes.",
+    targetVocab: ["environment", "water", "nutrient", "growth", "trait"],
+    hypPrompt: "If you water a plant much less, what happens to its growth?",
+    hypPlaceholder: "I think the plant will... because...",
+    stepLabels: ["1. Get Ready", "2. Change Watering", "3. What Happened?", "4. Change Nutrients", "5. Compare Plants", "6. What You Learned"],
+    leftControl: { title: "Watering Days", label: "Water Days", unit: "days", min: 1, max: 7, defaultVal: 4, step: 1 },
+    rightControl: { title: "Soil Nutrients", label: "Nutrients", unit: "%", min: 10, max: 100, defaultVal: 60, step: 1 },
+    telemetry: { label1: "Plant Height", label2: "Root Size", label3: "Health", label4: "Color" },
     video: {
-      title: "Environmental Modification of Biological Traits",
-      subtitle: "Investigating how external resource availability alters physical growth and morphology",
+      title: "Environment Can Change Growth",
+      subtitle: "Same genes, different care",
       captions: [
-        { start: 0, end: 5, text: "An organism's physical traits are shaped by both genetics and the environment." },
-        { start: 5, end: 10, text: "Environmental traits develop in response to external factors like food and water." },
-        { start: 10, end: 15, text: "Insufficient hydration stunts plant growth regardless of genetic potential." },
-        { start: 15, end: 21, text: "Domestic pets provided excessive caloric intake become overweight and lethargic." },
-        { start: 21, end: 30, text: "Phenotypic expression reflects the continuous interaction of genome and habitat." }
+        { start: 0, end: 5, text: "Not all traits come only from parents." },
+        { start: 5, end: 10, text: "The environment can change how a plant grows." },
+        { start: 10, end: 15, text: "Water and nutrients matter a lot." },
+        { start: 15, end: 21, text: "Too little water can make plants smaller." },
+        { start: 21, end: 30, text: "Same seeds can look different in different places." }
       ]
     },
     quiz: [
       {
-        question: "Define an 'environmental trait' and contrast it with a purely inherited trait using botanical examples.",
-        hint: "Leaf shape is inherited; stunted height due to drought is an environmental trait.",
-        keywords: ["environmental trait", "inherited", "stunting", "water", "environment", "phenotype"]
+        question: "Give one environmental thing that can change a plant's size.",
+        hint: "Think water, sunlight, or soil food.",
+        keywords: ["water", "nutrient", "sunlight", "environment", "soil"]
       },
       {
-        question: "Based on the Garza family investigation, why did Carrot A grow significantly smaller than Carrot B?",
-        hint: "Carrot A's garden box received significantly less weekly irrigation, stunting cellular expansion.",
-        keywords: ["water", "stunting", "garden box", "environmental trait", "growth", "carrot"]
+        question: "If two plants have the same parents but different watering, can they look different?",
+        hint: "Yes — environment matters.",
+        keywords: ["yes", "environment", "water", "different", "growth"]
       },
       {
-        question: "How can two identical twin animals with the exact same genes end up with completely different adult body weights?",
-        hint: "Disparities in nutritional intake, physical exercise, and environmental stressors.",
-        keywords: ["environment", "nutrition", "exercise", "weight", "genes", "environmental trait"]
+        question: "Is plant height always only from genes?",
+        hint: "Care and environment also matter.",
+        keywords: ["no", "environment", "water", "genes", "both"]
       }
     ],
-    discoveryLogPrompt: "Document the empirical relationship: How does increasing weekly watering days from 1 to 7 overcome phenotypic stunting in carrots?",
-    takeaway: "Resource constraints like water and nutrients can severely stunt physical growth, demonstrating that environment directly impacts traits.",
-    canvasType: "carrot_growth"
+    discoveryLogPrompt: "How did water and nutrients change your plants?",
+    takeaway: "The environment can change how traits show up, even with the same parents.",
+    canvasType: "carrot_growth",
+    obs1Prompt: "You changed watering. What happened to the plant?",
+    step2Tutor: "<strong>Step 2: Change the water!</strong><br><br>Move <strong>Watering Days</strong>. Watch the carrots.",
+    step3Tutor: "<strong>See the difference?</strong><br><br>Write what changed. Keep watching.",
+    step5Tutor: "<strong>Compare!</strong><br><br>Write how environment changed growth.",
+    doneTutor: "<strong>Garden scientist!</strong><br><br>You showed environment changes traits."
   },
 
-  // Module 3014: Learned Behaviors vs. Inherited Traits (SEEd 3.2.3)
   {
     id: 3014,
-    code: "3.2.3",
-    standard: "Utah SEEd 3.2.3 · Grade 3 · Module 3014",
+    code: "3.2.6",
+    standard: "Utah SEEd 3.2.6 · Grade 3 · Module 3014",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Neurobehavioral Conditioning vs. Innate Instinct",
-    conceptTitle: "Learned Behaviors",
-    briefScenario: "Behavioral biologists replicate Pavlovian acoustic conditioning with canine cohorts, contrasting innate involuntary salivation reflexes with acquired learned behavioral responses.",
-    challengeObjective: "Pair acoustic auditory stimuli with food rewards to measure the exact trials required to condition an acquired learned behavior.",
-    targetVocab: ["Learned Behavior", "Conditioned Response", "Innate Reflex", "Instinct"],
-    hypPrompt: "How does repeated pairing of an environmental stimulus convert a neutral cue into a learned conditioned response?",
-    hypPlaceholder: "I hypothesize that repeated associative reinforcement will condition the subject to respond to the auditory bell even when...",
-    stepLabels: ["1. Baseline Reflex Audit", "2. Stimulus Pairing", "3. Reinforcement Iterations", "4. Extinction Testing", "5. Associative Threshold", "6. Behavioral Synthesis"],
-    leftControl: { title: "Auditory Stimulus Frequency", label: "Bell Tone Frequency (Hz)", unit: "Hz", min: 200, max: 2000, defaultVal: 880, step: 10 },
-    rightControl: { title: "Reinforcement Pairing Count", label: "Training Trials (N)", unit: "trials", min: 1, max: 30, defaultVal: 10, step: 1 },
-    telemetry: { label1: "Salivation Volume (ml)", label2: "Response Latency (ms)", label3: "Conditioning Index", label4: "Behavior Class" },
+    title: "Learned vs Instinct",
+    conceptTitle: "Learned Behavior",
+    briefScenario: "Some actions are built-in (instinct). Others are learned by practice, like a dog learning a bell means food.",
+    challengeObjective: "Change the bell sound and training trials. See when the learned response appears.",
+    targetVocab: ["learned", "instinct", "training", "behavior", "practice"],
+    hypPrompt: "If you pair a bell with food many times, what might the dog do when it hears the bell alone?",
+    hypPlaceholder: "I think the dog will... because...",
+    stepLabels: ["1. Get Ready", "2. Set the Bell", "3. What Happened?", "4. Add Training Trials", "5. Learned Check", "6. What You Learned"],
+    leftControl: { title: "Bell Pitch", label: "Bell Hz", unit: "Hz", min: 200, max: 2000, defaultVal: 880, step: 10 },
+    rightControl: { title: "Training Trials", label: "Trials", unit: "N", min: 1, max: 30, defaultVal: 10, step: 1 },
+    telemetry: { label1: "Learned %", label2: "Instinct Score", label3: "Trials Done", label4: "Response" },
     video: {
-      title: "Innate Instincts vs. Acquired Learned Behaviors",
-      subtitle: "Examining neuro-associative learning and environmental behavioral adaptation",
+      title: "Instinct vs Learned",
+      subtitle: "Born knowing vs practice",
       captions: [
-        { start: 0, end: 5, text: "Not all organism behaviors are inherited genetically through DNA." },
-        { start: 5, end: 10, text: "Innate instincts like breathing and nursing occur automatically from birth." },
-        { start: 10, end: 15, text: "Learned behaviors are acquired through practice, trial, and environmental feedback." },
-        { start: 15, end: 21, text: "Ivan Pavlov demonstrated conditioned learned responses in dogs using acoustic bells." },
-        { start: 21, end: 30, text: "Mastering language, riding bicycles, and swimming are quintessential learned behaviors." }
+        { start: 0, end: 5, text: "Instincts are behaviors animals are born with." },
+        { start: 5, end: 10, text: "Learned behaviors come from practice." },
+        { start: 10, end: 15, text: "Training pairs a signal with a reward." },
+        { start: 15, end: 21, text: "More practice can strengthen learning." },
+        { start: 21, end: 30, text: "Both instinct and learning help survival." }
       ]
     },
     quiz: [
       {
-        question: "Rigorously distinguish between an 'innate instinct' and an 'acquired learned behavior' with animal examples.",
-        hint: "Spiders spinning webs is innate; dogs drooling to a bell or humans riding a bicycle is learned.",
-        keywords: ["learned behavior", "innate reflex", "instinct", "conditioning", "inherited", "practice"]
+        question: "What is an instinct?",
+        hint: "A behavior you do not need to be taught.",
+        keywords: ["instinct", "born", "automatic", "not learned"]
       },
       {
-        question: "Describe the experimental protocol Ivan Pavlov utilized to prove salivation could become a conditioned response.",
-        hint: "Paired the sound of a ringing bell with meat powder until the bell alone provoked salivation.",
-        keywords: ["Pavlov", "learned behavior", "bell", "conditioned response", "stimulus", "salivation"]
+        question: "What is a learned behavior?",
+        hint: "Something practiced or taught.",
+        keywords: ["learned", "practice", "training", "teach"]
       },
       {
-        question: "Explain why an Olympic hurdle racehorse requires both inherited physical traits and years of acquired training.",
-        hint: "Inherits long skeletal leg bones; acquires muscular conditioning and coordination through trained learned behavior.",
-        keywords: ["inherited trait", "learned behavior", "training", "muscle", "horse", "phenotype"]
+        question: "Why do more training trials often help?",
+        hint: "Practice makes the link stronger.",
+        keywords: ["practice", "trials", "learn", "stronger", "repeat"]
       }
     ],
-    discoveryLogPrompt: "Synthesize conditioning trial data: How many repeated reinforcement trials were necessary before the acoustic cue reliably triggered the conditioned behavior?",
-    takeaway: "Innate instincts are genetically inherited, whereas learned behaviors require environmental repetition, training, and synaptic reinforcement.",
-    canvasType: "pavlov_dog"
+    discoveryLogPrompt: "When did the learned response show up? How is that different from instinct?",
+    takeaway: "Instincts are built-in. Learned behaviors come from practice and training.",
+    canvasType: "pavlov_dog",
+    obs1Prompt: "You changed the bell. What did the dog do at first?",
+    step2Tutor: "<strong>Step 2: Set the bell!</strong><br><br>Move the <strong>Bell</strong> slider. Watch the dog.",
+    step3Tutor: "<strong>Interesting reaction!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Learned or instinct?</strong><br><br>Write what changed after more trials.",
+    doneTutor: "<strong>Behavior buddy!</strong><br><br>You compared learned behavior with instinct."
   },
 
-  // Module 3015: Physical Traits and Survival (SEEd 3.2.4)
   {
     id: 3015,
-    code: "3.2.4",
-    standard: "Utah SEEd 3.2.4 · Grade 3 · Module 3015",
+    code: "3.2.7",
+    standard: "Utah SEEd 3.2.7 · Grade 3 · Module 3015",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Adaptive Camouflage & Differential Predation",
-    conceptTitle: "Traits and Survival",
-    briefScenario: "Forest field biologists monitor Peromyscus deer mice across varying substrate backgrounds. Melanic brown mice blend seamlessly into dark forest humus, evading nocturnal avian raptor predation.",
-    challengeObjective: "Manipulate substrate color and rodent fur pigment variations to measure survival percentages under active predatory pressure.",
-    targetVocab: ["Camouflage", "Predator", "Differential Survival", "Adaptation"],
-    hypPrompt: "How does phenotypic fur camouflage directly influence an organism's survival probability and subsequent reproductive fitness?",
-    hypPlaceholder: "I hypothesize that mice matching substrate pigmentation will evade detection by avian predators, allowing higher...",
-    stepLabels: ["1. Substrate Calibration", "2. Prey Population Release", "3. Raptor Predation Run", "4. Survival Quantification", "5. Reproductive Succession", "6. Evolutionary Synthesis"],
-    leftControl: { title: "Rodent Melanin Index", label: "Fur Pigment (0=Light, 100=Dark)", unit: "idx", min: 0, max: 100, defaultVal: 50, step: 1 },
-    rightControl: { title: "Substrate Albedo Background", label: "Soil Color (0=Sand, 100=Soil)", unit: "albedo", min: 0, max: 100, defaultVal: 80, step: 1 },
-    telemetry: { label1: "Detection Contrast", label2: "Capture Rate (%)", label3: "Survival Ratio", label4: "Offspring Yield" },
+    title: "Camouflage",
+    conceptTitle: "Camouflage",
+    briefScenario: "Mice that blend into the ground are harder for hawks to see. Camouflage can help survival.",
+    challengeObjective: "Match fur color to the ground. Raise the survival chance.",
+    targetVocab: ["camouflage", "predator", "survive", "blend", "adaptation"],
+    hypPrompt: "If a mouse is dark brown on dark soil, will more or fewer mice get caught?",
+    hypPlaceholder: "I think fewer mice get caught because...",
+    stepLabels: ["1. Get Ready", "2. Change Fur Color", "3. What Happened?", "4. Change Ground Color", "5. Survival Score", "6. What You Learned"],
+    leftControl: { title: "Fur Color", label: "Fur", unit: "idx", min: 0, max: 100, defaultVal: 50, step: 1 },
+    rightControl: { title: "Ground Color", label: "Ground", unit: "idx", min: 0, max: 100, defaultVal: 80, step: 1 },
+    telemetry: { label1: "Match %", label2: "Caught", label3: "Survived", label4: "Hunt Time" },
     video: {
-      title: "Physical Trait Adaptations and Predatory Evasion",
-      subtitle: "How morphological camouflage directly dictates differential survival and reproductive success",
+      title: "Blend In to Survive",
+      subtitle: "Camouflage and predators",
       captions: [
-        { start: 0, end: 5, text: "Physical variations among individuals influence survival and reproductive success." },
-        { start: 5, end: 10, text: "Camouflage enables organisms to blend into background environmental substrates." },
-        { start: 10, end: 15, text: "A brown mouse in a dark forest evades predatory owls better than a light mouse." },
-        { start: 15, end: 21, text: "Surviving organisms mature, secure mates, and transmit adaptive traits to offspring." },
-        { start: 21, end: 30, text: "Over successive generations, advantageous survival traits become predominant." }
+        { start: 0, end: 5, text: "Camouflage means blending into the background." },
+        { start: 5, end: 10, text: "Predators hunt for food." },
+        { start: 10, end: 15, text: "Hard-to-see prey survive more often." },
+        { start: 15, end: 21, text: "Matching colors is an adaptation." },
+        { start: 21, end: 30, text: "Traits that help survival can become common." }
       ]
     },
     quiz: [
       {
-        question: "Define 'adaptive camouflage' and explain how it alters visual contrast for nocturnal avian predators.",
-        hint: "Minimizes optical contrast between prey silhouette and background substrate, reducing predatory detection.",
-        keywords: ["camouflage", "predator", "contrast", "survival", "adaptation", "detection"]
+        question: "What is camouflage?",
+        hint: "Looking like the background.",
+        keywords: ["blend", "camouflage", "hide", "background"]
       },
       {
-        question: "In the forest simulation, why did brown-furred mice produce three times more second-generation offspring than gray mice?",
-        hint: "Brown mice evaded predators, survived to adulthood, and successfully reproduced.",
-        keywords: ["survival", "reproduction", "offspring", "predator", "camouflage", "fitness"]
+        question: "How can camouflage help an animal survive?",
+        hint: "Predators have a harder time finding it.",
+        keywords: ["predator", "survive", "hide", "catch", "harder"]
       },
       {
-        question: "Besides animal camouflage, describe how botanical traits like sharp cactus spines provide defensive survival adaptations.",
-        hint: "Mechanical deterrents prevent herbivores from consuming vegetative tissues and moisture reserves.",
-        keywords: ["adaptation", "spine", "predator", "herbivore", "survival", "physical trait"]
+        question: "If ground color changes, what should fur color do to stay safe?",
+        hint: "Match the new background.",
+        keywords: ["match", "blend", "camouflage", "ground", "color"]
       }
     ],
-    discoveryLogPrompt: "Document predator capture ratios: Conclude why matching fur pigmentation to substrate albedo directly increases reproductive longevity.",
-    takeaway: "Cryptic camouflage drastically lowers predatory mortality, enabling organisms to survive to maturity and successfully reproduce.",
-    canvasType: "camouflage_predator"
+    discoveryLogPrompt: "Which fur and ground combo survived best? Why?",
+    takeaway: "Camouflage helps animals avoid predators by blending in.",
+    canvasType: "camouflage_predator",
+    obs1Prompt: "You changed fur color. Did more mice get caught or fewer?",
+    step2Tutor: "<strong>Step 2: Recolor the fur!</strong><br><br>Move <strong>Fur Color</strong>. Watch the hawk hunt.",
+    step3Tutor: "<strong>Hunt results!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Survival score!</strong><br><br>Write which match worked best.",
+    doneTutor: "<strong>Camouflage champ!</strong><br><br>You linked blending in to survival."
   },
 
-  // Module 3016: Behavioral Traits and Group Survival (SEEd 3.2.4)
   {
     id: 3016,
-    code: "3.2.4",
-    standard: "Utah SEEd 3.2.4 · Grade 3 · Module 3016",
+    code: "3.2.8",
+    standard: "Utah SEEd 3.2.8 · Grade 3 · Module 3016",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Cooperative Ethology & Group Defense",
-    conceptTitle: "Behavioral Traits",
-    briefScenario: "Wildlife biologists in Yellowstone observe Canis lupus wolf packs coordinating hunting vectors against massive bison, while lone dispersing wolves face elevated mortality and foraging deficits.",
-    challengeObjective: "Optimize pack hunting coordination and defensive perimeter formations to analyze how cooperative social behaviors enhance individual survival.",
-    targetVocab: ["Behavioral Trait", "Cooperative Hunting", "Pack Dynamics", "Group Defense"],
-    hypPrompt: "Why does social group formation yield higher foraging success and caloric intake per capita than solitary foraging?",
-    hypPlaceholder: "I hypothesize that coordinated group behaviors allow packs to overcome defensive barriers of large prey that...",
-    stepLabels: ["1. Pack Roster Formation", "2. Foraging Range Sweep", "3. Coordinated Flanking Vector", "4. Prey Encircling", "5. Caloric Sharing Audit", "6. Ethological Synthesis"],
-    leftControl: { title: "Pack Group Cohort Size", label: "Pack Members (N)", unit: "wolves", min: 1, max: 12, defaultVal: 6, step: 1 },
-    rightControl: { title: "Prey Biomass Mass", label: "Prey Target Mass (kg)", unit: "kg", min: 50, max: 900, defaultVal: 500, step: 25 },
-    telemetry: { label1: "Hunt Success Probability", label2: "Injury Risk Index", label3: "Caloric Return / Wolf", label4: "Pack Fitness" },
+    title: "Working in Groups",
+    conceptTitle: "Group Behavior",
+    briefScenario: "Wolves that hunt together can take down bigger prey than a lone wolf.",
+    challengeObjective: "Change pack size and prey size. See when teamwork succeeds.",
+    targetVocab: ["group", "cooperate", "pack", "prey", "survive"],
+    hypPrompt: "Is a lone wolf or a pack more likely to catch a huge bison?",
+    hypPlaceholder: "I think the... because...",
+    stepLabels: ["1. Get Ready", "2. Grow the Pack", "3. What Happened?", "4. Change Prey Size", "5. Teamwork Check", "6. What You Learned"],
+    leftControl: { title: "Pack Size", label: "Wolves", unit: "N", min: 1, max: 12, defaultVal: 6, step: 1 },
+    rightControl: { title: "Prey Size", label: "Prey Mass", unit: "kg", min: 50, max: 900, defaultVal: 500, step: 25 },
+    telemetry: { label1: "Hunt Success", label2: "Energy Used", label3: "Food Share", label4: "Risk" },
     video: {
-      title: "Cooperative Behavioral Adaptations in Social Organisms",
-      subtitle: "Examining how pack cohesion and coordinated vigilance enhance species survival",
+      title: "Teamwork Helps Survival",
+      subtitle: "Group hunting and defense",
       captions: [
-        { start: 0, end: 5, text: "Behavioral traits encompass actions organisms perform to survive." },
-        { start: 5, end: 10, text: "Many carnivores and herbivores form social groups for collective advantage." },
-        { start: 10, end: 15, text: "Wolf packs cooperate to encircle and capture large ungulate prey like bison." },
-        { start: 15, end: 21, text: "Herds of musk oxen form defensive horns-out perimeters protecting calves." },
-        { start: 21, end: 30, text: "Group behavioral adaptations dramatically reduce individual mortality rates." }
+        { start: 0, end: 5, text: "Some animals live and hunt in groups." },
+        { start: 5, end: 10, text: "Cooperating means working together." },
+        { start: 10, end: 15, text: "A pack can catch bigger prey." },
+        { start: 15, end: 21, text: "Groups can also watch for danger." },
+        { start: 21, end: 30, text: "Teamwork is a helpful behavior trait." }
       ]
     },
     quiz: [
       {
-        question: "Define a 'behavioral trait' and explain how living in a pack serves as an evolutionary survival adaptation.",
-        hint: "Action-based adaptation; collective hunting, mutual defense, and shared vigilance.",
-        keywords: ["behavioral trait", "pack", "survival", "cooperative", "hunting", "adaptation"]
+        question: "How can hunting in a group help wolves?",
+        hint: "Think bigger prey and shared work.",
+        keywords: ["group", "cooperate", "prey", "together", "pack"]
       },
       {
-        question: "Why does a solitary wolf attempting to hunt a 500 kg bison suffer a 90% failure and injury rate compared to a pack of six?",
-        hint: "Bison defensive mass exceeds single-predator force capacity; packs divide attention and exhaust prey.",
-        keywords: ["pack", "cooperative hunting", "prey", "bison", "injury", "mass"]
+        question: "What is a downside of a very small pack vs huge prey?",
+        hint: "They may fail or get hurt.",
+        keywords: ["fail", "danger", "too small", "risk", "prey"]
       },
       {
-        question: "Describe how migrating avian flocks flying in V-formation utilize aerodynamic group behaviors to conserve metabolic energy.",
-        hint: "Upwash vortex from preceding bird's wings reduces aerodynamic drag for followers.",
-        keywords: ["migration", "behavioral trait", "group defense", "flock", "aerodynamic", "energy"]
+        question: "Name one way group living helps besides hunting.",
+        hint: "Watching for predators, caring for young.",
+        keywords: ["watch", "protect", "warn", "care", "defend"]
       }
     ],
-    discoveryLogPrompt: "Analyze the mathematical threshold: How does scaling pack size from 1 to 6 wolves dramatically flip hunting success from 10% to over 85%?",
-    takeaway: "Cooperative group behaviors amplify physical capabilities, allowing social organisms to capture prey and defend against predators far beyond solitary limits.",
-    canvasType: "wolf_pack_hunt"
+    discoveryLogPrompt: "When did the pack succeed? How did pack size and prey size matter?",
+    takeaway: "Cooperating in a group can help animals survive and catch food.",
+    canvasType: "wolf_pack_hunt",
+    obs1Prompt: "You grew the pack. What changed in the hunt?",
+    step2Tutor: "<strong>Step 2: Add wolves!</strong><br><br>Raise <strong>Pack Size</strong>. Watch the hunt.",
+    step3Tutor: "<strong>Teamwork?</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Results!</strong><br><br>Write when cooperation worked best.",
+    doneTutor: "<strong>Pack leader!</strong><br><br>You saw how group behavior helps survival."
   },
 
-  // Module 3017: Habitats as Interdependent Systems (SEEd 3.2.5)
   {
     id: 3017,
-    code: "3.2.5",
-    standard: "Utah SEEd 3.2.5 · Grade 3 · Module 3017",
+    code: "3.2.9",
+    standard: "Utah SEEd 3.2.9 · Grade 3 · Module 3017",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Ecological Niches & Morphological Adaptation",
-    conceptTitle: "Habitats and Survival",
-    briefScenario: "Comparative zoologists contrast Arctic snowshoe hares (Lepus americanus) with Mojave jackrabbits (Lepus californicus). Disparities in ear pinnae surface area and paw dimensions match Arctic snow versus desert heat.",
-    challengeObjective: "Subject variant hare morphologies to extreme thermal and snowpack environments to prove that anatomical adaptations restrict survival to specific habitat systems.",
-    targetVocab: ["Habitat System", "Morphological Adaptation", "Thermoregulation", "Ecological Niche"],
-    hypPrompt: "How does the massive ear pinna surface area of a desert jackrabbit facilitate thermoregulation in arid environments while causing lethal hypothermia in Arctic tundra?",
-    hypPlaceholder: "I hypothesize high surface-area ear pinnae dissipate excess vascular body heat in hot deserts, but in freezing snow...",
-    stepLabels: ["1. Biome Microclimate Setup", "2. Pinnae Surface Area Test", "3. Snowpack Foot Loading", "4. Thermal Energy Loss Plot", "5. Habitat Swap Stress Test", "6. Ecosystem Synthesis"],
-    leftControl: { title: "Ambient Habitat Temp", label: "Thermal Baseline (°C)", unit: "°C", min: -30, max: 45, defaultVal: 35, step: 1 },
-    rightControl: { title: "Substrate Snowpack Depth", label: "Snow Depth (cm)", unit: "cm", min: 0, max: 120, defaultVal: 0, step: 5 },
-    telemetry: { label1: "Core Body Temp (°C)", label2: "Thermal Loss Rate (W)", label3: "Locomotive Sinking (cm)", label4: "Survival Metric" },
+    title: "Habitat Fit",
+    conceptTitle: "Habitat Fit",
+    briefScenario: "Arctic hares and desert jackrabbits have different ears and feet that fit their homes.",
+    challengeObjective: "Change temperature and snow depth. See which rabbit body plan thrives.",
+    targetVocab: ["habitat", "adapt", "survive", "temperature", "snow"],
+    hypPrompt: "Would big thin ears help more in a hot desert or a freezing snowy place?",
+    hypPlaceholder: "I think big ears help more in... because...",
+    stepLabels: ["1. Get Ready", "2. Change Temperature", "3. What Happened?", "4. Change Snow", "5. Who Survives?", "6. What You Learned"],
+    leftControl: { title: "Temperature", label: "Temp", unit: "°C", min: -30, max: 45, defaultVal: 35, step: 1 },
+    rightControl: { title: "Snow Depth", label: "Snow", unit: "cm", min: 0, max: 120, defaultVal: 0, step: 5 },
+    telemetry: { label1: "Arctic Hare OK", label2: "Desert Hare OK", label3: "Heat Stress", label4: "Cold Stress" },
     video: {
-      title: "Anatomical Specialization within Habitat Systems",
-      subtitle: "Why morphological traits perfectly tuned to one biome become lethal liabilities in another",
+      title: "Bodies Match Habitats",
+      subtitle: "Adaptations fit the home",
       captions: [
-        { start: 0, end: 5, text: "A habitat is an interconnected system where organisms depend on environmental features." },
-        { start: 5, end: 10, text: "The snowshoe hare possesses broad, padded feet acting as snowshoes across deep drifts." },
-        { start: 10, end: 15, text: "Its compact rounded ears minimize vascular heat loss in Arctic sub-zero winds." },
-        { start: 15, end: 21, text: "The desert jackrabbit possesses elongated ears that radiate surplus heat into arid skies." },
-        { start: 21, end: 30, text: "Organisms flourish in their adapted habitat system, but perish if abruptly relocated." }
+        { start: 0, end: 5, text: "A habitat is where an organism lives." },
+        { start: 5, end: 10, text: "Adaptations help survival in that place." },
+        { start: 10, end: 15, text: "Big ears can release heat in deserts." },
+        { start: 15, end: 21, text: "Wide feet help walk on snow." },
+        { start: 21, end: 30, text: "A great desert body can fail in the Arctic." }
       ]
     },
     quiz: [
       {
-        question: "Define 'habitat system' and explain why organisms cannot survive equally well in every global biome.",
-        hint: "Organisms possess specialized anatomical traits tuned to specific temperature, moisture, and substrate niches.",
-        keywords: ["habitat system", "adaptation", "survive", "biome", "system", "niche"]
+        question: "What is a habitat?",
+        hint: "The place where a living thing lives.",
+        keywords: ["habitat", "home", "live", "place"]
       },
       {
-        question: "Compare the vascular ear structures of the desert jackrabbit and the Arctic snowshoe hare in the context of thermoregulation.",
-        hint: "Large desert ears vent excess heat; small Arctic ears preserve vital body heat.",
-        keywords: ["thermoregulation", "ears", "jackrabbit", "snowshoe hare", "heat loss", "habitat"]
+        question: "Why might desert rabbits have bigger ears?",
+        hint: "Think about cooling off.",
+        keywords: ["heat", "cool", "desert", "ears", "adapt"]
       },
       {
-        question: "Using evidence from morphological adaptations, explain why a polar bear cannot survive long-term in a temperate deciduous forest.",
-        hint: "Dense blubber causes overheating; white fur eliminates hunting camouflage in green forests; diet requires maritime seals.",
-        keywords: ["polar bear", "habitat system", "adaptation", "blubber", "overheating", "camouflage"]
+        question: "Can an animal adapted to snow struggle in a hot desert?",
+        hint: "Yes — the wrong body for the place.",
+        keywords: ["yes", "habitat", "adapt", "struggle", "survive"]
       }
     ],
-    discoveryLogPrompt: "Explain what occurred during the habitat swap simulation when the desert jackrabbit was placed in -25°C snowpack.",
-    takeaway: "Organisms form interdependent systems with their native habitats; morphological adaptations that ensure survival in one biome become lethal in another.",
-    canvasType: "rabbit_habitat_swap"
+    discoveryLogPrompt: "Which rabbit did better in heat vs snow? Why?",
+    takeaway: "Body traits that fit a habitat help survival — and can fail in the wrong place.",
+    canvasType: "rabbit_habitat_swap",
+    obs1Prompt: "You changed temperature. Which rabbit looked healthier?",
+    step2Tutor: "<strong>Step 2: Change the weather!</strong><br><br>Move <strong>Temperature</strong>. Watch both rabbits.",
+    step3Tutor: "<strong>Habitat stress!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Who fits?</strong><br><br>Write which body plan matched each habitat.",
+    doneTutor: "<strong>Habitat hero!</strong><br><br>You matched adaptations to homes."
   },
 
-  // Module 3018: Environmental Changes and Ecosystem Impacts (SEEd 3.2.6)
   {
     id: 3018,
-    code: "3.2.6",
-    standard: "Utah SEEd 3.2.6 · Grade 3 · Module 3018",
+    code: "3.2.10",
+    standard: "Utah SEEd 3.2.10 · Grade 3 · Module 3018",
     strand: "Strand 2: Effects of Traits on Survival",
-    title: "Anthropogenic & Natural Ecosystem Disturbances",
-    conceptTitle: "Environmental Changes",
-    briefScenario: "Riparian ecologists analyze the Swaner Wetlands in Park City, tracking ecosystem restoration after historic agricultural drainage altered water tables and displaced tiger salamanders.",
-    challengeObjective: "Design and implement hydrological wetland recovery solutions to restore native biodiversity after catastrophic environmental disturbance.",
-    targetVocab: ["Environmental Change", "Ecosystem Disturbance", "Ecological Restoration", "Displacement"],
-    hypPrompt: "How does human disruption of hydrological riparian systems impact specialized aquatic indicator species like the tiger salamander?",
-    hypPlaceholder: "I hypothesize that draining riparian wetlands eliminates breeding pools, forcing amphibians to...",
-    stepLabels: ["1. Disturbance Baseline", "2. Habitat Fragmentation", "3. Biodiversity Census", "4. Hydrological Restoration", "5. Species Re-colonization", "6. Conservation Synthesis"],
-    leftControl: { title: "Wetland Drainage Intensity", label: "Ditch Extraction Rate (%)", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
-    rightControl: { title: "Riparian Replanting Effort", label: "Willow Shrub Planting (N)", unit: "shrubs", min: 0, max: 1000, defaultVal: 200, step: 20 },
-    telemetry: { label1: "Water Table Depth (m)", label2: "Tiger Salamander Pop", label3: "Biodiversity Index", label4: "Ecosystem Health" },
+    title: "Ecosystem Change",
+    conceptTitle: "Ecosystem Change",
+    briefScenario: "Draining a wetland hurts animals that need wet homes. Planting willows can help heal it.",
+    challengeObjective: "Change drainage and replanting. Restore a healthier wetland.",
+    targetVocab: ["ecosystem", "disturbance", "restore", "wetland", "habitat"],
+    hypPrompt: "If you drain more water from a wetland, what happens to wetland animals?",
+    hypPlaceholder: "I think they will... because...",
+    stepLabels: ["1. Get Ready", "2. Drain Water", "3. What Happened?", "4. Replant Willows", "5. Recovery Check", "6. What You Learned"],
+    leftControl: { title: "Drainage", label: "Drain %", unit: "%", min: 0, max: 100, defaultVal: 50, step: 1 },
+    rightControl: { title: "Replanting", label: "Willows", unit: "N", min: 0, max: 1000, defaultVal: 200, step: 20 },
+    telemetry: { label1: "Water Level", label2: "Animal Count", label3: "Plant Cover", label4: "Health" },
     video: {
-      title: "Ecological Succession Following Environmental Disturbance",
-      subtitle: "Examining natural wildfires, beaver engineering, and human-led conservation restoration",
+      title: "When Ecosystems Change",
+      subtitle: "Damage and repair",
       captions: [
-        { start: 0, end: 5, text: "Environments undergo continuous changes from wildfires, droughts, and human action." },
-        { start: 5, end: 10, text: "When habitats alter abruptly, some species adapt, others relocate, and many perish." },
-        { start: 10, end: 15, text: "Beavers act as ecosystem engineers, damming waterways to create biodiverse ponds." },
-        { start: 15, end: 21, text: "Human land development frequently fragments forests and dries critical wetlands." },
-        { start: 21, end: 30, text: "Ecological restoration projects successfully rehabilitate damaged habitat systems." }
+        { start: 0, end: 5, text: "An ecosystem is living and nonliving parts together." },
+        { start: 5, end: 10, text: "A disturbance can suddenly change a habitat." },
+        { start: 10, end: 15, text: "Draining wetlands removes homes for animals." },
+        { start: 15, end: 21, text: "Restoration means helping nature heal." },
+        { start: 21, end: 30, text: "Planting and water care can bring animals back." }
       ]
     },
     quiz: [
       {
-        question: "Define 'environmental change' and provide both a natural cause (e.g., wildfire) and an anthropogenic cause (e.g., land clearing).",
-        hint: "Natural: forest fires, droughts, beaver dams. Anthropogenic: urban expansion, oil spills, ditch draining.",
-        keywords: ["environmental change", "wildfire", "human", "ecosystem disturbance", "habitat", "restoration"]
+        question: "What is an ecosystem disturbance?",
+        hint: "A change that shakes up the habitat.",
+        keywords: ["change", "disturbance", "habitat", "damage"]
       },
       {
-        question: "How did the 1988 Yellowstone fires trigger differential survival between mobile elk and winter-foraging moose?",
-        hint: "Elk fled quickly to meadows; moose suffered winter starvation because their riparian willow food source was incinerated.",
-        keywords: ["wildfire", "Yellowstone", "willow", "moose", "survival", "environmental change"]
+        question: "How can people help restore a wetland?",
+        hint: "Think water and plants.",
+        keywords: ["restore", "plant", "water", "willow", "help"]
       },
       {
-        question: "Describe how citizens at the Swaner Nature Preserve in Park City engineered a solution to reverse historic wetland destruction.",
-        hint: "Filled old agricultural irrigation ditches, planted native willows, and re-established tiger salamander ponds.",
-        keywords: ["ecological restoration", "Swaner", "wetlands", "salamander", "ditches", "solution"]
+        question: "Why do wetland animals struggle if water disappears?",
+        hint: "Their habitat needs water.",
+        keywords: ["habitat", "water", "home", "survive", "wetland"]
       }
     ],
-    discoveryLogPrompt: "Document the biodiversity rebound curve as riparian willow replanting and ditch closures restored wetland water tables.",
-    takeaway: "Environmental disturbances radically alter species survival, but targeted ecological engineering can successfully rehabilitate degraded habitats.",
-    canvasType: "wetland_restoration"
+    discoveryLogPrompt: "How did drainage and replanting change wetland health?",
+    takeaway: "Disturbances can hurt ecosystems, but careful restoration can help them recover.",
+    canvasType: "wetland_restoration",
+    obs1Prompt: "You increased drainage. What happened to the wetland?",
+    step2Tutor: "<strong>Step 2: Drain the wetland!</strong><br><br>Raise <strong>Drainage</strong>. Watch the animals.",
+    step3Tutor: "<strong>Habitat hurt!</strong><br><br>Write what you saw. Keep watching.",
+    step5Tutor: "<strong>Recovery check!</strong><br><br>Write whether replanting helped and why.",
+    doneTutor: "<strong>Restoration ranger!</strong><br><br>You saw damage — and how healing can start."
   },
 
-  // Module 3019: Gravity and Downward Motion (SEEd 3.3.3)
   {
     id: 3019,
     code: "3.3.3",
     standard: "Utah SEEd 3.3.3 · Grade 3 · Module 3019",
     strand: "Strand 3: Force Affects Motion",
-    title: "Centripetal Gravitational Acceleration",
-    conceptTitle: "Gravity and Downward Motion",
-    briefScenario: "Geophysicists deploy spherical Earth gravitational sensors across various continental coordinates. Regardless of surface longitude or latitude, dropped test masses accelerate radially inward toward Earth's center.",
-    challengeObjective: "Release test masses at differing global coordinates to prove that 'downward' universally points toward the geometric center of spherical Earth.",
-    targetVocab: ["Gravitational Force", "Center of Earth", "Radial Vector", "Acceleration"],
-    hypPrompt: "Why does an observer standing in Antarctica experience the identical downward gravitational pull as an observer in the Arctic?",
-    hypPlaceholder: "I hypothesize that gravitational force acts radially toward the center of the spherical Earth, so 'down' always means...",
-    stepLabels: ["1. Orbital Coordinate Lock", "2. Test Mass Positioning", "3. Free-Fall Release", "4. Vector Trajectory Tracking", "5. Radial Alignment Audit", "6. Gravitational Synthesis"],
-    leftControl: { title: "Planetary Coordinate Latitude", label: "Latitude Position (°)", unit: "°", min: -90, max: 90, defaultVal: 45, step: 1 },
-    rightControl: { title: "Test Mass Magnitude", label: "Mass (kg)", unit: "kg", min: 1, max: 100, defaultVal: 10, step: 1 },
-    telemetry: { label1: "Gravity Vector (g)", label2: "Impact Velocity (m/s)", label3: "Vector Angle to Core", label4: "Free-Fall Time" },
+    title: "Gravity Pulls Down",
+    conceptTitle: "Gravity",
+    briefScenario: "Drop a ball in Utah or Antarctica — it still falls 'down.' Down means toward Earth's center.",
+    challengeObjective: "Change latitude and mass. Prove everything falls toward Earth's center.",
+    targetVocab: ["gravity", "down", "Earth", "center", "fall"],
+    hypPrompt: "Why don't people in Australia fall off Earth into space?",
+    hypPlaceholder: "I think gravity pulls them... because...",
+    stepLabels: ["1. Get Ready", "2. Pick a Spot", "3. What Happened?", "4. Change Mass", "5. Where Is Down?", "6. What You Learned"],
+    leftControl: { title: "Latitude", label: "Latitude", unit: "°", min: -90, max: 90, defaultVal: 45, step: 1 },
+    rightControl: { title: "Test Mass", label: "Mass", unit: "kg", min: 1, max: 100, defaultVal: 10, step: 1 },
+    telemetry: { label1: "g Pull", label2: "Fall Speed", label3: "Toward Center?", label4: "Fall Time" },
     video: {
-      title: "Planetary Gravitational Physics on a Spherical Earth",
-      subtitle: "Demonstrating why Earth's gravitational field directs all masses toward its center of gravity",
+      title: "Gravity and Down",
+      subtitle: "Toward the center of Earth",
       captions: [
-        { start: 0, end: 5, text: "Gravity is a fundamental non-contact force pulling matter inward." },
-        { start: 5, end: 10, text: "Earth's spherical mass exerts a gravitational vector toward its center." },
-        { start: 10, end: 15, text: "The term 'downward' is a local description directed toward Earth's core." },
-        { start: 15, end: 21, text: "Observers in Utah, Australia, and Antarctica all experience gravity toward center." },
-        { start: 21, end: 30, text: "Overcoming gravity requires applying an upward force exceeding Earth's pull." }
+        { start: 0, end: 5, text: "Gravity is a pull between masses." },
+        { start: 5, end: 10, text: "Earth pulls things toward its center." },
+        { start: 10, end: 15, text: "'Down' means toward Earth's center." },
+        { start: 15, end: 21, text: "People everywhere feel gravity toward the center." },
+        { start: 21, end: 30, text: "Jumping up needs a force bigger than gravity for a moment." }
       ]
     },
     quiz: [
       {
-        question: "Scientifically explain why people standing on the opposite side of Earth (e.g., in the Southern Hemisphere) do not fall off into space.",
-        hint: "Earth's gravitational force pulls radially toward the center of the spherical Earth, defining local downward.",
-        keywords: ["gravity", "center of Earth", "spherical", "downward", "force", "radial vector"]
+        question: "What does gravity do to objects near Earth?",
+        hint: "It pulls them.",
+        keywords: ["pull", "gravity", "down", "center", "Earth"]
       },
       {
-        question: "When a family sleds down a steep winter hill, what force causes all members to accelerate to the bottom regardless of weight?",
-        hint: "Earth's gravitational force pulls downward along the incline vector toward Earth's center.",
-        keywords: ["gravity", "downward", "gravitational force", "sled", "hill", "acceleration"]
+        question: "Why is 'down' different directions in Utah vs Australia, but both make sense?",
+        hint: "Both point toward Earth's center.",
+        keywords: ["center", "Earth", "down", "gravity", "sphere"]
       },
       {
-        question: "How do humans routinely overcome Earth's gravitational force during everyday locomotion like jumping or stair climbing?",
-        hint: "Musculoskeletal upward forces exerted against the ground exceed Earth's downward gravitational pull momentarily.",
-        keywords: ["overcoming gravity", "force", "jump", "upward force", "gravity", "mass"]
+        question: "When you jump, how do you briefly overcome gravity?",
+        hint: "Your legs push up hard.",
+        keywords: ["push", "up", "force", "jump", "legs"]
       }
     ],
-    discoveryLogPrompt: "Analyze the radial vector plot on the spherical Earth: Prove why 'downward' vectors at +90° and -90° latitude point toward the exact same core.",
-    takeaway: "Earth's gravitational force pulls all matter toward the center of the spherical Earth, establishing the universal definition of downward.",
-    canvasType: "spherical_gravity"
+    discoveryLogPrompt: "At different latitudes, which way did the mass fall? Toward what?",
+    takeaway: "Gravity pulls toward Earth's center — that is what 'down' means everywhere.",
+    canvasType: "spherical_gravity",
+    obs1Prompt: "You picked a new spot on Earth. Which way did the mass fall?",
+    step2Tutor: "<strong>Step 2: Pick a place on Earth!</strong><br><br>Move <strong>Latitude</strong>. Drop the mass.",
+    step3Tutor: "<strong>Falling!</strong><br><br>Write which way is down. Keep watching.",
+    step5Tutor: "<strong>Where is down?</strong><br><br>Write what 'down' means on a round Earth.",
+    doneTutor: "<strong>Gravity genius!</strong><br><br>You proved down points to Earth's center."
   },
 
-  // Module 3020: Noncontact Forces - Magnets & Static Electricity (SEEd 3.3.4 & 3.3.5)
   {
     id: 3020,
     code: "3.3.4",
     standard: "Utah SEEd 3.3.4 & 3.3.5 · Grade 3 · Module 3020",
     strand: "Strand 3: Force Affects Motion",
-    title: "Noncontact Field Interactions & Magnetic Devices",
+    title: "Magnets Push & Pull",
     conceptTitle: "Noncontact Forces",
-    briefScenario: "High-speed Maglev transportation engineers test repulsive neodymium magnetic arrays and electrostatic charge fields to achieve wheel-less frictionless levitation.",
-    challengeObjective: "Align magnetic dipoles (North-North vs North-South) and distance offsets to calculate magnetic force vector field strength without physical contact.",
-    targetVocab: ["Noncontact Force", "Magnetic Field", "Poles (Attract/Repel)", "Electrostatic Force"],
-    hypPrompt: "How does the distance separation between two aligned magnetic poles dictate the repulsive force vector magnitude?",
-    hypPlaceholder: "I hypothesize that as the distance between identical magnetic poles decreases, the repulsive force will...",
-    stepLabels: ["1. Dipole Orientation", "2. Separation Sweep", "3. Vector Field Line Plot", "4. Maglev Levitation Test", "5. Distance-Force Curve", "6. Electromagnetic Synthesis"],
-    leftControl: { title: "Pole Separation Gap", label: "Distance (mm)", unit: "mm", min: 2, max: 80, defaultVal: 20, step: 1 },
-    rightControl: { title: "Magnetic Dipole Strength", label: "Field Strength (Tesla)", unit: "T", min: 0.1, max: 2.0, defaultVal: 1.0, step: 0.1 },
-    telemetry: { label1: "Magnetic Force (N)", label2: "Field Potential", label3: "Levitation Height", label4: "Interaction Type" },
+    briefScenario: "Magnets can push or pull without touching. Closer magnets feel stronger forces.",
+    challengeObjective: "Change distance and magnet strength. Watch attraction or repulsion without contact.",
+    targetVocab: ["magnet", "attract", "repel", "force", "distance"],
+    hypPrompt: "What happens to the push/pull when two magnets get closer?",
+    hypPlaceholder: "I think the force gets... because...",
+    stepLabels: ["1. Get Ready", "2. Change Distance", "3. What Happened?", "4. Change Strength", "5. Force Check", "6. What You Learned"],
+    leftControl: { title: "Distance", label: "Gap", unit: "mm", min: 2, max: 80, defaultVal: 20, step: 1 },
+    rightControl: { title: "Magnet Strength", label: "Strength", unit: "T", min: 0.1, max: 2.0, defaultVal: 1.0, step: 0.1 },
+    telemetry: { label1: "Force", label2: "Attract/Repel", label3: "Lift Height", label4: "Field Feel" },
     video: {
-      title: "Noncontact Vector Fields: Magnetism and Static Electricity",
-      subtitle: "Discovering how unseen vector fields exert push and pull forces across empty space",
+      title: "Forces Without Touching",
+      subtitle: "Magnets and static",
       captions: [
-        { start: 0, end: 5, text: "Forces can be categorized into contact forces and noncontact forces." },
-        { start: 5, end: 10, text: "Noncontact forces like gravity, magnetism, and static electricity act at a distance." },
-        { start: 10, end: 15, text: "Magnets possess north and south poles: like poles repel, opposite poles attract." },
-        { start: 15, end: 21, text: "Maglev trains harness magnetic repulsion to levitate frictionless above tracks." },
-        { start: 21, end: 30, text: "Noncontact field strength intensifies drastically as separation distance decreases." }
+        { start: 0, end: 5, text: "Some forces work without touching." },
+        { start: 5, end: 10, text: "Magnets can attract or repel." },
+        { start: 10, end: 15, text: "Like poles push; opposite poles pull." },
+        { start: 15, end: 21, text: "Closer magnets mean stronger force." },
+        { start: 21, end: 30, text: "Maglev trains use magnetic push to float." }
       ]
     },
     quiz: [
       {
-        question: "Define a 'noncontact force' and identify three fundamental examples in nature.",
-        hint: "Forces that act across empty space without physical contact: gravity, magnetism, and electric/static force.",
-        keywords: ["noncontact force", "gravity", "magnetic force", "electrostatic force", "distance", "poles"]
+        question: "What is a noncontact force?",
+        hint: "A force that works without touching.",
+        keywords: ["without touching", "magnet", "gravity", "distance", "force"]
       },
       {
-        question: "Explain what occurs when two identical North magnetic poles are brought into close proximity versus a North and South pole.",
-        hint: "Like poles repel (push away); opposite poles attract (pull together).",
-        keywords: ["repel", "attract", "poles", "north", "south", "magnetic force"]
+        question: "What do two North poles do to each other?",
+        hint: "Like poles...",
+        keywords: ["repel", "push", "north", "like"]
       },
       {
-        question: "How do civil engineers utilize magnetic repulsion in roller coasters and high-speed Maglev trains to prevent collisions?",
-        hint: "Mounting identical poles creates a noncontact braking force that repels moving vehicles without mechanical friction.",
-        keywords: ["maglev", "magnetic device", "repel", "poles", "friction", "noncontact force"]
+        question: "What happens to magnetic force when magnets move closer?",
+        hint: "It usually gets stronger.",
+        keywords: ["stronger", "closer", "force", "distance", "increase"]
       }
     ],
-    discoveryLogPrompt: "Document the non-linear relationship: As distance between opposing magnets halves from 40 mm to 20 mm, what happens to the repulsive force in Newtons?",
-    takeaway: "Noncontact magnetic and electrostatic forces exert powerful attractive and repulsive vectors across space, intensifying sharply at close range.",
-    canvasType: "magnetic_dipole_field"
+    discoveryLogPrompt: "How did distance and strength change the magnetic force?",
+    takeaway: "Magnets push and pull without touching. Closer and stronger magnets make bigger forces.",
+    canvasType: "magnetic_poles",
+    obs1Prompt: "You changed the distance. Did the force get stronger or weaker?",
+    step2Tutor: "<strong>Step 2: Move the magnets!</strong><br><br>Slide <strong>Distance</strong> closer. Watch the force.",
+    step3Tutor: "<strong>Feel that pull?</strong><br><br>Write what happened. Keep watching — no blur!",
+    step5Tutor: "<strong>Force check!</strong><br><br>Write how distance and strength changed the push or pull.",
+    doneTutor: "<strong>Magnet master!</strong><br><br>You explored forces that work without touching."
   }
 ];

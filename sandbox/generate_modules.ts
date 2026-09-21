@@ -3,7 +3,12 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { MODULES } from './generate_modules_data.js';
+import { MODULES } from './generate_modules_data.ts';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function renderModuleHTML(m: any): string {
   return `<!DOCTYPE html>
@@ -95,6 +100,21 @@ body::before {
 @keyframes pulseEmerald {
   0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.35); }
   50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.7); }
+}
+
+@keyframes pulseSalmon {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(255, 122, 89, 0.45), 0 4px 18px rgba(255, 90, 54, 0.25);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 140, 105, 0.85), 0 6px 24px rgba(255, 90, 54, 0.4);
+    transform: translateY(-1px) scale(1.015);
+  }
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
 }
 
 #version-tag {
@@ -433,6 +453,57 @@ body::before {
   font-style: italic;
 }
 
+/* Hypothesis keyword helper — nudges kids to use the unit's science words */
+.vocab-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 11px 14px;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px dashed rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+}
+.vocab-hint-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #7dd3fc;
+}
+.vocab-chip {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #06263a;
+  background: linear-gradient(135deg, #bae6fd, #38bdf8);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vocab-chip:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.55);
+}
+.vocab-chip:active {
+  transform: scale(0.97);
+}
+
+.ai-think-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(56, 189, 248, 0.25);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.ai-think-spinner.hidden {
+  display: none;
+}
+
 .tutor-speech-bubble {
   display: flex;
   align-items: flex-start;
@@ -514,6 +585,24 @@ body::before {
   background: rgba(11, 17, 30, 0.95);
   border-top: 1px solid rgba(56, 189, 248, 0.2);
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+}
+
+.btn-start-experiment {
+  width: 100%;
+  background: linear-gradient(135deg, #ff8c69 0%, #ff6b4a 45%, #ff5a36 100%) !important;
+  border: 1px solid rgba(255, 200, 170, 0.55) !important;
+  color: #1a0a06 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em;
+  animation: pulseSalmon 1.6s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(255, 122, 89, 0.5);
+}
+.btn-start-experiment:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .tutor-header {
@@ -1182,14 +1271,14 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 <div class="modal-overlay" id="modal-standards">
   <div class="modal-dialog">
     <span class="badge" style="margin-bottom:12px;display:inline-block">${m.code}</span>
-    <h2>Scientific Standards &amp; Vocabulary</h2>
+    <h2>What This Lab Covers</h2>
     <ul>
       <li><strong>Standard:</strong> ${m.strand} (${m.code}).</li>
-      <li><strong>Target Vocabulary:</strong> ${m.targetVocab.join(', ')}.</li>
-      <li><strong>Core Directive:</strong> Rigorous academic terminology enforced across all Socratic interactions.</li>
+      <li><strong>Science words to try:</strong> ${m.targetVocab.join(', ')}.</li>
+      <li><strong>Goal:</strong> ${m.challengeObjective}</li>
     </ul>
-    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah State Science with Engineering Education (SEEd) Standards.</p>
-    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Acknowledge</button>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah SEEd Standards · written for ~age 10.</p>
+    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Got it!</button>
   </div>
 </div>
 
@@ -1209,7 +1298,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
     <div class="tutor-dialog-body">
       <div class="tutor-chat-log" id="tutor-chat-history">
         <div class="chat-bubble tutor">
-          Greetings! I am Valerie, your Socratic science tutor. What empirical observations or questions do you have regarding ${m.conceptTitle}? Remember to utilize Tier-2/Tier-3 academic vocabulary.
+          Hi! I'm Valerie, your science guide. What did you notice about ${m.conceptTitle}? Try using words like: ${m.targetVocab.slice(0, 3).join(', ')}.
         </div>
       </div>
       <div class="tutor-chat-input-row">
@@ -1225,16 +1314,21 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 <div class="screen hidden" id="screen-hypothesis">
   <div class="hypothesis-container">
     <div class="card">
-      <div class="section-label">Scientific Investigation</div>
+      <div class="section-label">The Mystery</div>
       <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">${m.title}</h3>
       <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">${m.briefScenario}</p>
     </div>
     <div class="card">
-      <div class="section-label">Hypothesis Formulation</div>
+      <div class="section-label">Your Prediction</div>
       <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">${m.hypPrompt}</p>
       <textarea class="text-input" id="hypothesis-input" placeholder="${m.hypPlaceholder}"></textarea>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Hypothesis →</button>
+      <div class="vocab-hint">
+        <span class="vocab-hint-label">💡 Try to use science words like:</span>
+        ${m.targetVocab.slice(0, 5).map((v: string) => `<span class="vocab-chip">${v}</span>`).join('\n        ')}
+      </div>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px">
+        <div class="ai-think-spinner hidden" id="hypothesis-spinner" aria-hidden="true"></div>
+        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Guess →</button>
       </div>
     </div>
     <div class="tutor-speech-bubble hidden" id="tutor-hypothesis-reply">
@@ -1245,7 +1339,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 </div>
 
 <!-- Simulation Screen (2:3 Ratio) -->
-<div id="version-tag">Module ${m.id} · V7 HYBRID</div>
+<div id="version-tag">Module ${m.id} · v8 KID FLOW</div>
 <div class="screen hidden" id="screen-simulation">
   <div id="valerie-overlay"></div>
 
@@ -1283,7 +1377,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 
     <div class="sidebar-action">
       <div id="action-area">
-        <button class="btn-primary" style="width:100%" id="btn-initialize-sim">Start Experiment →</button>
+        <button class="btn-primary btn-start-experiment" id="btn-initialize-sim">Start Experiment →</button>
       </div>
     </div>
   </aside>
@@ -1431,6 +1525,7 @@ const labState = {
   valRight: ${m.rightControl.defaultVal},
   quizAnswers: [],
   isSimRunning: false,
+  isObserving: false,
   simAnimationId: null,
   introIconAnimationId: null,
   videoAnimationId: null,
@@ -1493,7 +1588,8 @@ function initCosmicBackground() {
   render();
 }
 
-// 2-Second Cinematic Interstellar Transition
+// Rocket-Launch Step Transition (~1.7s) — smooth liftoff, no random glitch-shake
+let activeTransitionId = 0;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
@@ -1502,137 +1598,207 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
   const canvas = document.getElementById('transition-canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const transitionId = ++activeTransitionId;
+  let finished = false;
+
+  function finishTransition() {
+    if (finished || transitionId !== activeTransitionId) return;
+    finished = true;
+    hud.classList.remove('show');
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    overlay.style.transform = 'translate(0px, 0px)';
+    overlay.style.pointerEvents = '';
+    ctx.clearRect(0, 0, W, H);
+    if (onComplete) onComplete();
+  }
+
+  setTimeout(finishTransition, 2200);
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   numberText.textContent = "STEP " + stepNumber;
   labelText.textContent = stepTitle || ("Step " + stepNumber);
 
   overlay.classList.add('active');
-  hud.classList.add('show');
+  overlay.style.transform = 'translate(0px, 0px)';
+  hud.classList.remove('show');
 
+  const cx = W / 2;
+  const duration = 1700;
   const startTime = performance.now();
-  const duration = 2000;
 
-  const glints = [];
-  for (let i = 0; i < 36; i++) {
-    glints.push({
-      yRatio: Math.random(),
-      relOffset: (Math.random() - 0.5) * 200,
-      size: 1.5 + Math.random() * 3.5,
-      alpha: 0.4 + Math.random() * 0.6
+  const embers = [];
+  for (let i = 0; i < 80; i++) {
+    embers.push({
+      spread: (Math.random() - 0.5) * 130,
+      speed: 340 + Math.random() * 560,
+      size: 1.4 + Math.random() * 3.0,
+      delay: Math.random() * 0.32,
+      wobble: Math.random() * 6.28
+    });
+  }
+  const streaks = [];
+  for (let i = 0; i < 34; i++) {
+    streaks.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 40 + Math.random() * 150,
+      speed: 620 + Math.random() * 900,
+      alpha: 0.18 + Math.random() * 0.45
     });
   }
 
+  const easeInOutCubic = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
   function renderFrame(now) {
-    const elapsed = now - startTime;
-    const p = Math.min(elapsed / duration, 1);
+    const p = Math.min((now - startTime) / duration, 1);
+    ctx.clearRect(0, 0, W, H);
 
-    let ease;
-    if (p < 0.45) {
-      const t = p / 0.45;
-      ease = (t * t * (3 - 2 * t)) * 0.38;
-    } else if (p < 0.70) {
-      const t = (p - 0.45) / 0.25;
-      ease = 0.38 + (Math.sin(t * Math.PI * 0.5)) * 0.08;
-    } else {
-      const t = (p - 0.70) / 0.30;
-      ease = 0.46 + (t * t * t * t) * 0.54;
-    }
+    const rumble = p < 0.32 ? Math.sin(now * 0.045) * ((0.32 - p) / 0.32) * 5 : 0;
+    const dim = p < 0.72 ? p / 0.72 : 1 - (p - 0.72) / 0.28;
+    const vg = ctx.createRadialGradient(cx, H * 0.62, 40, cx, H * 0.62, Math.max(W, H) * 0.8);
+    vg.addColorStop(0, "rgba(10, 16, 30, " + (0.5 * dim) + ")");
+    vg.addColorStop(1, "rgba(4, 7, 15, " + (0.94 * dim) + ")");
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
 
-    if (p >= 0.68 && p <= 0.94) {
-      const shakeIntensity = Math.sin((p - 0.68) / 0.26 * Math.PI) * 5.5;
-      const sx = (Math.random() - 0.5) * shakeIntensity;
-      const sy = (Math.random() - 0.5) * shakeIntensity;
-      overlay.style.transform = "translate(" + sx.toFixed(1) + "px, " + sy.toFixed(1) + "px)";
-    } else {
-      overlay.style.transform = 'translate(0px, 0px)';
-    }
+    const baseA = p < 0.72 ? 1 : Math.max(0, 1 - (p - 0.72) / 0.28);
+    const climb = easeInOutCubic(Math.min(p / 0.85, 1));
+    const launchY = H * 0.72 - climb * H * 0.95;
+    const baseY = H * 0.72 + rumble;
 
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = 'lighter';
 
-    const waveFront = -300 + ease * (width + 650);
-    const waveWidth = 420;
-
-    ctx.save();
+    const glowR = 60 + Math.min(p / 0.32, 1) * 150;
+    const baseGlow = ctx.createRadialGradient(cx, baseY, 6, cx, baseY, glowR);
+    baseGlow.addColorStop(0, "rgba(255, 244, 214, " + (0.9 * baseA) + ")");
+    baseGlow.addColorStop(0.35, "rgba(255, 168, 72, " + (0.6 * baseA) + ")");
+    baseGlow.addColorStop(1, 'rgba(255, 120, 40, 0)');
+    ctx.fillStyle = baseGlow;
     ctx.beginPath();
-    ctx.moveTo(waveFront - waveWidth, 0);
-    for (let y = 0; y <= height; y += 20) {
-      const curve = Math.sin((y / height) * Math.PI * 2 + p * Math.PI * 1.5) * 55;
-      ctx.lineTo(waveFront + curve, y);
-    }
-    ctx.lineTo(waveFront - waveWidth - 80, height);
-    ctx.closePath();
-
-    const gradient = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
-    gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
-    gradient.addColorStop(0.3, 'rgba(99, 102, 241, 0.40)');
-    gradient.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)');
-    gradient.addColorStop(0.90, 'rgba(226, 232, 240, 0.70)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.90)');
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = '#38bdf8';
-    ctx.shadowBlur = 40;
+    ctx.arc(cx, baseY, glowR, 0, Math.PI * 2);
     ctx.fill();
 
-    for (let i = 0; i < glints.length; i++) {
-      const g = glints[i];
-      const gx = waveFront - 60 + g.relOffset;
-      const gy = g.yRatio * height;
-      if (gx > 0 && gx < width) {
-        ctx.save();
-        ctx.translate(gx, gy);
-        ctx.fillStyle = "rgba(255, 255, 255, " + (g.alpha * (1 - Math.abs(p - 0.55) * 1.6)) + ")";
+    for (const e of embers) {
+      const ep = (p - e.delay) / (1 - e.delay);
+      if (ep <= 0) continue;
+      const dist = ep * e.speed * 1.5;
+      const x = cx + e.spread * (1 - ep * 0.4) + Math.sin(e.wobble + now * 0.004) * 9;
+      const y = H * 0.74 - dist + rumble;
+      const trail = 10 + ep * 78;
+      const a = Math.max(0, 1 - ep) * baseA;
+      const col = ep < 0.5
+        ? "rgba(255, " + (170 + Math.round(ep * 130)) + ", " + (90 + Math.round(ep * 130)) + ", " + a + ")"
+        : "rgba(" + Math.round(210 - (ep - 0.5) * 170) + ", 235, 255, " + a + ")";
+      const g = ctx.createLinearGradient(x, y, x, y + trail);
+      g.addColorStop(0, col);
+      g.addColorStop(1, 'rgba(120, 180, 255, 0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = e.size;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + trail);
+      ctx.stroke();
+    }
+
+    if (p < 0.92) {
+      const core = ctx.createRadialGradient(cx, launchY, 2, cx, launchY, 44);
+      core.addColorStop(0, "rgba(255, 255, 255, " + (baseA * 0.95) + ")");
+      core.addColorStop(0.5, "rgba(125, 211, 252, " + (baseA * 0.8) + ")");
+      core.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, launchY, 44, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (p > 0.5) {
+      const wp = (p - 0.5) / 0.5;
+      for (const s of streaks) {
+        let y = (s.y - wp * s.speed * 1.2) % H;
+        if (y < 0) y += H;
+        const len = s.len * (0.4 + wp * 1.6);
+        const g = ctx.createLinearGradient(s.x, y, s.x, y + len);
+        g.addColorStop(0, 'rgba(226, 240, 255, 0)');
+        g.addColorStop(0.5, "rgba(186, 230, 253, " + (s.alpha * wp) + ")");
+        g.addColorStop(1, 'rgba(226, 240, 255, 0)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.arc(0, 0, g.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(56, 189, 248, " + (g.alpha * 0.8) + ")";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(-g.size * 2.8, 0); ctx.lineTo(g.size * 2.8, 0);
-        ctx.moveTo(0, -g.size * 2.8); ctx.lineTo(0, g.size * 2.8);
+        ctx.moveTo(s.x, y);
+        ctx.lineTo(s.x, y + len);
         ctx.stroke();
-        ctx.restore();
       }
     }
-    ctx.restore();
+
+    if (p > 0.82) {
+      const fp = (p - 0.82) / 0.18;
+      ctx.fillStyle = "rgba(240, 248, 255, " + (Math.sin(fp * Math.PI) * 0.45) + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+    if (p > 0.26 && !hud.classList.contains('show')) hud.classList.add('show');
 
     if (p < 1) {
-      requestAnimationFrame(renderFrame);
+      if (transitionId === activeTransitionId && !finished) requestAnimationFrame(renderFrame);
     } else {
-      hud.classList.remove('show');
-      overlay.classList.remove('active');
-      overlay.style.transform = 'translate(0px, 0px)';
-      ctx.clearRect(0, 0, width, height);
-      if (onComplete) onComplete();
+      finishTransition();
     }
   }
+
   requestAnimationFrame(renderFrame);
 }
 
 // Typing Intro
-const STORY_TEXT = ${JSON.stringify("INCIDENT BRIEFING: " + m.briefScenario + "\n\nMission Objective: " + m.challengeObjective + " Enforce target academic vocabulary: " + m.targetVocab.join(", ") + ".")};
+const STORY_TEXT = ${JSON.stringify("MISSION BRIEFING: " + m.briefScenario + "\\n\\nYour job: " + m.challengeObjective)};
 let storyCharIndex = 0;
+let storyTypeTimer = null;
+let storyTypingDone = false;
+
+function showLaunchButton() {
+  const launchButton = document.getElementById('btn-start-intro');
+  if (!launchButton) return;
+  launchButton.style.opacity = '1';
+  launchButton.style.pointerEvents = 'all';
+  launchButton.style.transform = 'translateY(0)';
+  const cursor = document.getElementById('cursor-blink');
+  if (cursor) cursor.style.display = 'none';
+}
+
+function finishTypewriter() {
+  if (storyTypingDone) return;
+  storyTypingDone = true;
+  if (storyTypeTimer) {
+    clearTimeout(storyTypeTimer);
+    storyTypeTimer = null;
+  }
+  storyCharIndex = STORY_TEXT.length;
+  const container = document.getElementById('story-text');
+  if (container) {
+    container.innerHTML = STORY_TEXT.replace(/\\n/g, '<br>');
+  }
+  showLaunchButton();
+}
 
 function runTypewriter() {
   const container = document.getElementById('story-text');
-  if (!container) return;
+  if (!container || storyTypingDone) return;
   if (storyCharIndex < STORY_TEXT.length) {
     const char = STORY_TEXT.charAt(storyCharIndex);
     container.innerHTML += char === '\\n' ? '<br>' : char;
     storyCharIndex++;
-    setTimeout(runTypewriter, 12);
+    storyTypeTimer = setTimeout(runTypewriter, 12);
   } else {
-    setTimeout(() => {
-      const launchButton = document.getElementById('btn-start-intro');
-      launchButton.style.opacity = '1';
-      launchButton.style.pointerEvents = 'all';
-      launchButton.style.transform = 'translateY(0)';
-      document.getElementById('cursor-blink').style.display = 'none';
-    }, 250);
+    storyTypingDone = true;
+    storyTypeTimer = setTimeout(showLaunchButton, 250);
   }
 }
 
@@ -1822,7 +1988,7 @@ function updateTelemetryDisplay() {
   } else if (labState.currentStep === 3 && labState.isSimRunning) {
     const confirmContainer = document.getElementById('balance-confirmation-container');
     if (Math.abs(derivedMetric) <= 2) {
-      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>${m.targetVocab[0]}</em> and <em>${m.targetVocab[1]}</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
+      setTutorMessage("<strong>Nice balance!</strong><br><br>You got <em>${m.targetVocab[0]}</em> and <em>${m.targetVocab[1]}</em> working together. Click <strong>Confirm Finding</strong>!");
       if (!document.getElementById('btn-confirm-balance')) {
         confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
         document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
@@ -1856,7 +2022,7 @@ function initSimulationLab() {
   labState.valLeft = ${m.leftControl.defaultVal};
   labState.valRight = ${m.rightControl.defaultVal};
 
-  setTutorMessage("<strong>Welcome to Module ${m.id}: ${m.conceptTitle}!</strong><br><br>Utilize the controllers below to test how <strong>${m.targetVocab[0]}</strong> interacts with <strong>${m.targetVocab[1]}</strong>. Click <strong>Start Experiment</strong> to launch live data acquisition!");
+  setTutorMessage("<strong>Welcome to Module ${m.id}: ${m.conceptTitle}!</strong><br><br>Use the two sliders below. Watch what changes. Click <strong>Start Experiment</strong> when you are ready!");
   updateStepNavigation(0);
   document.getElementById('btn-initialize-sim').style.display = 'block';
   document.getElementById('valerie-overlay').classList.remove('active');
@@ -1872,7 +2038,7 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
     <div class="observation-panel">
       <div class="section-label">\${label}</div>
       <div class="observation-prompt">\${promptText}</div>
-      <textarea class="observation-textarea" id="observation-input" placeholder="Type your answer using target terms: \${${JSON.stringify(m.targetVocab.slice(0, 2).join(', '))}} (Press Enter to submit)..."></textarea>
+      <textarea class="observation-textarea" id="observation-input" placeholder="Type your thoughts here (Press Enter to submit)..."></textarea>
       <button class="btn-primary" style="width:100%" id="btn-submit-observation" disabled>Submit Answer →</button>
     </div>
   \`;
@@ -1903,13 +2069,19 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
   });
 
   submitBtn.addEventListener('click', doSubmit);
-  document.getElementById('btn-initialize-sim').style.display = 'none';
-  document.getElementById('action-area').innerHTML = '';
+
+  // Wire callback FIRST — looking up a deleted Start button used to throw and softlock Step 5.
   observationCallback = onSubmitCallback;
+  labState.isObserving = true;
+
+  const initBtn = document.getElementById('btn-initialize-sim');
+  if (initBtn) initBtn.style.display = 'none';
+  document.getElementById('action-area').innerHTML = '';
   input.focus();
 }
 
 function clearObservationPrompt() {
+  labState.isObserving = false;
   document.getElementById('observation-container').innerHTML = '';
   document.getElementById('action-area').innerHTML = '';
 }
@@ -1925,25 +2097,25 @@ function onStartExperiment() {
     labState.isSimRunning = true;
     document.getElementById('slider-left').disabled = false;
     updateStepNavigation(1);
-    setTutorMessage("<strong>Active Step 2: System Activation</strong><br><br>Adjust the left control slider past 60 to induce initial dynamic variance. Observe the telemetry!");
+    setTutorMessage(${JSON.stringify(m.step2Tutor)});
     runPhysicsTick();
   });
 }
 
 function onTriggerObservation1() {
-  labState.isSimRunning = false;
+  // Keep sim LIVE and un-blurred so kids can watch while writing
   labState.currentStep = 2;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
+  document.getElementById('valerie-overlay').classList.remove('active');
 
   playStepTransition(3, STEP_LABELS[2], () => {
     updateStepNavigation(2);
-    setTutorMessage("<strong>Data Recorded: Observation 1</strong><br><br>The initial parameter shift generated measurable variation. Formulate your observation below utilizing academic terminology.");
+    setTutorMessage(${JSON.stringify(m.step3Tutor)});
     showObservationPrompt(
       'Observation 1',
-      "Describe how altering the initial parameter influenced the physical state of the system, referencing <em>${m.targetVocab[0]}</em>.",
+      ${JSON.stringify(m.obs1Prompt)},
       onObservation1Submitted
     );
   });
@@ -1956,28 +2128,26 @@ function onObservation1Submitted() {
 
   playStepTransition(4, STEP_LABELS[3], () => {
     labState.currentStep = 3;
-    labState.isSimRunning = true;
     document.getElementById('slider-left').disabled = false;
     document.getElementById('slider-right').disabled = false;
     updateStepNavigation(3);
     updateTelemetryDisplay();
-    runPhysicsTick();
+    if (!labState.isSimRunning) { labState.isSimRunning = true; runPhysicsTick(); }
   });
 }
 
 function onConfirmStep3() {
   labState.hasReachedSecondThreshold = true;
   labState.currentStep = 4;
-  labState.isSimRunning = false;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('balance-confirmation-container').innerHTML = '';
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
+  document.getElementById('valerie-overlay').classList.remove('active');
 
   playStepTransition(5, STEP_LABELS[4], () => {
     updateStepNavigation(4);
-    setTutorMessage("<strong>Discovery Confirmed!</strong><br><br>System parameters have stabilized. Synthesize your scientific findings in the discovery log.");
+    setTutorMessage(${JSON.stringify(m.step5Tutor)});
     showObservationPrompt(
       'Discovery Log',
       ${JSON.stringify(m.discoveryLogPrompt)},
@@ -1997,17 +2167,18 @@ function onObservation2Submitted() {
 
     document.getElementById('observation-container').innerHTML = \`
       <div class="summary-card">
-        <div class="summary-heading">Empirical Synthesis</div>
+        <div class="summary-heading">What You Learned</div>
         \${${JSON.stringify(m.takeaway)}}
       </div>
     \`;
 
-    document.getElementById('btn-initialize-sim').style.display = 'none';
+    const initBtn = document.getElementById('btn-initialize-sim');
+    if (initBtn) initBtn.style.display = 'none';
     const actionArea = document.getElementById('action-area');
     actionArea.innerHTML = '<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>';
     document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
 
-    setTutorMessage("<strong>Investigation Complete!</strong><br><br>You verified foundational principles of ${m.conceptTitle}. Proceed to the concept deep-dive!");
+    setTutorMessage(${JSON.stringify(m.doneTutor)});
   });
 }
 
@@ -2204,7 +2375,7 @@ function buildResultsSummary() {
     const card = document.createElement('div');
     card.className = 'feedback-card review';
     card.innerHTML = '<div class="feedback-card-heading">[ Vocabulary Expansion Needed ]</div>' +
-      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Integrate required terms: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
+      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Try using words like: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
     grid.appendChild(card);
   }
 
@@ -2390,9 +2561,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hypothesis Submission
   const hypothesisInput = document.getElementById('hypothesis-input');
   const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
+  const hypothesisSpinner = document.getElementById('hypothesis-spinner');
 
   hypothesisInput.addEventListener('input', () => {
     hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+  });
+
+  document.querySelectorAll('.vocab-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (hypothesisInput.disabled) return;
+      const word = chip.textContent.trim();
+      const needsSpace = hypothesisInput.value.length > 0 && !hypothesisInput.value.endsWith(' ');
+      hypothesisInput.value += (needsSpace ? ' ' : '') + word + ' ';
+      hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+      hypothesisInput.focus();
+    });
   });
 
   hypothesisInput.addEventListener('keydown', (e) => {
@@ -2406,31 +2589,45 @@ document.addEventListener('DOMContentLoaded', () => {
     labState.hypothesisText = hypothesisInput.value.trim();
     hypothesisSubmitBtn.disabled = true;
     hypothesisInput.disabled = true;
+    hypothesisSubmitBtn.textContent = 'Valerie is analyzing...';
+    if (hypothesisSpinner) hypothesisSpinner.classList.remove('hidden');
 
-    document.getElementById('tutor-hypothesis-text').textContent = "Hypothesis registered. Initiating empirical parameter testing in simulation environment...";
+    document.getElementById('tutor-hypothesis-text').textContent = "Awesome guess! Let's test it in the lab...";
     document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
 
     setTimeout(() => {
+      if (hypothesisSpinner) hypothesisSpinner.classList.add('hidden');
       playStepTransition(1, STEP_LABELS[0], () => {
         transitionScreen('screen-hypothesis', 'screen-simulation');
         setTimeout(initSimulationLab, 400);
       });
-    }, 1600);
+    }, 1500);
   });
+
+  const FIRST_SLIDER_TARGET = ${m.leftControl.max >= 63 ? 60 : Math.round(m.leftControl.min + (m.leftControl.max - m.leftControl.min) * 0.72)};
+
+  function magneticSnap60(value) {
+    const n = parseFloat(value);
+    // Magnetic snap window around the step-2 target (fixes soft-miss like 58/61 when target is 60)
+    if (n >= FIRST_SLIDER_TARGET - 3 && n <= FIRST_SLIDER_TARGET + 3) return FIRST_SLIDER_TARGET;
+    return n;
+  }
 
   // Controls & Nudge
   function adjustChannel(channel, delta) {
     if (channel === 'left') {
       const s = document.getElementById('slider-left');
       if (s.disabled) return;
-      labState.valLeft = Math.max(${m.leftControl.min}, Math.min(${m.leftControl.max}, labState.valLeft + delta));
+      labState.valLeft = magneticSnap60(Math.max(${m.leftControl.min}, Math.min(${m.leftControl.max}, labState.valLeft + delta)));
+      s.value = labState.valLeft;
     } else {
       const s = document.getElementById('slider-right');
       if (s.disabled) return;
-      labState.valRight = Math.max(${m.rightControl.min}, Math.min(${m.rightControl.max}, labState.valRight + delta));
+      labState.valRight = magneticSnap60(Math.max(${m.rightControl.min}, Math.min(${m.rightControl.max}, labState.valRight + delta)));
+      s.value = labState.valRight;
     }
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft === FIRST_SLIDER_TARGET) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2446,9 +2643,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-left').addEventListener('input', (e) => {
     if (document.getElementById('slider-left').disabled) return;
-    labState.valLeft = parseFloat(e.target.value);
+    const snapped = magneticSnap60(e.target.value);
+    labState.valLeft = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft === FIRST_SLIDER_TARGET) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2456,11 +2655,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-right').addEventListener('input', (e) => {
     if (document.getElementById('slider-right').disabled) return;
-    labState.valRight = parseFloat(e.target.value);
+    const snapped = magneticSnap60(e.target.value);
+    labState.valRight = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
   });
 
   document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
+
+  document.getElementById('screen-intro').addEventListener('click', () => {
+    if (!storyTypingDone && storyCharIndex < STORY_TEXT.length) {
+      finishTypewriter();
+    }
+  });
 
   window.addEventListener('resize', () => {
     const canvas = document.getElementById('sim-canvas');
@@ -2518,7 +2725,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-finish-module').addEventListener('click', () => {
     [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
       .forEach(id => id && cancelAnimationFrame(id));
-    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Completed!</div><div style="color:#94a3b8;font-size:16px;font-family:monospace">All empirical data and lexical scores logged.</div></div>';
+    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Complete!</div><div style="color:#94a3b8;font-size:16px">You finished the lab. Nice work, scientist!</div></div>';
   });
 });
 </script>
@@ -2528,13 +2735,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Generate all modules from 3001 through 3020
 console.log(`Generating 20 modules...`);
+const outDir = path.join(__dirname);
 for (const m of MODULES) {
   const filename = `module${m.id}fulltesting.html`;
-  const filePath = path.join('/workspace/sandbox', filename);
-  
-  // Note: For module 3001, we preserve the existing tested canvas physics loop while adding any missing features (e.g. Enter to submit / prev question already integrated)
+  const filePath = path.join(outDir, filename);
+
+  // Keep hand-tuned Module 3001 canvas/physics; regenerate 3002–3020 from this template.
   if (m.id === 3001 && fs.existsSync(filePath)) {
-    console.log(`Module 3001 already verified and active at ${filename}.`);
+    console.log(`Skipping Module 3001 (hand-tuned reference): ${filename}`);
     continue;
   }
 

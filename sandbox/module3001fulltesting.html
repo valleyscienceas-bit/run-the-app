@@ -95,6 +95,21 @@ body::before {
   50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.7); }
 }
 
+@keyframes pulseSalmon {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(255, 122, 89, 0.45), 0 4px 18px rgba(255, 90, 54, 0.25);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 140, 105, 0.85), 0 6px 24px rgba(255, 90, 54, 0.4);
+    transform: translateY(-1px) scale(1.015);
+  }
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
 #version-tag {
   position: fixed;
   bottom: 12px;
@@ -454,6 +469,57 @@ body::before {
   font-style: italic;
 }
 
+/* Hypothesis keyword helper — nudges kids to use the unit's science words */
+.vocab-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 11px 14px;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px dashed rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+}
+.vocab-hint-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #7dd3fc;
+}
+.vocab-chip {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #06263a;
+  background: linear-gradient(135deg, #bae6fd, #38bdf8);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vocab-chip:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.55);
+}
+.vocab-chip:active {
+  transform: scale(0.97);
+}
+
+.ai-think-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(56, 189, 248, 0.25);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.ai-think-spinner.hidden {
+  display: none;
+}
+
 .tutor-speech-bubble {
   display: flex;
   align-items: flex-start;
@@ -541,6 +607,25 @@ body::before {
   background: rgba(11, 17, 30, 0.95);
   border-top: 1px solid rgba(56, 189, 248, 0.2);
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+}
+
+/* Vibrant pulsing Start Experiment CTA — pops on dark UI */
+.btn-start-experiment {
+  width: 100%;
+  background: linear-gradient(135deg, #ff8c69 0%, #ff6b4a 45%, #ff5a36 100%) !important;
+  border: 1px solid rgba(255, 200, 170, 0.55) !important;
+  color: #1a0a06 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em;
+  animation: pulseSalmon 1.6s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(255, 122, 89, 0.5);
+}
+.btn-start-experiment:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .tutor-header {
@@ -1091,9 +1176,9 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
   z-index: 99999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
-  backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  transition: opacity 0.25s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 #step-transition-layer.active {
@@ -1567,7 +1652,15 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
         What will happen to the robot when both rockets pull with the <em>exact same strength</em>?
       </p>
       <textarea class="text-input" id="hypothesis-input" placeholder="I think the robot will... because..."></textarea>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+      <div class="vocab-hint">
+        <span class="vocab-hint-label">💡 Try to use science words like:</span>
+        <span class="vocab-chip">balanced forces</span>
+        <span class="vocab-chip">net force</span>
+        <span class="vocab-chip">cancel out</span>
+        <span class="vocab-chip">zero</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px">
+        <div class="ai-think-spinner hidden" id="hypothesis-spinner" aria-hidden="true"></div>
         <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Guess →</button>
       </div>
     </div>
@@ -1579,7 +1672,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 </div>
 
 <!-- Simulation Screen -->
-<div id="version-tag">v6.3 · INTERSTELLAR HYBRID</div>
+<div id="version-tag">v8 · KID FLOW (no softlock · live observations)</div>
 <div class="screen hidden" id="screen-simulation">
   <div id="valerie-overlay"></div>
 
@@ -1618,7 +1711,7 @@ input[type=range].slider-control:not(:disabled)::-webkit-slider-thumb:hover {
 
     <div class="sidebar-action">
       <div id="action-area">
-        <button class="btn-primary" style="width:100%" id="btn-initialize-sim">Start Experiment →</button>
+        <button class="btn-primary btn-start-experiment" id="btn-initialize-sim">Start Experiment →</button>
       </div>
     </div>
   </aside>
@@ -1775,6 +1868,7 @@ const labState = {
   videoCurrentTime: 0,
   videoDuration: 30,
   isVideoPlaying: false,
+  isObserving: false,
   hasReachedFirstThreshold: false,
   hasReachedSecondThreshold: false
 };
@@ -1874,8 +1968,10 @@ function initCosmicBackground() {
   render();
 }
 
-// Interstellar Liquid Glass Step Wave Transition (2s Cinematic Arc)
-// Starts slow, decelerates to near-stop with gentle hover, then zooms across with screen shake
+// Rocket-Launch Step Transition (~1.7s)
+// Ignition rumble -> smooth liftoff -> warp whoosh. No random per-frame jitter (that read as a
+// glitch); the shake is a small damped sine that fades out, and everything eases smoothly.
+let activeTransitionId = 0;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
@@ -1884,127 +1980,171 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
   const canvas = document.getElementById('transition-canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const transitionId = ++activeTransitionId;
+  let finished = false;
+
+  function finishTransition() {
+    if (finished || transitionId !== activeTransitionId) return;
+    finished = true;
+    hud.classList.remove('show');
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    overlay.style.transform = 'translate(0px, 0px)';
+    overlay.style.pointerEvents = '';
+    ctx.clearRect(0, 0, W, H);
+    if (onComplete) onComplete();
+  }
+
+  // Hard failsafe — if rAF is throttled/paused, never softlock the kid
+  setTimeout(finishTransition, 2200);
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   numberText.textContent = `STEP ${stepNumber}`;
   labelText.textContent = stepTitle || `Step ${stepNumber}`;
 
   overlay.classList.add('active');
-  hud.classList.add('show');
+  overlay.style.transform = 'translate(0px, 0px)';
+  hud.classList.remove('show'); // HUD eases in once the rocket lifts off
 
+  const cx = W / 2;
+  const duration = 1700;
   const startTime = performance.now();
-  const duration = 2000; // Exact 2.0s cinematic sequence
 
-  const glintCount = 36;
-  const glints = [];
-  for (let i = 0; i < glintCount; i++) {
-    glints.push({
-      yRatio: Math.random(),
-      relOffset: (Math.random() - 0.5) * 200,
-      size: 1.5 + Math.random() * 3.5,
-      alpha: 0.4 + Math.random() * 0.6
+  // Exhaust embers streaming up from the launch point
+  const embers = [];
+  for (let i = 0; i < 80; i++) {
+    embers.push({
+      spread: (Math.random() - 0.5) * 130,
+      speed: 340 + Math.random() * 560,
+      size: 1.4 + Math.random() * 3.0,
+      delay: Math.random() * 0.32,
+      wobble: Math.random() * 6.28
+    });
+  }
+  // Vertical warp streaks for the "whoosh" out (adds a little texture, not too much)
+  const streaks = [];
+  for (let i = 0; i < 34; i++) {
+    streaks.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 40 + Math.random() * 150,
+      speed: 620 + Math.random() * 900,
+      alpha: 0.18 + Math.random() * 0.45
     });
   }
 
+  const easeInOutCubic = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
   function renderFrame(now) {
-    const elapsed = now - startTime;
-    const p = Math.min(elapsed / duration, 1);
+    const p = Math.min((now - startTime) / duration, 1);
+    ctx.clearRect(0, 0, W, H);
 
-    // Cinematic 3-stage timing curve:
-    // 0.0 -> 0.45: Gentle start moving towards center screen (0 -> 0.38)
-    // 0.45 -> 0.70: Dramatic deceleration / near-stop hover at center (0.38 -> 0.46)
-    // 0.70 -> 1.00: High-speed hyperspace zoom across and off-screen (0.46 -> 1.0)
-    let ease;
-    if (p < 0.45) {
-      const t = p / 0.45;
-      ease = (t * t * (3 - 2 * t)) * 0.38;
-    } else if (p < 0.70) {
-      const t = (p - 0.45) / 0.25;
-      ease = 0.38 + (Math.sin(t * Math.PI * 0.5)) * 0.08;
-    } else {
-      const t = (p - 0.70) / 0.30;
-      // Explosive acceleration zoom (quintic curve)
-      ease = 0.46 + (t * t * t * t) * 0.54;
-    }
+    // A smooth, decaying rumble only during ignition (no random jitter)
+    const rumble = p < 0.32 ? Math.sin(now * 0.045) * ((0.32 - p) / 0.32) * 5 : 0;
 
-    // Subtle screen shake during high-speed zoom breakout (p >= 0.70)
-    let shakeX = 0;
-    let shakeY = 0;
-    if (p >= 0.68 && p <= 0.94) {
-      const shakeIntensity = Math.sin((p - 0.68) / 0.26 * Math.PI) * 5.5;
-      shakeX = (Math.random() - 0.5) * shakeIntensity;
-      shakeY = (Math.random() - 0.5) * shakeIntensity;
-      overlay.style.transform = `translate(${shakeX.toFixed(1)}px, ${shakeY.toFixed(1)}px)`;
-    } else {
-      overlay.style.transform = 'translate(0px, 0px)';
-    }
+    // Dark vignette eases in, then releases near the end
+    const dim = p < 0.72 ? p / 0.72 : 1 - (p - 0.72) / 0.28;
+    const vg = ctx.createRadialGradient(cx, H * 0.62, 40, cx, H * 0.62, Math.max(W, H) * 0.8);
+    vg.addColorStop(0, `rgba(10, 16, 30, ${0.5 * dim})`);
+    vg.addColorStop(1, `rgba(4, 7, 15, ${0.94 * dim})`);
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
 
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
+    const baseA = p < 0.72 ? 1 : Math.max(0, 1 - (p - 0.72) / 0.28);
+    const climb = easeInOutCubic(Math.min(p / 0.85, 1)); // how high the rocket core has travelled
+    const launchY = H * 0.72 - climb * H * 0.95;
+    const baseY = H * 0.72 + rumble;
 
-    const waveFront = -300 + ease * (width + 650);
-    const waveWidth = 420;
+    ctx.globalCompositeOperation = 'lighter';
 
-    ctx.save();
+    // Amber exhaust glow at the launch pad
+    const glowR = 60 + Math.min(p / 0.32, 1) * 150;
+    const baseGlow = ctx.createRadialGradient(cx, baseY, 6, cx, baseY, glowR);
+    baseGlow.addColorStop(0, `rgba(255, 244, 214, ${0.9 * baseA})`);
+    baseGlow.addColorStop(0.35, `rgba(255, 168, 72, ${0.6 * baseA})`);
+    baseGlow.addColorStop(1, 'rgba(255, 120, 40, 0)');
+    ctx.fillStyle = baseGlow;
     ctx.beginPath();
-    ctx.moveTo(waveFront - waveWidth, 0);
-
-    for (let y = 0; y <= height; y += 20) {
-      const curve = Math.sin((y / height) * Math.PI * 2 + p * Math.PI * 1.5) * 55;
-      ctx.lineTo(waveFront + curve, y);
-    }
-
-    ctx.lineTo(waveFront - waveWidth - 80, height);
-    ctx.closePath();
-
-    const gradient = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
-    gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
-    gradient.addColorStop(0.3, 'rgba(99, 102, 241, 0.40)');
-    gradient.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)');
-    gradient.addColorStop(0.90, 'rgba(226, 232, 240, 0.70)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.90)');
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = '#38bdf8';
-    ctx.shadowBlur = 40;
+    ctx.arc(cx, baseY, glowR, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glinting interstellar starlight particles
-    for (let i = 0; i < glints.length; i++) {
-      const g = glints[i];
-      const gx = waveFront - 60 + g.relOffset;
-      const gy = g.yRatio * height;
-      if (gx > 0 && gx < width) {
-        ctx.save();
-        ctx.translate(gx, gy);
-        ctx.fillStyle = `rgba(255, 255, 255, ${g.alpha * (1 - Math.abs(p - 0.55) * 1.6)})`;
-        ctx.beginPath();
-        ctx.arc(0, 0, g.size, 0, Math.PI * 2);
-        ctx.fill();
+    // Rising exhaust embers (amber near the pad, cooling to blue-white as they climb)
+    for (const e of embers) {
+      const ep = (p - e.delay) / (1 - e.delay);
+      if (ep <= 0) continue;
+      const dist = ep * e.speed * 1.5;
+      const x = cx + e.spread * (1 - ep * 0.4) + Math.sin(e.wobble + now * 0.004) * 9;
+      const y = H * 0.74 - dist + rumble;
+      const trail = 10 + ep * 78;
+      const a = Math.max(0, 1 - ep) * baseA;
+      const col = ep < 0.5
+        ? `rgba(255, ${170 + Math.round(ep * 130)}, ${90 + Math.round(ep * 130)}, ${a})`
+        : `rgba(${Math.round(210 - (ep - 0.5) * 170)}, 235, 255, ${a})`;
+      const g = ctx.createLinearGradient(x, y, x, y + trail);
+      g.addColorStop(0, col);
+      g.addColorStop(1, 'rgba(120, 180, 255, 0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = e.size;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + trail);
+      ctx.stroke();
+    }
 
-        ctx.strokeStyle = `rgba(56, 189, 248, ${g.alpha * 0.8})`;
-        ctx.lineWidth = 1;
+    // Bright rocket core climbing the screen
+    if (p < 0.92) {
+      const core = ctx.createRadialGradient(cx, launchY, 2, cx, launchY, 44);
+      core.addColorStop(0, `rgba(255, 255, 255, ${baseA * 0.95})`);
+      core.addColorStop(0.5, `rgba(125, 211, 252, ${baseA * 0.8})`);
+      core.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, launchY, 44, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Warp streaks during the whoosh
+    if (p > 0.5) {
+      const wp = (p - 0.5) / 0.5;
+      for (const s of streaks) {
+        let y = (s.y - wp * s.speed * 1.2) % H;
+        if (y < 0) y += H;
+        const len = s.len * (0.4 + wp * 1.6);
+        const g = ctx.createLinearGradient(s.x, y, s.x, y + len);
+        g.addColorStop(0, 'rgba(226, 240, 255, 0)');
+        g.addColorStop(0.5, `rgba(186, 230, 253, ${s.alpha * wp})`);
+        g.addColorStop(1, 'rgba(226, 240, 255, 0)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.moveTo(-g.size * 2.8, 0);
-        ctx.lineTo(g.size * 2.8, 0);
-        ctx.moveTo(0, -g.size * 2.8);
-        ctx.lineTo(0, g.size * 2.8);
+        ctx.moveTo(s.x, y);
+        ctx.lineTo(s.x, y + len);
         ctx.stroke();
-        ctx.restore();
       }
     }
-    ctx.restore();
+
+    // Gentle final flash as we punch into the next step
+    if (p > 0.82) {
+      const fp = (p - 0.82) / 0.18;
+      ctx.fillStyle = `rgba(240, 248, 255, ${Math.sin(fp * Math.PI) * 0.45})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+
+    if (p > 0.26 && !hud.classList.contains('show')) hud.classList.add('show');
 
     if (p < 1) {
-      requestAnimationFrame(renderFrame);
+      if (transitionId === activeTransitionId && !finished) requestAnimationFrame(renderFrame);
     } else {
-      hud.classList.remove('show');
-      overlay.classList.remove('active');
-      overlay.style.transform = 'translate(0px, 0px)';
-      ctx.clearRect(0, 0, width, height);
-      if (onComplete) onComplete();
+      finishTransition();
     }
   }
 
@@ -2014,24 +2154,46 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
 // Typing Animation for Incident Story
 const STORY_TEXT = "INCIDENT BRIEFING: Orbital Tug-Bot 3001 is on top of a smooth track. Rockets are pulling both ways, but the robot is not moving.\n\nYour mission: figure out why it is not moving, and prove the First Law of Newton.";
 let storyCharIndex = 0;
+let storyTypeTimer = null;
+let storyTypingDone = false;
+
+function showLaunchButton() {
+  const launchButton = document.getElementById('btn-start-intro');
+  if (!launchButton) return;
+  launchButton.style.opacity = '1';
+  launchButton.style.pointerEvents = 'all';
+  launchButton.style.transform = 'translateY(0)';
+  const cursor = document.getElementById('cursor-blink');
+  if (cursor) cursor.style.display = 'none';
+}
+
+function finishTypewriter() {
+  if (storyTypingDone) return;
+  storyTypingDone = true;
+  if (storyTypeTimer) {
+    clearTimeout(storyTypeTimer);
+    storyTypeTimer = null;
+  }
+  storyCharIndex = STORY_TEXT.length;
+  const container = document.getElementById('story-text');
+  if (container) {
+    container.innerHTML = STORY_TEXT.replace(/\n/g, '<br>');
+  }
+  showLaunchButton();
+}
 
 function runTypewriter() {
   const container = document.getElementById('story-text');
-  if (!container) return;
+  if (!container || storyTypingDone) return;
 
   if (storyCharIndex < STORY_TEXT.length) {
     const char = STORY_TEXT.charAt(storyCharIndex);
     container.innerHTML += char === '\n' ? '<br>' : char;
     storyCharIndex++;
-    setTimeout(runTypewriter, 14);
+    storyTypeTimer = setTimeout(runTypewriter, 14);
   } else {
-    setTimeout(() => {
-      const launchButton = document.getElementById('btn-start-intro');
-      launchButton.style.opacity = '1';
-      launchButton.style.pointerEvents = 'all';
-      launchButton.style.transform = 'translateY(0)';
-      document.getElementById('cursor-blink').style.display = 'none';
-    }, 300);
+    storyTypingDone = true;
+    storyTypeTimer = setTimeout(showLaunchButton, 300);
   }
 }
 
@@ -2386,7 +2548,7 @@ function updateTelemetryDisplay() {
     } else {
       setTutorMessage(`<strong>Almost there: ${physicsState.leftForce} N!</strong><br><br>The robot is speeding up to the left! Get to 60 N to log your observation.`);
     }
-  } else if ((labState.currentStep === 3 || labState.currentStep === 4) && labState.isSimRunning) {
+  } else if ((labState.currentStep === 3 || labState.currentStep === 4) && labState.isSimRunning && !labState.isObserving) {
     const diff = Math.abs(physicsState.rightForce - physicsState.leftForce);
     const confirmContainer = document.getElementById('balance-confirmation-container');
 
@@ -2511,13 +2673,20 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
 
   submitBtn.addEventListener('click', doSubmit);
 
-  document.getElementById('btn-initialize-sim').style.display = 'none';
-  document.getElementById('action-area').innerHTML = '';
+  // Wire the callback FIRST. Previously this ran AFTER a DOM lookup that could throw
+  // (btn-initialize-sim gets deleted the first time this function runs), which stranded
+  // observationCallback as null on the second call — the "Step 5 Enter does nothing" softlock.
   observationCallback = onSubmitCallback;
+  labState.isObserving = true;
+
+  const initBtn = document.getElementById('btn-initialize-sim');
+  if (initBtn) initBtn.style.display = 'none';
+  document.getElementById('action-area').innerHTML = '';
   input.focus();
 }
 
 function clearObservationPrompt() {
+  labState.isObserving = false;
   document.getElementById('observation-container').innerHTML = '';
   document.getElementById('action-area').innerHTML = '';
 }
@@ -2539,12 +2708,12 @@ function onStartExperiment() {
 }
 
 function onTriggerObservation1() {
-  labState.isSimRunning = false;
+  // Keep the simulation LIVE and UN-blurred so the student can actually watch the robot
+  // react while they write. Only lock the sliders so the moment they observed holds still.
   labState.currentStep = 2;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
 
   playStepTransition(3, STEP_LABELS[2], () => {
     updateStepNavigation(2);
@@ -2559,19 +2728,19 @@ function onTriggerObservation1() {
 
 function onObservation1Submitted() {
   clearObservationPrompt();
-  document.getElementById('valerie-overlay').classList.remove('active');
   document.getElementById('canvas-frame').classList.remove('glow');
 
   playStepTransition(4, STEP_LABELS[3], () => {
     labState.currentStep = 3;
-    labState.isSimRunning = true;
     physicsState.velocity = 0;
     physicsState.position = 0;
     document.getElementById('slider-left').disabled = false;
     document.getElementById('slider-right').disabled = false;
     updateStepNavigation(3);
     updateTelemetryDisplay();
-    runPhysicsTick();
+    // The physics loop has been running continuously since Start; only (re)start it if
+    // it somehow stopped, to avoid spawning a duplicate loop (which would double the speed).
+    if (!labState.isSimRunning) { labState.isSimRunning = true; runPhysicsTick(); }
   });
 }
 
@@ -2581,12 +2750,12 @@ function onConfirmEquilibrium() {
   labState.hasReachedSecondThreshold = true;
   labState.currentStep = 4;
 
-  labState.isSimRunning = false;
+  // Leave the sim LIVE and un-blurred; just lock the sliders so the balanced state holds
+  // on screen while the student records their discovery.
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('balance-confirmation-container').innerHTML = '';
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
 
   playStepTransition(5, STEP_LABELS[4], () => {
     updateStepNavigation(4); // Highlights Step 5: "Zero Net Force!" (0-indexed: 4)
@@ -2619,7 +2788,8 @@ function onObservation2Submitted() {
       </div>
     `;
 
-    document.getElementById('btn-initialize-sim').style.display = 'none';
+    const initBtn = document.getElementById('btn-initialize-sim');
+    if (initBtn) initBtn.style.display = 'none';
     const actionArea = document.getElementById('action-area');
     actionArea.innerHTML = `<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>`;
     document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
@@ -3166,9 +3336,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hypothesis Input & Submit
   const hypothesisInput = document.getElementById('hypothesis-input');
   const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
+  const hypothesisSpinner = document.getElementById('hypothesis-spinner');
 
   hypothesisInput.addEventListener('input', () => {
     hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+  });
+
+  // Clickable keyword chips — append word to hypothesis to cut typing friction
+  document.querySelectorAll('.vocab-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (hypothesisInput.disabled) return;
+      const word = chip.textContent.trim();
+      const needsSpace = hypothesisInput.value.length > 0 && !hypothesisInput.value.endsWith(' ');
+      hypothesisInput.value += (needsSpace ? ' ' : '') + word + ' ';
+      hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+      hypothesisInput.focus();
+    });
   });
 
   hypothesisInput.addEventListener('keydown', (e) => {
@@ -3184,6 +3367,8 @@ document.addEventListener('DOMContentLoaded', () => {
     labState.hypothesisText = hypothesisInput.value.trim();
     hypothesisSubmitBtn.disabled = true;
     hypothesisInput.disabled = true;
+    hypothesisSubmitBtn.textContent = 'Valerie is analyzing...';
+    if (hypothesisSpinner) hypothesisSpinner.classList.remove('hidden');
 
     const replies = [
       'Awesome prediction! 🤔 Let us test it in space and see what really happens.',
@@ -3192,28 +3377,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tutor-hypothesis-text').textContent = replies[Math.floor(Math.random() * replies.length)];
     document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
 
+    // Dummy AI thinking delay (ready for real backend later)
     setTimeout(() => {
+      if (hypothesisSpinner) hypothesisSpinner.classList.add('hidden');
       playStepTransition(1, STEP_LABELS[0], () => {
         transitionScreen('screen-hypothesis', 'screen-simulation');
         setTimeout(initSimulationLab, 400);
       });
-    }, 1800);
+    }, 1500);
   });
+
+  // Magnetic snap helper — lands near 60 become exactly 60 (fixes 58/61 soft-miss)
+  function magneticSnap60(value) {
+    const n = parseInt(value, 10);
+    if (n >= 57 && n <= 63) return 60;
+    return n;
+  }
 
   // Sliders and Nudge Buttons
   function onAdjustForce(thruster, delta) {
     if (thruster === 'left') {
       const slider = document.getElementById('slider-left');
       if (slider.disabled) return;
-      physicsState.leftForce = Math.max(0, Math.min(100, physicsState.leftForce + delta));
+      physicsState.leftForce = magneticSnap60(Math.max(0, Math.min(100, physicsState.leftForce + delta)));
+      slider.value = physicsState.leftForce;
     } else {
       const slider = document.getElementById('slider-right');
       if (slider.disabled) return;
-      physicsState.rightForce = Math.max(0, Math.min(100, physicsState.rightForce + delta));
+      physicsState.rightForce = magneticSnap60(Math.max(0, Math.min(100, physicsState.rightForce + delta)));
+      slider.value = physicsState.rightForce;
     }
     updateTelemetryDisplay();
 
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce === 60) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -3229,9 +3425,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-left').addEventListener('input', e => {
     if (document.getElementById('slider-left').disabled) return;
-    physicsState.leftForce = parseInt(e.target.value, 10);
+    const snapped = magneticSnap60(e.target.value);
+    physicsState.leftForce = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce >= 58) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && physicsState.leftForce === 60) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -3239,12 +3437,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-right').addEventListener('input', e => {
     if (document.getElementById('slider-right').disabled) return;
-    physicsState.rightForce = parseInt(e.target.value, 10);
+    const snapped = magneticSnap60(e.target.value);
+    physicsState.rightForce = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
   });
 
   // Action Button to Start Simulation
   document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
+
+  // Skip intro typewriter on any click (returning kids / impatient explorers)
+  document.getElementById('screen-intro').addEventListener('click', () => {
+    if (!storyTypingDone && storyCharIndex < STORY_TEXT.length) {
+      finishTypewriter();
+    }
+  });
 
   // Resize Listener for Canvas
   window.addEventListener('resize', () => {

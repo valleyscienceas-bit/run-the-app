@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Module 3009 — Biological Life Cycles & Reproductive Continuity | Valley Science</title>
+<title>Module 3009 — Life Cycles | Valley Science</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -87,6 +87,21 @@ body::before {
 @keyframes pulseEmerald {
   0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.35); }
   50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.7); }
+}
+
+@keyframes pulseSalmon {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(255, 122, 89, 0.45), 0 4px 18px rgba(255, 90, 54, 0.25);
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 140, 105, 0.85), 0 6px 24px rgba(255, 90, 54, 0.4);
+    transform: translateY(-1px) scale(1.015);
+  }
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
 }
 
 #version-tag {
@@ -425,6 +440,57 @@ body::before {
   font-style: italic;
 }
 
+/* Hypothesis keyword helper — nudges kids to use the unit's science words */
+.vocab-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 11px 14px;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px dashed rgba(56, 189, 248, 0.45);
+  border-radius: 12px;
+}
+.vocab-hint-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #7dd3fc;
+}
+.vocab-chip {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #06263a;
+  background: linear-gradient(135deg, #bae6fd, #38bdf8);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vocab-chip:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.55);
+}
+.vocab-chip:active {
+  transform: scale(0.97);
+}
+
+.ai-think-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(56, 189, 248, 0.25);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.ai-think-spinner.hidden {
+  display: none;
+}
+
 .tutor-speech-bubble {
   display: flex;
   align-items: flex-start;
@@ -506,6 +572,24 @@ body::before {
   background: rgba(11, 17, 30, 0.95);
   border-top: 1px solid rgba(56, 189, 248, 0.2);
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+}
+
+.btn-start-experiment {
+  width: 100%;
+  background: linear-gradient(135deg, #ff8c69 0%, #ff6b4a 45%, #ff5a36 100%) !important;
+  border: 1px solid rgba(255, 200, 170, 0.55) !important;
+  color: #1a0a06 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em;
+  animation: pulseSalmon 1.6s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(255, 122, 89, 0.5);
+}
+.btn-start-experiment:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .tutor-header {
@@ -1143,7 +1227,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
     <div class="transition-card">
       <div class="badge">NEXT STEP</div>
       <div class="transition-step-number" id="transition-step-number">STEP 2</div>
-      <div class="transition-step-label" id="transition-step-label">2. Biomass Growth</div>
+      <div class="transition-step-label" id="transition-step-label">2. Add Food & Water</div>
     </div>
   </div>
 </div>
@@ -1174,14 +1258,14 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 <div class="modal-overlay" id="modal-standards">
   <div class="modal-dialog">
     <span class="badge" style="margin-bottom:12px;display:inline-block">3.2.1</span>
-    <h2>Scientific Standards &amp; Vocabulary</h2>
+    <h2>What This Lab Covers</h2>
     <ul>
       <li><strong>Standard:</strong> Strand 2: Effects of Traits on Survival (3.2.1).</li>
-      <li><strong>Target Vocabulary:</strong> Life Cycle, Reproduction, Organism, Extinction.</li>
-      <li><strong>Core Directive:</strong> Rigorous academic terminology enforced across all Socratic interactions.</li>
+      <li><strong>Science words to try:</strong> life cycle, birth, grow, reproduce, organism.</li>
+      <li><strong>Goal:</strong> Change food/water and baby-making rate. Keep the population going.</li>
     </ul>
-    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah State Science with Engineering Education (SEEd) Standards.</p>
-    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Acknowledge</button>
+    <p style="color:#64748b;font-size:12px;margin-top:14px">Aligned to Utah SEEd Standards · written for ~age 10.</p>
+    <button class="btn-primary" id="btn-close-standards" style="margin-top:18px">Got it!</button>
   </div>
 </div>
 
@@ -1201,7 +1285,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
     <div class="tutor-dialog-body">
       <div class="tutor-chat-log" id="tutor-chat-history">
         <div class="chat-bubble tutor">
-          Greetings! I am Valerie, your Socratic science tutor. What empirical observations or questions do you have regarding Life Cycles? Remember to utilize Tier-2/Tier-3 academic vocabulary.
+          Hi! I'm Valerie, your science guide. What did you notice about Life Cycles? Try using words like: life cycle, birth, grow.
         </div>
       </div>
       <div class="tutor-chat-input-row">
@@ -1217,16 +1301,25 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 <div class="screen hidden" id="screen-hypothesis">
   <div class="hypothesis-container">
     <div class="card">
-      <div class="section-label">Scientific Investigation</div>
-      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Biological Life Cycles & Reproductive Continuity</h3>
-      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">Ecologists track amphibians and angiosperm flora across Great Salt Lake riparian wetlands, mapping the universal cyclical progression of birth, developmental growth, reproduction, and mortality.</p>
+      <div class="section-label">The Mystery</div>
+      <h3 style="font-size:20px;font-weight:900;color:#f8fafc;margin-bottom:8px">Life Cycles</h3>
+      <p style="color:#94a3b8;font-size:14.5px;line-height:1.7;font-weight:600">Living things are born, grow, can make babies, and eventually die. That loop is a life cycle.</p>
     </div>
     <div class="card">
-      <div class="section-label">Hypothesis Formulation</div>
-      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">What universal biological consequence occurs to a species population if environmental hazards disrupt the reproduction phase?</p>
-      <textarea class="text-input" id="hypothesis-input" placeholder="I hypothesize that if organisms fail to reach reproductive maturity, the population will..."></textarea>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Hypothesis →</button>
+      <div class="section-label">Your Prediction</div>
+      <p style="color:#cbd5e1;font-size:14.5px;margin-bottom:12px;font-weight:600">If animals never reproduce, what happens to the population over time?</p>
+      <textarea class="text-input" id="hypothesis-input" placeholder="I think the population will... because..."></textarea>
+      <div class="vocab-hint">
+        <span class="vocab-hint-label">💡 Try to use science words like:</span>
+        <span class="vocab-chip">life cycle</span>
+        <span class="vocab-chip">birth</span>
+        <span class="vocab-chip">grow</span>
+        <span class="vocab-chip">reproduce</span>
+        <span class="vocab-chip">organism</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px">
+        <div class="ai-think-spinner hidden" id="hypothesis-spinner" aria-hidden="true"></div>
+        <button class="btn-primary" id="btn-submit-hypothesis" disabled>Lock In Guess →</button>
       </div>
     </div>
     <div class="tutor-speech-bubble hidden" id="tutor-hypothesis-reply">
@@ -1237,7 +1330,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 </div>
 
 <!-- Simulation Screen (2:3 Ratio) -->
-<div id="version-tag">Module 3009 · V7 HYBRID</div>
+<div id="version-tag">Module 3009 · v8 KID FLOW</div>
 <div class="screen hidden" id="screen-simulation">
   <div id="valerie-overlay"></div>
 
@@ -1259,35 +1352,35 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
         
         <div class="step-item active" id="step-item-0">
           <div class="step-badge">1</div>
-          <div class="step-title">1. Germination & Birth</div>
+          <div class="step-title">1. Get Ready</div>
         </div>
         <div class="step-item " id="step-item-1">
           <div class="step-badge">2</div>
-          <div class="step-title">2. Biomass Growth</div>
+          <div class="step-title">2. Add Food & Water</div>
         </div>
         <div class="step-item " id="step-item-2">
           <div class="step-badge">3</div>
-          <div class="step-title">3. Reproductive Maturation</div>
+          <div class="step-title">3. What Happened?</div>
         </div>
         <div class="step-item " id="step-item-3">
           <div class="step-badge">4</div>
-          <div class="step-title">4. Seed Dispersal & Oviposition</div>
+          <div class="step-title">4. Change Baby Rate</div>
         </div>
         <div class="step-item " id="step-item-4">
           <div class="step-badge">5</div>
-          <div class="step-title">5. Generation Transition</div>
+          <div class="step-title">5. Population Check</div>
         </div>
         <div class="step-item " id="step-item-5">
           <div class="step-badge">6</div>
-          <div class="step-title">6. Biological Synthesis</div>
+          <div class="step-title">6. What You Learned</div>
         </div>
       </nav>
 
       <div class="telemetry-grid">
-        <div class="metric-card"><div class="metric-value" id="metric-val-1">0.0</div><div class="metric-label">Organism Population</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-val-2">0.00</div><div class="metric-label">Growth Velocity</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-val-3">0.00</div><div class="metric-label">Generational Turnover</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-val-4">0.00</div><div class="metric-label">Mortality Rate</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-1">0.0</div><div class="metric-label">Population</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-2">0.00</div><div class="metric-label">Babies Born</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-3">0.00</div><div class="metric-label">Growth Stage</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-val-4">0.00</div><div class="metric-label">Survival %</div></div>
       </div>
 
       <div id="observation-container"></div>
@@ -1295,7 +1388,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 
     <div class="sidebar-action">
       <div id="action-area">
-        <button class="btn-primary" style="width:100%" id="btn-initialize-sim">Start Experiment →</button>
+        <button class="btn-primary btn-start-experiment" id="btn-initialize-sim">Start Experiment →</button>
       </div>
     </div>
   </aside>
@@ -1315,7 +1408,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
         <!-- Left Control -->
         <div class="control-card left" id="card-ctrl-left">
           <div class="control-header">
-            <span class="control-title">Nutrient & Hydration Flux</span>
+            <span class="control-title">Food & Water</span>
             <span class="control-readout" id="readout-left">70 %</span>
           </div>
           <input type="range" class="slider-control" id="slider-left" min="10" max="100" value="70" step="1" disabled>
@@ -1329,7 +1422,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 
         <!-- Center Readout -->
         <div class="center-display">
-          <div class="center-label">Organism Population</div>
+          <div class="center-label">Population</div>
           <div class="center-value" id="chip-center-val">0.0 %</div>
           <div class="status-pill nominal" id="status-main-pill">NOMINAL</div>
           <div id="balance-confirmation-container" style="width:100%"></div>
@@ -1338,7 +1431,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
         <!-- Right Control -->
         <div class="control-card right" id="card-ctrl-right">
           <div class="control-header">
-            <span class="control-title">Reproductive Mating Rate</span>
+            <span class="control-title">Baby Rate</span>
             <span class="control-readout" id="readout-right">50 %</span>
           </div>
           <input type="range" class="slider-control" id="slider-right" min="0" max="100" value="50" step="1" disabled>
@@ -1358,8 +1451,8 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
 <div class="screen hidden" id="screen-video">
   <div class="video-container">
     <div class="section-label">Concept Deep-Dive</div>
-    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">The Universal Biological Progression of Life Cycles</h2>
-    <p style="font-size:14px;color:#94a3b8;font-weight:600">Tracing continuity from embryonic birth through developmental growth to reproductive renewal</p>
+    <h2 style="font-size:26px;font-weight:900;color:#f8fafc">The Life Cycle Loop</h2>
+    <p style="font-size:14px;color:#94a3b8;font-weight:600">Birth, growth, babies, death</p>
     <div class="video-player" id="video-player">
       <canvas id="video-canvas"></canvas>
       <div class="video-loading-screen" id="video-loading">
@@ -1404,7 +1497,7 @@ input[type=range].slider-control:disabled { opacity: 0.28; cursor: not-allowed; 
   <div class="results-container">
     <div class="results-header">
       <h2>EVALUATION COMPLETE</h2>
-      <p>Module 3009: Biological Life Cycles & Reproductive Continuity</p>
+      <p>Module 3009: Life Cycles</p>
     </div>
     <div class="score-ring-wrapper"><canvas id="score-ring-canvas" width="140" height="140"></canvas></div>
     <div class="results-breakdown-grid" id="results-feedback-grid"></div>
@@ -1443,6 +1536,7 @@ const labState = {
   valRight: 50,
   quizAnswers: [],
   isSimRunning: false,
+  isObserving: false,
   simAnimationId: null,
   introIconAnimationId: null,
   videoAnimationId: null,
@@ -1455,9 +1549,9 @@ const labState = {
   hasReachedSecondThreshold: false
 };
 
-const STEP_LABELS = ["1. Germination & Birth","2. Biomass Growth","3. Reproductive Maturation","4. Seed Dispersal & Oviposition","5. Generation Transition","6. Biological Synthesis"];
-const VIDEO_CAPTIONS = [{"start":0,"end":5,"text":"All living organisms undergo a repeating developmental life cycle."},{"start":5,"end":10,"text":"The universal sequence spans birth, growth, reproduction, and death."},{"start":10,"end":15,"text":"Plants develop roots and foliage from seeds; animals mature into adults."},{"start":15,"end":21,"text":"Reproduction ensures genetic transmission to subsequent generations."},{"start":21,"end":30,"text":"Failure to reproduce across successive generations results in biological extinction."}];
-const QUIZ_ITEMS = [{"question":"State the four universal sequential phases of an organism's life cycle and define the evolutionary significance of 'reproduction'.","hint":"Birth, growth, reproduction, death; reproduction transmits genetic traits and prevents extinction.","keywords":["life cycle","birth","growth","reproduction","death","organism"]},{"question":"How does the life cycle of an apple tree compare to that of an amphibian (frog), despite physical structural differences?","hint":"Both progress from embryonic seed/egg through vegetative/tadpole growth to reproductive adult.","keywords":["life cycle","plant","animal","reproduction","seed","egg"]},{"question":"What ecological catastrophe threatens an organism population if mortality rates permanently outpace reproductive output?","hint":"Declining carrying capacity terminating in species extinction.","keywords":["extinction","mortality","reproduction","population","survival","life cycle"]}];
+const STEP_LABELS = ["1. Get Ready","2. Add Food & Water","3. What Happened?","4. Change Baby Rate","5. Population Check","6. What You Learned"];
+const VIDEO_CAPTIONS = [{"start":0,"end":5,"text":"Every organism has a life cycle."},{"start":5,"end":10,"text":"Living things are born and grow."},{"start":10,"end":15,"text":"Many living things reproduce."},{"start":15,"end":21,"text":"Babies continue the cycle."},{"start":21,"end":30,"text":"Without babies, a group can disappear."}];
+const QUIZ_ITEMS = [{"question":"Name the main parts of a life cycle in order.","hint":"Start with birth.","keywords":["birth","grow","reproduce","death","life cycle"]},{"question":"Do plants and animals both have life cycles?","hint":"Seeds and eggs are starts of life.","keywords":["yes","plant","animal","life cycle","seed"]},{"question":"Why is reproduction important for a species?","hint":"Think about what happens if no babies are born.","keywords":["reproduce","babies","continue","survive","population"]}];
 
 let activeQuizIndex = 0;
 let observationCallback = null;
@@ -1505,7 +1599,8 @@ function initCosmicBackground() {
   render();
 }
 
-// 2-Second Cinematic Interstellar Transition
+// Rocket-Launch Step Transition (~1.7s) — smooth liftoff, no random glitch-shake
+let activeTransitionId = 0;
 function playStepTransition(stepNumber, stepTitle, onComplete) {
   const overlay = document.getElementById('step-transition-layer');
   const hud = document.getElementById('transition-hud');
@@ -1514,137 +1609,207 @@ function playStepTransition(stepNumber, stepTitle, onComplete) {
   const canvas = document.getElementById('transition-canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const transitionId = ++activeTransitionId;
+  let finished = false;
+
+  function finishTransition() {
+    if (finished || transitionId !== activeTransitionId) return;
+    finished = true;
+    hud.classList.remove('show');
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    overlay.style.transform = 'translate(0px, 0px)';
+    overlay.style.pointerEvents = '';
+    ctx.clearRect(0, 0, W, H);
+    if (onComplete) onComplete();
+  }
+
+  setTimeout(finishTransition, 2200);
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   numberText.textContent = "STEP " + stepNumber;
   labelText.textContent = stepTitle || ("Step " + stepNumber);
 
   overlay.classList.add('active');
-  hud.classList.add('show');
+  overlay.style.transform = 'translate(0px, 0px)';
+  hud.classList.remove('show');
 
+  const cx = W / 2;
+  const duration = 1700;
   const startTime = performance.now();
-  const duration = 2000;
 
-  const glints = [];
-  for (let i = 0; i < 36; i++) {
-    glints.push({
-      yRatio: Math.random(),
-      relOffset: (Math.random() - 0.5) * 200,
-      size: 1.5 + Math.random() * 3.5,
-      alpha: 0.4 + Math.random() * 0.6
+  const embers = [];
+  for (let i = 0; i < 80; i++) {
+    embers.push({
+      spread: (Math.random() - 0.5) * 130,
+      speed: 340 + Math.random() * 560,
+      size: 1.4 + Math.random() * 3.0,
+      delay: Math.random() * 0.32,
+      wobble: Math.random() * 6.28
+    });
+  }
+  const streaks = [];
+  for (let i = 0; i < 34; i++) {
+    streaks.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 40 + Math.random() * 150,
+      speed: 620 + Math.random() * 900,
+      alpha: 0.18 + Math.random() * 0.45
     });
   }
 
+  const easeInOutCubic = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
   function renderFrame(now) {
-    const elapsed = now - startTime;
-    const p = Math.min(elapsed / duration, 1);
+    const p = Math.min((now - startTime) / duration, 1);
+    ctx.clearRect(0, 0, W, H);
 
-    let ease;
-    if (p < 0.45) {
-      const t = p / 0.45;
-      ease = (t * t * (3 - 2 * t)) * 0.38;
-    } else if (p < 0.70) {
-      const t = (p - 0.45) / 0.25;
-      ease = 0.38 + (Math.sin(t * Math.PI * 0.5)) * 0.08;
-    } else {
-      const t = (p - 0.70) / 0.30;
-      ease = 0.46 + (t * t * t * t) * 0.54;
-    }
+    const rumble = p < 0.32 ? Math.sin(now * 0.045) * ((0.32 - p) / 0.32) * 5 : 0;
+    const dim = p < 0.72 ? p / 0.72 : 1 - (p - 0.72) / 0.28;
+    const vg = ctx.createRadialGradient(cx, H * 0.62, 40, cx, H * 0.62, Math.max(W, H) * 0.8);
+    vg.addColorStop(0, "rgba(10, 16, 30, " + (0.5 * dim) + ")");
+    vg.addColorStop(1, "rgba(4, 7, 15, " + (0.94 * dim) + ")");
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
 
-    if (p >= 0.68 && p <= 0.94) {
-      const shakeIntensity = Math.sin((p - 0.68) / 0.26 * Math.PI) * 5.5;
-      const sx = (Math.random() - 0.5) * shakeIntensity;
-      const sy = (Math.random() - 0.5) * shakeIntensity;
-      overlay.style.transform = "translate(" + sx.toFixed(1) + "px, " + sy.toFixed(1) + "px)";
-    } else {
-      overlay.style.transform = 'translate(0px, 0px)';
-    }
+    const baseA = p < 0.72 ? 1 : Math.max(0, 1 - (p - 0.72) / 0.28);
+    const climb = easeInOutCubic(Math.min(p / 0.85, 1));
+    const launchY = H * 0.72 - climb * H * 0.95;
+    const baseY = H * 0.72 + rumble;
 
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = 'lighter';
 
-    const waveFront = -300 + ease * (width + 650);
-    const waveWidth = 420;
-
-    ctx.save();
+    const glowR = 60 + Math.min(p / 0.32, 1) * 150;
+    const baseGlow = ctx.createRadialGradient(cx, baseY, 6, cx, baseY, glowR);
+    baseGlow.addColorStop(0, "rgba(255, 244, 214, " + (0.9 * baseA) + ")");
+    baseGlow.addColorStop(0.35, "rgba(255, 168, 72, " + (0.6 * baseA) + ")");
+    baseGlow.addColorStop(1, 'rgba(255, 120, 40, 0)');
+    ctx.fillStyle = baseGlow;
     ctx.beginPath();
-    ctx.moveTo(waveFront - waveWidth, 0);
-    for (let y = 0; y <= height; y += 20) {
-      const curve = Math.sin((y / height) * Math.PI * 2 + p * Math.PI * 1.5) * 55;
-      ctx.lineTo(waveFront + curve, y);
-    }
-    ctx.lineTo(waveFront - waveWidth - 80, height);
-    ctx.closePath();
-
-    const gradient = ctx.createLinearGradient(waveFront - waveWidth, 0, waveFront, 0);
-    gradient.addColorStop(0, 'rgba(15, 23, 42, 0)');
-    gradient.addColorStop(0.3, 'rgba(99, 102, 241, 0.40)');
-    gradient.addColorStop(0.65, 'rgba(56, 189, 248, 0.70)');
-    gradient.addColorStop(0.90, 'rgba(226, 232, 240, 0.70)');
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.90)');
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = '#38bdf8';
-    ctx.shadowBlur = 40;
+    ctx.arc(cx, baseY, glowR, 0, Math.PI * 2);
     ctx.fill();
 
-    for (let i = 0; i < glints.length; i++) {
-      const g = glints[i];
-      const gx = waveFront - 60 + g.relOffset;
-      const gy = g.yRatio * height;
-      if (gx > 0 && gx < width) {
-        ctx.save();
-        ctx.translate(gx, gy);
-        ctx.fillStyle = "rgba(255, 255, 255, " + (g.alpha * (1 - Math.abs(p - 0.55) * 1.6)) + ")";
+    for (const e of embers) {
+      const ep = (p - e.delay) / (1 - e.delay);
+      if (ep <= 0) continue;
+      const dist = ep * e.speed * 1.5;
+      const x = cx + e.spread * (1 - ep * 0.4) + Math.sin(e.wobble + now * 0.004) * 9;
+      const y = H * 0.74 - dist + rumble;
+      const trail = 10 + ep * 78;
+      const a = Math.max(0, 1 - ep) * baseA;
+      const col = ep < 0.5
+        ? "rgba(255, " + (170 + Math.round(ep * 130)) + ", " + (90 + Math.round(ep * 130)) + ", " + a + ")"
+        : "rgba(" + Math.round(210 - (ep - 0.5) * 170) + ", 235, 255, " + a + ")";
+      const g = ctx.createLinearGradient(x, y, x, y + trail);
+      g.addColorStop(0, col);
+      g.addColorStop(1, 'rgba(120, 180, 255, 0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = e.size;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + trail);
+      ctx.stroke();
+    }
+
+    if (p < 0.92) {
+      const core = ctx.createRadialGradient(cx, launchY, 2, cx, launchY, 44);
+      core.addColorStop(0, "rgba(255, 255, 255, " + (baseA * 0.95) + ")");
+      core.addColorStop(0.5, "rgba(125, 211, 252, " + (baseA * 0.8) + ")");
+      core.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, launchY, 44, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (p > 0.5) {
+      const wp = (p - 0.5) / 0.5;
+      for (const s of streaks) {
+        let y = (s.y - wp * s.speed * 1.2) % H;
+        if (y < 0) y += H;
+        const len = s.len * (0.4 + wp * 1.6);
+        const g = ctx.createLinearGradient(s.x, y, s.x, y + len);
+        g.addColorStop(0, 'rgba(226, 240, 255, 0)');
+        g.addColorStop(0.5, "rgba(186, 230, 253, " + (s.alpha * wp) + ")");
+        g.addColorStop(1, 'rgba(226, 240, 255, 0)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.arc(0, 0, g.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(56, 189, 248, " + (g.alpha * 0.8) + ")";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(-g.size * 2.8, 0); ctx.lineTo(g.size * 2.8, 0);
-        ctx.moveTo(0, -g.size * 2.8); ctx.lineTo(0, g.size * 2.8);
+        ctx.moveTo(s.x, y);
+        ctx.lineTo(s.x, y + len);
         ctx.stroke();
-        ctx.restore();
       }
     }
-    ctx.restore();
+
+    if (p > 0.82) {
+      const fp = (p - 0.82) / 0.18;
+      ctx.fillStyle = "rgba(240, 248, 255, " + (Math.sin(fp * Math.PI) * 0.45) + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+    if (p > 0.26 && !hud.classList.contains('show')) hud.classList.add('show');
 
     if (p < 1) {
-      requestAnimationFrame(renderFrame);
+      if (transitionId === activeTransitionId && !finished) requestAnimationFrame(renderFrame);
     } else {
-      hud.classList.remove('show');
-      overlay.classList.remove('active');
-      overlay.style.transform = 'translate(0px, 0px)';
-      ctx.clearRect(0, 0, width, height);
-      if (onComplete) onComplete();
+      finishTransition();
     }
   }
+
   requestAnimationFrame(renderFrame);
 }
 
 // Typing Intro
-const STORY_TEXT = "INCIDENT BRIEFING: Ecologists track amphibians and angiosperm flora across Great Salt Lake riparian wetlands, mapping the universal cyclical progression of birth, developmental growth, reproduction, and mortality.\n\nMission Objective: Model developmental progression and gamete pollination to maintain population carrying capacity across generations. Enforce target academic vocabulary: Life Cycle, Reproduction, Organism, Extinction.";
+const STORY_TEXT = "MISSION BRIEFING: Living things are born, grow, can make babies, and eventually die. That loop is a life cycle.\\n\\nYour job: Change food/water and baby-making rate. Keep the population going.";
 let storyCharIndex = 0;
+let storyTypeTimer = null;
+let storyTypingDone = false;
+
+function showLaunchButton() {
+  const launchButton = document.getElementById('btn-start-intro');
+  if (!launchButton) return;
+  launchButton.style.opacity = '1';
+  launchButton.style.pointerEvents = 'all';
+  launchButton.style.transform = 'translateY(0)';
+  const cursor = document.getElementById('cursor-blink');
+  if (cursor) cursor.style.display = 'none';
+}
+
+function finishTypewriter() {
+  if (storyTypingDone) return;
+  storyTypingDone = true;
+  if (storyTypeTimer) {
+    clearTimeout(storyTypeTimer);
+    storyTypeTimer = null;
+  }
+  storyCharIndex = STORY_TEXT.length;
+  const container = document.getElementById('story-text');
+  if (container) {
+    container.innerHTML = STORY_TEXT.replace(/\n/g, '<br>');
+  }
+  showLaunchButton();
+}
 
 function runTypewriter() {
   const container = document.getElementById('story-text');
-  if (!container) return;
+  if (!container || storyTypingDone) return;
   if (storyCharIndex < STORY_TEXT.length) {
     const char = STORY_TEXT.charAt(storyCharIndex);
     container.innerHTML += char === '\n' ? '<br>' : char;
     storyCharIndex++;
-    setTimeout(runTypewriter, 12);
+    storyTypeTimer = setTimeout(runTypewriter, 12);
   } else {
-    setTimeout(() => {
-      const launchButton = document.getElementById('btn-start-intro');
-      launchButton.style.opacity = '1';
-      launchButton.style.pointerEvents = 'all';
-      launchButton.style.transform = 'translateY(0)';
-      document.getElementById('cursor-blink').style.display = 'none';
-    }, 250);
+    storyTypingDone = true;
+    storyTypeTimer = setTimeout(showLaunchButton, 250);
   }
 }
 
@@ -1682,7 +1847,7 @@ function initIntroIcon() {
     ctx.fillText("3.2.1", cx, cy + floatBob - 6);
     ctx.fillStyle = '#a7f3d0';
     ctx.font = '9px "JetBrains Mono", monospace';
-    ctx.fillText("Life Cycle", cx, cy + floatBob + 10);
+    ctx.fillText("life cycle", cx, cy + floatBob + 10);
 
     frame++;
     labState.introIconAnimationId = requestAnimationFrame(render);
@@ -1797,10 +1962,10 @@ function drawSimCanvas(ctx, [width, height]) {
 
   ctx.fillStyle = '#38bdf8';
   ctx.font = '11px "JetBrains Mono", monospace';
-  ctx.fillText("Life Cycle: " + labState.valLeft + " %", cx, cy + bob + 10);
+  ctx.fillText("life cycle: " + labState.valLeft + " %", cx, cy + bob + 10);
 
   ctx.fillStyle = '#f59e0b';
-  ctx.fillText("Reproduction: " + labState.valRight + " %", cx, cy + bob + 24);
+  ctx.fillText("birth: " + labState.valRight + " %", cx, cy + bob + 24);
 
   ctx.resetTransform();
 }
@@ -1830,11 +1995,11 @@ function updateTelemetryDisplay() {
 
   // Dynamic Tutor Messages with Vocabulary Enforcement
   if (labState.currentStep === 1 && labState.isSimRunning) {
-    setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>Nutrient & Hydration Flux</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
+    setTutorMessage("<strong>Active Step 2: Scientific Parameter Adjustment</strong><br><br>Adjust the <strong>Food & Water</strong> to alter the system's baseline. Observe the dynamic response in telemetry!");
   } else if (labState.currentStep === 3 && labState.isSimRunning) {
     const confirmContainer = document.getElementById('balance-confirmation-container');
     if (Math.abs(derivedMetric) <= 2) {
-      setTutorMessage("<strong>Target Equilibrium Achieved!</strong><br><br>Notice how balancing <em>Life Cycle</em> and <em>Reproduction</em> stabilizes the system. Click <strong>Confirm Finding</strong> to log empirical evidence!");
+      setTutorMessage("<strong>Nice balance!</strong><br><br>You got <em>life cycle</em> and <em>birth</em> working together. Click <strong>Confirm Finding</strong>!");
       if (!document.getElementById('btn-confirm-balance')) {
         confirmContainer.innerHTML = '<button class="btn-confirm-action" id="btn-confirm-balance">CONFIRM FINDING →</button>';
         document.getElementById('btn-confirm-balance').addEventListener('click', onConfirmStep3);
@@ -1868,7 +2033,7 @@ function initSimulationLab() {
   labState.valLeft = 70;
   labState.valRight = 50;
 
-  setTutorMessage("<strong>Welcome to Module 3009: Life Cycles!</strong><br><br>Utilize the controllers below to test how <strong>Life Cycle</strong> interacts with <strong>Reproduction</strong>. Click <strong>Start Experiment</strong> to launch live data acquisition!");
+  setTutorMessage("<strong>Welcome to Module 3009: Life Cycles!</strong><br><br>Use the two sliders below. Watch what changes. Click <strong>Start Experiment</strong> when you are ready!");
   updateStepNavigation(0);
   document.getElementById('btn-initialize-sim').style.display = 'block';
   document.getElementById('valerie-overlay').classList.remove('active');
@@ -1884,7 +2049,7 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
     <div class="observation-panel">
       <div class="section-label">${label}</div>
       <div class="observation-prompt">${promptText}</div>
-      <textarea class="observation-textarea" id="observation-input" placeholder="Type your answer using target terms: ${"Life Cycle, Reproduction"} (Press Enter to submit)..."></textarea>
+      <textarea class="observation-textarea" id="observation-input" placeholder="Type your thoughts here (Press Enter to submit)..."></textarea>
       <button class="btn-primary" style="width:100%" id="btn-submit-observation" disabled>Submit Answer →</button>
     </div>
   `;
@@ -1915,13 +2080,19 @@ function showObservationPrompt(label, promptText, onSubmitCallback) {
   });
 
   submitBtn.addEventListener('click', doSubmit);
-  document.getElementById('btn-initialize-sim').style.display = 'none';
-  document.getElementById('action-area').innerHTML = '';
+
+  // Wire callback FIRST — looking up a deleted Start button used to throw and softlock Step 5.
   observationCallback = onSubmitCallback;
+  labState.isObserving = true;
+
+  const initBtn = document.getElementById('btn-initialize-sim');
+  if (initBtn) initBtn.style.display = 'none';
+  document.getElementById('action-area').innerHTML = '';
   input.focus();
 }
 
 function clearObservationPrompt() {
+  labState.isObserving = false;
   document.getElementById('observation-container').innerHTML = '';
   document.getElementById('action-area').innerHTML = '';
 }
@@ -1937,25 +2108,25 @@ function onStartExperiment() {
     labState.isSimRunning = true;
     document.getElementById('slider-left').disabled = false;
     updateStepNavigation(1);
-    setTutorMessage("<strong>Active Step 2: System Activation</strong><br><br>Adjust the left control slider past 60 to induce initial dynamic variance. Observe the telemetry!");
+    setTutorMessage("<strong>Step 2: Feed them!</strong><br><br>Raise <strong>Food & Water</strong>. Watch them grow.");
     runPhysicsTick();
   });
 }
 
 function onTriggerObservation1() {
-  labState.isSimRunning = false;
+  // Keep sim LIVE and un-blurred so kids can watch while writing
   labState.currentStep = 2;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
+  document.getElementById('valerie-overlay').classList.remove('active');
 
   playStepTransition(3, STEP_LABELS[2], () => {
     updateStepNavigation(2);
-    setTutorMessage("<strong>Data Recorded: Observation 1</strong><br><br>The initial parameter shift generated measurable variation. Formulate your observation below utilizing academic terminology.");
+    setTutorMessage("<strong>Growing!</strong><br><br>Write what you noticed. Keep watching.");
     showObservationPrompt(
       'Observation 1',
-      "Describe how altering the initial parameter influenced the physical state of the system, referencing <em>Life Cycle</em>.",
+      "You changed food and water. What happened to the living things?",
       onObservation1Submitted
     );
   });
@@ -1968,31 +2139,29 @@ function onObservation1Submitted() {
 
   playStepTransition(4, STEP_LABELS[3], () => {
     labState.currentStep = 3;
-    labState.isSimRunning = true;
     document.getElementById('slider-left').disabled = false;
     document.getElementById('slider-right').disabled = false;
     updateStepNavigation(3);
     updateTelemetryDisplay();
-    runPhysicsTick();
+    if (!labState.isSimRunning) { labState.isSimRunning = true; runPhysicsTick(); }
   });
 }
 
 function onConfirmStep3() {
   labState.hasReachedSecondThreshold = true;
   labState.currentStep = 4;
-  labState.isSimRunning = false;
   document.getElementById('slider-left').disabled = true;
   document.getElementById('slider-right').disabled = true;
   document.getElementById('balance-confirmation-container').innerHTML = '';
   document.getElementById('canvas-frame').classList.add('glow');
-  document.getElementById('valerie-overlay').classList.add('active');
+  document.getElementById('valerie-overlay').classList.remove('active');
 
   playStepTransition(5, STEP_LABELS[4], () => {
     updateStepNavigation(4);
-    setTutorMessage("<strong>Discovery Confirmed!</strong><br><br>System parameters have stabilized. Synthesize your scientific findings in the discovery log.");
+    setTutorMessage("<strong>Population check!</strong><br><br>Write how the life cycle kept going — or stalled.");
     showObservationPrompt(
       'Discovery Log',
-      "Document how environmental nutrient availability accelerates the transition from developmental growth to reproductive viability.",
+      "How did food/water and baby rate change the population?",
       onObservation2Submitted
     );
   });
@@ -2009,17 +2178,18 @@ function onObservation2Submitted() {
 
     document.getElementById('observation-container').innerHTML = `
       <div class="summary-card">
-        <div class="summary-heading">Empirical Synthesis</div>
-        ${"Every organism follows the invariant cycle of birth, growth, reproduction, and death; reproductive success is mandatory to avert species extinction."}
+        <div class="summary-heading">What You Learned</div>
+        ${"Life cycles keep species going: birth, growth, reproduction, and death."}
       </div>
     `;
 
-    document.getElementById('btn-initialize-sim').style.display = 'none';
+    const initBtn = document.getElementById('btn-initialize-sim');
+    if (initBtn) initBtn.style.display = 'none';
     const actionArea = document.getElementById('action-area');
     actionArea.innerHTML = '<button class="btn-primary" style="width:100%" id="btn-proceed-to-video">Watch Concept Video →</button>';
     document.getElementById('btn-proceed-to-video').addEventListener('click', onProceedToVideo);
 
-    setTutorMessage("<strong>Investigation Complete!</strong><br><br>You verified foundational principles of Life Cycles. Proceed to the concept deep-dive!");
+    setTutorMessage("<strong>Life cycle pro!</strong><br><br>You saw how birth and babies keep life going.");
   });
 }
 
@@ -2216,7 +2386,7 @@ function buildResultsSummary() {
     const card = document.createElement('div');
     card.className = 'feedback-card review';
     card.innerHTML = '<div class="feedback-card-heading">[ Vocabulary Expansion Needed ]</div>' +
-      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Integrate required terms: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
+      reviewAreas.map(r => '<p>• Question ' + (r.index + 1) + ': Try using words like: <em>' + QUIZ_ITEMS[r.index].keywords.slice(0, 3).join(', ') + '</em></p>').join('');
     grid.appendChild(card);
   }
 
@@ -2224,7 +2394,7 @@ function buildResultsSummary() {
     ? "Exemplary Scientific Mastery: " + scorePercentage + "%! You fluently demonstrated academic vocabulary and conceptual mastery of Life Cycles."
     : scorePercentage >= 55
     ? "Proficient Scientific Performance: " + scorePercentage + "%. Sound conceptual grasp. Continue pairing descriptive ideas with Tier-2/Tier-3 terms."
-    : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: Life Cycle, Reproduction, Organism, Extinction.";
+    : "Emerging Competency: " + scorePercentage + "%. Reinforce target vocabulary: life cycle, birth, grow, reproduce, organism.";
 
   document.getElementById('tutor-final-summary').textContent = finalSummaryText;
 }
@@ -2333,7 +2503,7 @@ const valerieAI = {
   async callTutorAPI(userMessage) {
     return {
       success: false,
-      reply: "Valerie Socratic Tutor is analyzing your query on Life Cycles. Remember to cite: Life Cycle and Reproduction."
+      reply: "Valerie Socratic Tutor is analyzing your query on Life Cycles. Remember to cite: life cycle and birth."
     };
   }
 };
@@ -2388,7 +2558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       const resp = document.createElement('div');
       resp.className = 'chat-bubble tutor';
-      resp.textContent = "Socratic guidance: Have you verified the behavior of Life Cycle in your telemetry readings?";
+      resp.textContent = "Socratic guidance: Have you verified the behavior of life cycle in your telemetry readings?";
       tutorChatHistory.appendChild(resp);
       tutorChatHistory.scrollTop = tutorChatHistory.scrollHeight;
     }, 400);
@@ -2402,9 +2572,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hypothesis Submission
   const hypothesisInput = document.getElementById('hypothesis-input');
   const hypothesisSubmitBtn = document.getElementById('btn-submit-hypothesis');
+  const hypothesisSpinner = document.getElementById('hypothesis-spinner');
 
   hypothesisInput.addEventListener('input', () => {
     hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+  });
+
+  document.querySelectorAll('.vocab-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (hypothesisInput.disabled) return;
+      const word = chip.textContent.trim();
+      const needsSpace = hypothesisInput.value.length > 0 && !hypothesisInput.value.endsWith(' ');
+      hypothesisInput.value += (needsSpace ? ' ' : '') + word + ' ';
+      hypothesisSubmitBtn.disabled = hypothesisInput.value.trim().length === 0;
+      hypothesisInput.focus();
+    });
   });
 
   hypothesisInput.addEventListener('keydown', (e) => {
@@ -2418,31 +2600,45 @@ document.addEventListener('DOMContentLoaded', () => {
     labState.hypothesisText = hypothesisInput.value.trim();
     hypothesisSubmitBtn.disabled = true;
     hypothesisInput.disabled = true;
+    hypothesisSubmitBtn.textContent = 'Valerie is analyzing...';
+    if (hypothesisSpinner) hypothesisSpinner.classList.remove('hidden');
 
-    document.getElementById('tutor-hypothesis-text').textContent = "Hypothesis registered. Initiating empirical parameter testing in simulation environment...";
+    document.getElementById('tutor-hypothesis-text').textContent = "Awesome guess! Let's test it in the lab...";
     document.getElementById('tutor-hypothesis-reply').classList.remove('hidden');
 
     setTimeout(() => {
+      if (hypothesisSpinner) hypothesisSpinner.classList.add('hidden');
       playStepTransition(1, STEP_LABELS[0], () => {
         transitionScreen('screen-hypothesis', 'screen-simulation');
         setTimeout(initSimulationLab, 400);
       });
-    }, 1600);
+    }, 1500);
   });
+
+  const FIRST_SLIDER_TARGET = 60;
+
+  function magneticSnap60(value) {
+    const n = parseFloat(value);
+    // Magnetic snap window around the step-2 target (fixes soft-miss like 58/61 when target is 60)
+    if (n >= FIRST_SLIDER_TARGET - 3 && n <= FIRST_SLIDER_TARGET + 3) return FIRST_SLIDER_TARGET;
+    return n;
+  }
 
   // Controls & Nudge
   function adjustChannel(channel, delta) {
     if (channel === 'left') {
       const s = document.getElementById('slider-left');
       if (s.disabled) return;
-      labState.valLeft = Math.max(10, Math.min(100, labState.valLeft + delta));
+      labState.valLeft = magneticSnap60(Math.max(10, Math.min(100, labState.valLeft + delta)));
+      s.value = labState.valLeft;
     } else {
       const s = document.getElementById('slider-right');
       if (s.disabled) return;
-      labState.valRight = Math.max(0, Math.min(100, labState.valRight + delta));
+      labState.valRight = magneticSnap60(Math.max(0, Math.min(100, labState.valRight + delta)));
+      s.value = labState.valRight;
     }
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft === FIRST_SLIDER_TARGET) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2458,9 +2654,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-left').addEventListener('input', (e) => {
     if (document.getElementById('slider-left').disabled) return;
-    labState.valLeft = parseFloat(e.target.value);
+    const snapped = magneticSnap60(e.target.value);
+    labState.valLeft = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
-    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft >= 55) {
+    if (labState.currentStep === 1 && !labState.hasReachedFirstThreshold && labState.valLeft === FIRST_SLIDER_TARGET) {
       labState.hasReachedFirstThreshold = true;
       onTriggerObservation1();
     }
@@ -2468,11 +2666,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('slider-right').addEventListener('input', (e) => {
     if (document.getElementById('slider-right').disabled) return;
-    labState.valRight = parseFloat(e.target.value);
+    const snapped = magneticSnap60(e.target.value);
+    labState.valRight = snapped;
+    e.target.value = snapped;
     updateTelemetryDisplay();
   });
 
   document.getElementById('btn-initialize-sim').addEventListener('click', onStartExperiment);
+
+  document.getElementById('screen-intro').addEventListener('click', () => {
+    if (!storyTypingDone && storyCharIndex < STORY_TEXT.length) {
+      finishTypewriter();
+    }
+  });
 
   window.addEventListener('resize', () => {
     const canvas = document.getElementById('sim-canvas');
@@ -2530,7 +2736,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-finish-module').addEventListener('click', () => {
     [labState.introIconAnimationId, labState.simAnimationId, labState.videoAnimationId, labState.celebrationAnimationId, labState.backgroundDustAnimationId]
       .forEach(id => id && cancelAnimationFrame(id));
-    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Completed!</div><div style="color:#94a3b8;font-size:16px;font-family:monospace">All empirical data and lexical scores logged.</div></div>';
+    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#080c15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Nunito,sans-serif"><div style="font-size:32px;color:#38bdf8;font-weight:900">Module ' + labState.moduleId + ' Complete!</div><div style="color:#94a3b8;font-size:16px">You finished the lab. Nice work, scientist!</div></div>';
   });
 });
 </script>
