@@ -197,4 +197,51 @@ describe("provisionParentForStudent", () => {
       })
     );
   });
+
+  it("does not send a second welcome email when parent Auth already exists", async () => {
+    const { auth } = createMockAuth({
+      existingEmail: "parent@home.com",
+      existingUid: "auth_existing",
+    });
+    const { db, store } = createMockFirestore({
+      "users/auth_existing": {
+        role: "parent",
+        email: "parent@home.com",
+        hasLoggedInBefore: false,
+        welcomeEmailSentAt: "2026-01-01T00:00:00.000Z",
+        linkedStudentUids: ["student_old"],
+      },
+    });
+
+    await provisionParentForStudent(auth, db, sendEmail, {
+      studentUid: "student_new",
+      studentName: "Sam",
+      parentEmail: "parent@home.com",
+      path: "individual",
+      sendWelcomeEmail: true,
+    });
+
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(store.get("users/auth_existing")?.linkedStudentUids).toEqual(
+      expect.arrayContaining(["student_old", "student_new"])
+    );
+  });
+
+  it("rejects weak initial passwords with the same rules as signup", async () => {
+    const { auth } = createMockAuth();
+    const { db } = createMockFirestore();
+
+    await expect(
+      provisionParentForStudent(auth, db, sendEmail, {
+        studentUid: "student_pw",
+        parentEmail: "parent@example.com",
+        path: "district",
+        districtId: "lasd",
+        initialPassword: "short",
+        sendWelcomeEmail: false,
+      })
+    ).rejects.toThrow(/8 characters/);
+
+    expect(auth.createUser).not.toHaveBeenCalled();
+  });
 });

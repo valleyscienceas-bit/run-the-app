@@ -385,16 +385,23 @@ export default function App() {
     }
 
     // 2. Dual-Provisioning: Create Parent Account via backend (Admin SDK)
-    if (updatedProfile.parentEmail) {
+    // Welcome email is sent at signup; payment only ensures the link exists.
+    if (updatedProfile.parentEmail && user) {
       try {
+        const idToken = await user.getIdToken();
         await fetch('/api/provision-parent', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
           body: JSON.stringify({
             studentUid: updatedProfile.uid,
             studentName: updatedProfile.name,
             parentEmail: updatedProfile.parentEmail,
-            studentGrade: updatedProfile.grade
+            studentGrade: updatedProfile.grade,
+            path: 'individual',
+            sendWelcomeEmail: false,
           })
         });
         console.log(`[DUAL-PROVISIONING] Parent provisioned for ${updatedProfile.parentEmail}`);

@@ -2,7 +2,6 @@ import express, { type Request, type Response } from "express";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
 import { getFirestore, type DocumentSnapshot } from "firebase-admin/firestore";
@@ -42,6 +41,11 @@ import {
   authorizeDistrictParentLink,
   unlinkStudentFromParent,
 } from "./lib/linkDistrictParent.js";
+import {
+  createMailTransporter,
+  explainSmtpFailure,
+  readSmtpConfig,
+} from "./lib/smtp.js";
 import {
   SANDBOX_VERSION,
   SANDBOX_TEACHER_EMAIL,
@@ -116,18 +120,7 @@ async function verifyAuthHeader(req: Request): Promise<AuthUser | null> {
   }
 }
 
-async function getMailTransporter() {
-  return nodemailer.createTransport({
-    service: process.env.SMTP_SERVICE,
-    host: process.env.SMTP_HOST || "smtp.ethereal.email",
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === "true" || Number(process.env.SMTP_PORT) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    tls: { rejectUnauthorized: false }
-  });
-}
-
-type EmailSendResult = { sent: boolean; simulated: boolean; error?: string };
+type EmailSendResult = { sent: boolean; simulated: boolean; error?: string; hint?: string };
 
 async function sendValleyScienceEmail(opts: {
   to: string;
@@ -145,16 +138,17 @@ async function sendValleyScienceEmail(opts: {
     return { sent: false, simulated: false, error: "missing recipient" };
   }
 
-  if (!process.env.SMTP_USER) {
+  const smtp = readSmtpConfig();
+  if (!smtp) {
     console.log(`[EMAIL] NOT SENT to ${to} | reason: no SMTP configured | subject: ${opts.subject} | context: ${context}`);
     if (opts.text) console.log(`[EMAIL] Body (dev): ${opts.text}`);
     return { sent: false, simulated: true };
   }
 
   try {
-    const transporter = await getMailTransporter();
+    const transporter = createMailTransporter(smtp);
     const info = await transporter.sendMail({
-      from: `"Valley Science" <${process.env.SMTP_USER}>`,
+      from: `"Valley Science" <${smtp.user}>`,
       to,
       subject: opts.subject,
       text: opts.text,
@@ -164,8 +158,10 @@ async function sendValleyScienceEmail(opts: {
     console.log(`[EMAIL] SENT to ${to} | subject: ${opts.subject} | context: ${context} | messageId: ${info.messageId || "n/a"}`);
     return { sent: true, simulated: false };
   } catch (err: any) {
+    const hint = explainSmtpFailure(err.message || String(err));
     console.error(`[EMAIL] FAILED to ${to} | subject: ${opts.subject} | context: ${context} | error: ${err.message}`);
-    return { sent: false, simulated: false, error: err.message };
+    console.error(`[EMAIL] HINT: ${hint}`);
+    return { sent: false, simulated: false, error: err.message, hint };
   }
 }
 
@@ -362,10 +358,17 @@ async function startServer() {
       }
 
       const accountEmail = await resolveAuthEmail(authUser);
+      const profile = profileSnap.data();
+      const personLabel =
+        (typeof profile?.name === "string" && profile.name.trim()) ||
+        (typeof profile?.username === "string" && profile.username.trim()) ||
+        accountEmail ||
+        profile?.email ||
+        authUser.uid;
       const secret = generateSecret();
       const otpauthUrl = generateURI({
         issuer: "Valley Science",
-        label: accountEmail || profileSnap.data()?.email || authUser.uid,
+        label: personLabel,
         secret,
         strategy: "totp"
       });
@@ -640,19 +643,48 @@ async function startServer() {
   // CREATE USER PROFILE ROUTE (Admin SDK bypasses Firestore rules)
   // ==========================================
   app.post("/api/create-profile", async (req, res) => {
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
     const { uid, profile } = req.body;
 
     if (!uid || !profile) {
       return res.status(400).json({ error: "uid and profile are required" });
     }
+    if (uid !== authUser.uid) {
+      return res.status(403).json({ error: "Cannot create a profile for another user" });
+    }
 
     try {
-      if (profile.role === 'parent') {
-        return res.status(403).json({ error: "Parent profiles cannot be created via this endpoint. Parent accounts are provisioned automatically when a student signs up." });
+      if (profile.role === "parent") {
+        return res.status(403).json({
+          error:
+            "Parent profiles cannot be created via this endpoint. Parent accounts are provisioned automatically when a student signs up.",
+        });
       }
-      await adminDb.collection("users").doc(uid).set(profile);
-      await syncAuthUserRoleLabels(adminAuth, uid, profile.role, profile.name);
-      res.json({ success: true });
+
+      const role = profile.role === "teacher" ? "teacher" : "student";
+      const safeProfile = {
+        uid: authUser.uid,
+        name: String(profile.name || "").slice(0, 120),
+        username: String(profile.username || "").slice(0, 80),
+        email: (authUser.email || String(profile.email || "")).toLowerCase(),
+        parentEmail: profile.parentEmail ? String(profile.parentEmail).toLowerCase().slice(0, 200) : "",
+        role,
+        path: profile.path === "district" ? "district" : "individual",
+        grade: profile.grade || null,
+        xp: 0,
+        isFirstTime: true,
+        isPaid: false,
+        hasLoggedInBefore: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      await adminDb.collection("users").doc(authUser.uid).set(safeProfile, { merge: true });
+      await syncAuthUserRoleLabels(adminAuth, authUser.uid, safeProfile.role, safeProfile.name);
+      res.json({ success: true, profile: safeProfile });
     } catch (error: any) {
       console.error("Create profile error:", error);
       res.status(500).json({ error: error.message });
@@ -663,10 +695,18 @@ async function startServer() {
   // PROVISION PARENT ACCOUNT ROUTE
   // ==========================================
   app.post("/api/provision-parent", async (req, res) => {
-    const { studentUid, studentName, parentEmail, studentGrade, path, districtId } = req.body;
+    const authUser = await verifyAuthHeader(req);
+    if (!authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const { studentUid, studentName, parentEmail, studentGrade, path, districtId, sendWelcomeEmail } = req.body;
 
     if (!studentUid || !parentEmail) {
       return res.status(400).json({ error: "studentUid and parentEmail are required" });
+    }
+    if (studentUid !== authUser.uid) {
+      return res.status(403).json({ error: "Students can only provision a parent for their own account" });
     }
 
     try {
@@ -678,9 +718,18 @@ async function startServer() {
         studentGrade,
         path: accessPath,
         districtId: accessPath === "district" ? districtId : undefined,
+        sendWelcomeEmail: sendWelcomeEmail !== false,
       });
       console.log(`[PROVISION] Created/updated parent profile at Auth UID: ${result.parentUid}`);
-      res.json({ success: true, parentDocId: result.parentDocId, parentUid: result.parentUid });
+      res.json({
+        success: true,
+        parentDocId: result.parentDocId,
+        parentUid: result.parentUid,
+        emailSent: result.emailSent ?? false,
+        emailSimulated: result.emailSimulated ?? false,
+        emailError: result.emailError || null,
+        emailHint: result.emailHint || null,
+      });
     } catch (error: any) {
       console.error("Parent provisioning error:", error);
       res.status(500).json({ error: error.message });
