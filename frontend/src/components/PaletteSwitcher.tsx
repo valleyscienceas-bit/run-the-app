@@ -36,12 +36,13 @@ export function PaletteSwitcher() {
     <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2 font-sans">
       {open && (
         <div
-          className="w-[min(22rem,calc(100vw-2rem))] max-h-[70vh] overflow-y-auto rounded-xl border p-3 shadow-xl"
+          className="w-[min(22rem,calc(100vw-2rem))] max-h-[70vh] overflow-y-auto border p-3"
           style={{
             background: 'var(--vs-surface, #fff)',
             borderColor: 'var(--vs-border, #e5e7eb)',
             color: 'var(--vs-text, #111827)',
             boxShadow: 'var(--vs-shadow, 0 10px 30px rgba(0,0,0,0.12))',
+            borderRadius: 'var(--vs-radius-card, 8px)',
           }}
         >
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider opacity-60">

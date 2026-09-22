@@ -22,4 +22,19 @@ describe('paletteThemes', () => {
     expect(isPaletteId('nope')).toBe(false);
     expect(getPalette(DEFAULT_PALETTE_ID).name).toContain('Linear');
   });
+
+  it('defines Sleek Salmon Scroll as flat editorial geometry', () => {
+    const salmon = getPalette('salmon');
+    expect(salmon.name).toBe('Sleek Salmon Scroll');
+    expect(salmon.cream).toBe('#FFF5F2');
+    expect(salmon.surface).toBe('#FDE8E3');
+    expect(salmon.sageGreen).toBe('#FF7A59');
+    expect(salmon.softPink).toBe('#E05A47');
+    expect(salmon.text).toBe('#2D221E');
+    expect(salmon.mutedText).toBe('#555555');
+    expect(salmon.border).toBe('#F8D8D0');
+    expect(salmon.radiusCard).toBe('0px');
+    expect(salmon.radiusButton).toBe('0px');
+    expect(salmon.shadow).toBe('none');
+  });
 });

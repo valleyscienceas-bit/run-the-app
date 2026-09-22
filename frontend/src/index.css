@@ -126,3 +126,256 @@ textarea::placeholder {
 .dark textarea::placeholder {
   color: rgb(100 116 139 / 0.55);
 }
+
+/* =============================================================================
+   Sleek Salmon Scroll — digital editorial / print layout
+   Scoped to [data-palette='salmon'] so other experiment palettes stay untouched.
+   ============================================================================= */
+
+@keyframes salmon-scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-palette='salmon'] {
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --salmon-page: #fff5f2;
+  --salmon-surface: #fde8e3;
+  --salmon-accent: #ff7a59;
+  --salmon-accent-2: #e05a47;
+  --salmon-text: #2d221e;
+  --salmon-muted: #555555;
+  --salmon-rule: #f8d8d0;
+}
+
+[data-palette='salmon'] body,
+[data-palette='salmon'] .bg-cream,
+[data-palette='salmon'] .min-h-screen {
+  background-color: var(--salmon-page) !important;
+  color: var(--salmon-text) !important;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+/* Brutalist geometry: zero radius, zero shadow everywhere */
+[data-palette='salmon'] *,
+[data-palette='salmon'] *::before,
+[data-palette='salmon'] *::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Major headings → Playfair Display, elegant, un-bolded */
+[data-palette='salmon'] h1,
+[data-palette='salmon'] h2,
+[data-palette='salmon'] h3,
+[data-palette='salmon'] .text-4xl,
+[data-palette='salmon'] .text-5xl,
+[data-palette='salmon'] .text-6xl,
+[data-palette='salmon'] .text-7xl,
+[data-palette='salmon'] [class*="text-[40px]"],
+[data-palette='salmon'] [class*="text-[48px]"],
+[data-palette='salmon'] [class*="text-[56px]"] {
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--salmon-text) !important;
+}
+
+/* Body copy → Inter light, tall measure */
+[data-palette='salmon'] p,
+[data-palette='salmon'] li,
+[data-palette='salmon'] .text-sm,
+[data-palette='salmon'] .text-base,
+[data-palette='salmon'] .text-lg {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--salmon-text);
+}
+
+[data-palette='salmon'] .text-slate-500,
+[data-palette='salmon'] .text-slate-400,
+[data-palette='salmon'] .text-slate-600,
+[data-palette='salmon'] .opacity-60 {
+  color: var(--salmon-muted) !important;
+}
+
+/* Nav, tags, labels, buttons → Inter caps + heavy tracking */
+[data-palette='salmon'] nav,
+[data-palette='salmon'] nav button,
+[data-palette='salmon'] nav a,
+[data-palette='salmon'] button,
+[data-palette='salmon'] [class*="uppercase"],
+[data-palette='salmon'] .tracking-widest,
+[data-palette='salmon'] .tracking-\[0\.2em\],
+[data-palette='salmon'] label,
+[data-palette='salmon'] th {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+/* Keep primary CTAs readable — slightly larger caps */
+[data-palette='salmon'] button.bg-slate-900,
+[data-palette='salmon'] button.bg-sage-green,
+[data-palette='salmon'] a.bg-slate-900,
+[data-palette='salmon'] [type="submit"] {
+  font-size: 12px !important;
+  letter-spacing: 0.16em !important;
+  background-color: var(--salmon-accent) !important;
+  color: #fff5f2 !important;
+  border: none !important;
+}
+
+[data-palette='salmon'] button.bg-slate-900:hover,
+[data-palette='salmon'] [type="submit"]:hover {
+  background-color: var(--salmon-accent-2) !important;
+}
+
+/* Surfaces: soft clay color blocks, not SaaS cards */
+[data-palette='salmon'] .bg-white,
+[data-palette='salmon'] .bg-white\/50,
+[data-palette='salmon'] .dark\:bg-slate-900 {
+  background-color: var(--salmon-surface) !important;
+}
+
+/* Kill full bounding-box borders; use asymmetrical accents instead */
+[data-palette='salmon'] .border,
+[data-palette='salmon'] .border-2,
+[data-palette='salmon'] .border-4,
+[data-palette='salmon'] [class*="border-slate"],
+[data-palette='salmon'] [class*="border-soft-pink"],
+[data-palette='salmon'] [class*="border-sage"] {
+  border-color: transparent !important;
+  border-width: 0 !important;
+}
+
+[data-palette='salmon'] .bg-white,
+[data-palette='salmon'] [class*="rounded-\[32px\]"],
+[data-palette='salmon'] [class*="rounded-\[40px\]"],
+[data-palette='salmon'] [class*="rounded-\[28px\]"],
+[data-palette='salmon'] section.bg-white,
+[data-palette='salmon'] div.bg-white {
+  border-left: 2px solid var(--salmon-accent) !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  background-color: var(--salmon-surface) !important;
+}
+
+/* Data rows / stacked list items — thin horizontal rules */
+[data-palette='salmon'] .space-y-3 > *,
+[data-palette='salmon'] .space-y-4 > *,
+[data-palette='salmon'] .divide-y > * {
+  border-top: 1px solid var(--salmon-rule) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-palette='salmon'] .space-y-3 > *:first-child,
+[data-palette='salmon'] .space-y-4 > *:first-child,
+[data-palette='salmon'] .divide-y > *:first-child {
+  border-top: none !important;
+}
+
+/* Sidebar as a color block, not a card */
+[data-palette='salmon'] nav.fixed {
+  background-color: var(--salmon-surface) !important;
+  border-right: 1px solid var(--salmon-rule) !important;
+  border-left: none !important;
+}
+
+[data-palette='salmon'] nav.fixed .text-sage-green {
+  color: var(--salmon-accent) !important;
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: none !important;
+  font-size: 1.25rem !important;
+}
+
+/* Accent chips / pills become flat color blocks */
+[data-palette='salmon'] .bg-sage-green,
+[data-palette='salmon'] .bg-soft-pink {
+  background-color: var(--salmon-accent) !important;
+  color: #fff5f2 !important;
+}
+
+[data-palette='salmon'] .bg-soft-pink\/10,
+[data-palette='salmon'] .bg-soft-pink\/15,
+[data-palette='salmon'] .bg-sage-green\/15,
+[data-palette='salmon'] .bg-sage-green\/20 {
+  background-color: color-mix(in srgb, var(--salmon-accent) 12%, var(--salmon-page)) !important;
+}
+
+/* Inputs — flat clay fields with bottom rule only */
+[data-palette='salmon'] input,
+[data-palette='salmon'] textarea,
+[data-palette='salmon'] select {
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid var(--salmon-rule) !important;
+  background-color: var(--salmon-surface) !important;
+  color: var(--salmon-text) !important;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 300 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+}
+
+[data-palette='salmon'] input:focus,
+[data-palette='salmon'] textarea:focus,
+[data-palette='salmon'] select:focus {
+  border-bottom-color: var(--salmon-accent) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Editorial cascade — content scrolls onto the page */
+[data-palette='salmon'] nav.fixed,
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(1),
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(2),
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(3),
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(4),
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(5),
+[data-palette='salmon'] main > *:nth-child(1),
+[data-palette='salmon'] main > *:nth-child(2),
+[data-palette='salmon'] main > *:nth-child(3),
+[data-palette='salmon'] main > *:nth-child(4),
+[data-palette='salmon'] main > *:nth-child(5) {
+  animation: salmon-scroll-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-palette='salmon'] nav.fixed { animation-delay: 0.05s; }
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(1),
+[data-palette='salmon'] main > *:nth-child(1) { animation-delay: 0.1s; }
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(2),
+[data-palette='salmon'] main > *:nth-child(2) { animation-delay: 0.2s; }
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(3),
+[data-palette='salmon'] main > *:nth-child(3) { animation-delay: 0.3s; }
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(4),
+[data-palette='salmon'] main > *:nth-child(4) { animation-delay: 0.4s; }
+[data-palette='salmon'] main .max-w-6xl > *:nth-child(5),
+[data-palette='salmon'] main > *:nth-child(5) { animation-delay: 0.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-palette='salmon'] nav.fixed,
+  [data-palette='salmon'] main .max-w-6xl > *,
+  [data-palette='salmon'] main > * {
+    animation: none !important;
+  }
+}

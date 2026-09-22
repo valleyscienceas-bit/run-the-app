@@ -120,7 +120,7 @@ export const PALETTE_THEMES: Record<PaletteId, PaletteTheme> = {
   salmon: {
     id: 'salmon',
     name: 'Sleek Salmon Scroll',
-    vibe: 'Editorial elegance',
+    vibe: 'Digital editorial magazine — Playfair + Inter, flat, sharp',
     cream: '#FFF5F2',
     softPink: '#E05A47',
     sageGreen: '#FF7A59',
@@ -242,6 +242,13 @@ export function applyPalette(id: PaletteId) {
   root.style.setProperty('--vs-radius-button', theme.radiusButton);
   root.style.setProperty('--vs-shadow', theme.shadow);
   root.style.setProperty('--font-sans', theme.font);
+  // Editorial display face for Sleek Salmon Scroll; other palettes keep Inter/system.
+  root.style.setProperty(
+    '--font-display',
+    theme.id === 'salmon'
+      ? '"Playfair Display", Georgia, "Times New Roman", serif'
+      : theme.font
+  );
   localStorage.setItem(PALETTE_STORAGE_KEY, theme.id);
   window.dispatchEvent(new CustomEvent('vs-palette-change', { detail: theme.id }));
 }
