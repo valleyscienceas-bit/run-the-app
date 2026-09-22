@@ -1,6 +1,6 @@
 # Prompt queue
 
-Scratch pad for prompts aimed at different branches. Edit here instead of parking text on the clipboard.
+Scratch pad for xprompts aimed at different branches. Edit here instead of parking text on the clipboard.
 
 **How to use**
 
