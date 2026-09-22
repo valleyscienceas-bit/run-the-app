@@ -1,6 +1,12 @@
 import type { Auth } from "firebase-admin/auth";
 import type { Firestore } from "firebase-admin/firestore";
 import { createAuthUserWithRoleLabels, syncAuthUserRoleLabels } from "./authUserProvisioning.js";
+import { getPasswordValidationError } from "./passwordValidation.js";
+
+/** Temporary Auth password until the parent sets one via reset link — must meet signup rules. */
+function generateCompliantTempPassword(): string {
+  return `${Math.random().toString(36).slice(-10)}Aa1!`;
+}
 
 export type ParentAccessPath = "individual" | "district";
 
@@ -65,7 +71,11 @@ export async function provisionParentForStudent(
   } catch (err: unknown) {
     const code = (err as { code?: string }).code;
     if (code === "auth/user-not-found") {
-      const password = initialPassword || Math.random().toString(36).slice(-12) + "A1!";
+      if (initialPassword) {
+        const passwordError = getPasswordValidationError(initialPassword);
+        if (passwordError) throw new Error(passwordError);
+      }
+      const password = initialPassword || generateCompliantTempPassword();
       const created = await createAuthUserWithRoleLabels(auth, {
         email: normalizedEmail,
         emailVerified: false,
