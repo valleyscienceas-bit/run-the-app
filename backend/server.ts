@@ -60,7 +60,8 @@ import {
   ensureSandboxDistrictParent,
 } from "./lib/sandboxSeed.js";
 
-dotenv.config();
+// Always prefer backend/.env over a stale shell export (e.g. partner machine path).
+dotenv.config({ override: true });
 
 const envValidation = validateEnv();
 logEnvValidation(envValidation);

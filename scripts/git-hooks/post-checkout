@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installed into .git/hooks/post-checkout by: npm run prepare
-# Only reinstalls when a package-lock.json changes between checkouts.
+# Ensures frontend/backend npm deps after every branch switch.
 
 prev_head="${1:-}"
 new_head="${2:-}"
@@ -11,26 +11,16 @@ if [[ "$branch_checkout" != "1" ]]; then
   exit 0
 fi
 
-# First clone / empty prev — skip (user should install once)
-if [[ -z "$prev_head" || "$prev_head" =~ ^0+$ ]]; then
-  exit 0
-fi
+root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+[[ -n "$root" ]] || exit 0
 
-changed="$(git diff --name-only "$prev_head" "$new_head" -- '**/package-lock.json' 'package-lock.json' 2>/dev/null || true)"
+echo "📦 Ensuring npm deps after branch switch..."
 
-if [[ -z "$changed" ]]; then
-  exit 0
-fi
-
-echo "📦 package-lock.json changed on branch switch — updating npm deps..."
-
-while IFS= read -r lockfile; do
-  [[ -z "$lockfile" ]] && continue
-  dir="$(dirname "$lockfile")"
-  if [[ -f "$dir/package.json" ]]; then
+for dir in frontend backend; do
+  if [[ -f "$root/$dir/package.json" ]]; then
     echo "  → npm install in $dir"
-    (cd "$dir" && npm install --no-fund --no-audit)
+    (cd "$root/$dir" && npm install --no-fund --no-audit) || echo "  ⚠ npm install failed in $dir (continuing)"
   fi
-done <<< "$changed"
+done
 
-echo "✅ deps updated"
+echo "✅ deps ready"
