@@ -8,3 +8,6 @@ Both: work on making prompts on docs/prompt-queue.md, understanding child privac
 
 ## Notes
 
+Ankan
+
+-- Possibility of using claude skills in Cursor (would that cost xtra money, do we need anthropic plan)
